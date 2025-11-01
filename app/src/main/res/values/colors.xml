@@ -7,4 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="dodo_maroon">#9A5050</color>
+    <color name="dodo_active_indicator">#339A5050</color>
+    <color name="dodo_tray_bg">#F3E9E9</color>
 </resources>
