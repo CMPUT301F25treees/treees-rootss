@@ -3,23 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_welcome">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.myapplication.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/navigation_welcome"
+        android:name="com.example.myapplication.features.auth.WelcomeFrag"
+        tools:layout="@layout/fragment_auth_welcome" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.myapplication.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_login"
+        android:name="com.example.myapplication.features.auth.LoginFrag"
+        tools:layout="@layout/fragment_auth_login" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.myapplication.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_admin_home"
+        android:name="com.example.myapplication.features.admin.AHomeFrag"
+        tools:layout="@layout/fragment_a_home" />
+    <fragment
+        android:id="@+id/navigation_admin_profile"
+        android:name="com.example.myapplication.features.admin.AProfileFrag"
+        tools:layout="@layout/fragment_a_profile" />
+    <fragment
+        android:id="@+id/navigation_admin_users"
+        android:name="com.example.myapplication.features.admin.AUsersFrag"
+        tools:layout="@layout/fragment_a_users" />
+
 </navigation>
