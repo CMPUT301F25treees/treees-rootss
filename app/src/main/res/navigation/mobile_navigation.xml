@@ -34,4 +34,19 @@
         android:name="com.example.myapplication.features.admin.AUsersFrag"
         tools:layout="@layout/fragment_a_users" />
 
+    <fragment
+        android:id="@+id/navigation_user_home"
+        android:name="com.example.myapplication.features.user.UHomeFrag"
+        tools:layout="@layout/fragment_u_home" />
+
+    <fragment
+        android:id="@+id/navigation_user_profile"
+        android:name="com.example.myapplication.features.user.UProfileFrag"
+        tools:layout="@layout/fragment_u_profile" />
+
+    <fragment
+        android:id="@+id/navigation_user_scan"
+        android:name="com.example.myapplication.features.user.UScanFrag"
+        tools:layout="@layout/fragment_u_scan" />
+
 </navigation>
