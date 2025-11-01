@@ -21,7 +21,10 @@ public class WelcomeFrag extends Fragment {
 
     @Override public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
         MaterialButton btnLogin = v.findViewById(R.id.btnLogin);
+        MaterialButton btnRegister = v.findViewById(R.id.btnRegister);
         btnLogin.setOnClickListener(x ->
                 NavHostFragment.findNavController(this).navigate(R.id.navigation_login));
+        btnRegister.setOnClickListener(x ->
+                NavHostFragment.findNavController(this).navigate(R.id.navigation_register));
     }
 }

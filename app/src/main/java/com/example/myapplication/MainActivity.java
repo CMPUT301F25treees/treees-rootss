@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navView, navController);
 
         navController.addOnDestinationChangedListener((c, d, a) -> {
-            boolean hide = d.getId() == R.id.navigation_welcome || d.getId() == R.id.navigation_login;
+            boolean hide = d.getId() == R.id.navigation_welcome || d.getId() == R.id.navigation_login || d.getId() == R.id.navigation_register;
             navView.setVisibility(hide ? View.GONE : View.VISIBLE);
         });
     }
