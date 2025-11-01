@@ -16,6 +16,12 @@
         tools:layout="@layout/fragment_auth_login" />
 
     <fragment
+        android:id="@+id/navigation_register"
+        android:name="com.example.myapplication.features.auth.RegisterFrag"
+        android:layout="@layout/fragment_auth_registration"/>
+
+
+    <fragment
         android:id="@+id/navigation_admin_home"
         android:name="com.example.myapplication.features.admin.AHomeFrag"
         tools:layout="@layout/fragment_a_home" />
