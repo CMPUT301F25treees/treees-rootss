@@ -10,11 +10,13 @@ import androidx.annotation.*;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import com.example.myapplication.R;
+import com.example.myapplication.data.model.User;
+import com.example.myapplication.core.UserSession;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginFrag extends Fragment {
@@ -52,6 +54,8 @@ public class LoginFrag extends Fragment {
     private void signIn() {
         String email = text(etEmail), pass = text(etPassword);
 
+        if (tryDummyUserLogin(email, pass)) { return; }
+
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) { tilEmail.setError("Enter a valid email"); return; }
         tilEmail.setError(null);
         if (TextUtils.isEmpty(pass)) { tilPassword.setError("Enter your password"); return; }
@@ -71,11 +75,33 @@ public class LoginFrag extends Fragment {
                 setLoading(false);
                 if (!rt.isSuccessful()) { toast("Failed to load role"); return; }
                 DocumentSnapshot d = rt.getResult();
-                String role = d != null ? String.valueOf(d.get("role")) : null;
-                if ("admin".equalsIgnoreCase(role)) {
+                String role = null;
+                if (d != null) {
+                    Object roleValue = d.get("role");
+                    if (roleValue != null) {
+                        role = roleValue.toString();
+                    }
+                }
+
+                // Create User object from Firebase data
+                User user = new User();
+                user.setUid(uid);
+                user.setEmail(auth.getCurrentUser().getEmail());
+                user.setRole(role != null ? role : "user");
+                if (d != null && d.contains("username")) {
+                    Object username = d.get("username");
+                    if (username != null) {
+                        user.setUsername(username.toString());
+                    }
+                }
+
+                // Store in session
+                UserSession.getInstance().setCurrentUser(user);
+
+                if ("admin".equalsIgnoreCase(user.getRole())) {
                     NavHostFragment.findNavController(this).navigate(R.id.navigation_admin_home);
                 } else {
-                    toast("This account is not an admin.");
+                    NavHostFragment.findNavController(this).navigate(R.id.navigation_user_home);
                 }
             });
         });
@@ -83,4 +109,26 @@ public class LoginFrag extends Fragment {
 
     private static String text(TextInputEditText e){ return e.getText()==null ? "" : e.getText().toString().trim(); }
     private void toast(String m){ Toast.makeText(requireContext(), m, Toast.LENGTH_SHORT).show(); }
+
+    private boolean tryDummyUserLogin(String email, String pass) {
+        final String dummyEmail = "user@example.com";
+        final String dummyPassword = "password123";
+
+        if (!dummyEmail.equalsIgnoreCase(email) || !dummyPassword.equals(pass)) {
+            return false;
+        }
+
+        User dummyUser = new User();
+        dummyUser.setUid("LOCAL_DUMMY_USER");
+        dummyUser.setEmail(dummyEmail);
+        dummyUser.setUsername("Demo User");
+        dummyUser.setRole("user");
+        dummyUser.setCreatedAt(System.currentTimeMillis());
+
+        UserSession.getInstance().setCurrentUser(dummyUser);
+        toast("Logged in as demo user");
+
+        NavHostFragment.findNavController(this).navigate(R.id.navigation_user_home);
+        return true;
+    }
 }

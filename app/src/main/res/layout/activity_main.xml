@@ -25,7 +25,7 @@
         android:paddingVertical="6dp"
         android:background="@drawable/bnv_tray"
         android:elevation="8dp"
-        app:menu="@menu/bottom_nav_menu"
+        app:menu="@menu/bottom_nav_admin"
         app:labelVisibilityMode="labeled"
         app:itemBackground="@drawable/bnv_item_background"
         app:itemIconTint="@null"
