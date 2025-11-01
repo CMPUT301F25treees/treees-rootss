@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="registration_title_text">Please Register</string>
+    <string name="first_name_text_title">First Name</string>
+    <string name="last_name_text_title">Last Name</string>
+    <string name="email_title_text">Email</string>
+    <string name="last_name_hint_text">Please Enter Last Name</string>
+    <string name="first_name_hint_text">Please Enter First Name</string>
+    <string name="email_hint_text">hello@example.com</string>
+    <string name="phone_text_title">Cell</string>
+    <string name="phone_hint_title">Please enter your phone number (Optional)</string>
+    <string name="password_text_title">Password</string>
+    <string name="password_hint_text">Please enter your password</string>
+    <string name="register_button_text">Register</string>
+</resources>

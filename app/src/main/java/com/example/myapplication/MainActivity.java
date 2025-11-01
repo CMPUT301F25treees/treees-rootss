@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         currentMenuResId = R.menu.bottom_nav_admin;
 
         navController.addOnDestinationChangedListener((c, d, a) -> {
-            boolean hide = d.getId() == R.id.navigation_welcome || d.getId() == R.id.navigation_login;
+            boolean hide = d.getId() == R.id.navigation_welcome || d.getId() == R.id.navigation_login || d.getId() == R.id.navigation_register;
             navView.setVisibility(hide ? View.GONE : View.VISIBLE);
             if (!hide) {
                 updateBottomNavMenu();

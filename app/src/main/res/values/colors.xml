@@ -14,4 +14,7 @@
     <color name="event_banner_midnight">#102542</color>
     <color name="event_banner_merlot">#3D1F2D</color>
     <color name="event_banner_forest">#153A2C</color>
+    <color name="mainButtonColor">#924545</color>
+    <color name="gradient_start">#1F1C18</color>
+    <color name="gradient_end">#8E0E00</color>
 </resources>
