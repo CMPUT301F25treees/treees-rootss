@@ -99,4 +99,41 @@ public class ExampleInstrumentedTest {
 
         assertEquals(1, occurrences);
     }
+
+    @Test
+    public void testLeaveWaitlist() throws Exception {
+        String eventId = "Uu8qd4j2Xdo1TyeOFmsy";
+        String userId = "testUser123";
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseEventRepository repo = new FirebaseEventRepository();
+
+        DocumentSnapshot beforeSnap = Tasks.await(
+                db.collection("events").document(eventId).get()
+        );
+        List<String> beforeList = (List<String>) beforeSnap.get("waitlist");
+        int beforeSize = beforeList == null ? 0 : beforeList.size();
+        boolean userWasPresent = beforeList != null && beforeList.contains(userId);
+
+        TaskCompletionSource<Void> waiter = new TaskCompletionSource<>();
+        repo.leaveWaitlist(
+                eventId,
+                userId,
+                v -> waiter.setResult(null),
+                waiter::setException
+        );
+
+        Tasks.await(waiter.getTask());
+
+        DocumentSnapshot afterSnap = Tasks.await(
+                db.collection("events").document(eventId).get()
+        );
+        List<String> afterList = (List<String>) afterSnap.get("waitlist");
+
+        assertNotNull(afterList);
+        assertFalse(afterList.contains(userId));
+
+        int expectedSize = beforeSize - (userWasPresent ? 1 : 0);
+        assertEquals(expectedSize, afterList.size());
+    }
 }
