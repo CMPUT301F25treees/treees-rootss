@@ -17,4 +17,8 @@
     <color name="mainButtonColor">#924545</color>
     <color name="gradient_start">#1F1C18</color>
     <color name="gradient_end">#8E0E00</color>
+
+    <color name="profile_role_rouge">#B2555D</color>
+    <color name="profile_card_gray">#F2F2F2</color>
+    <color name="profile_delete_red">#D64A4A</color>
 </resources>
