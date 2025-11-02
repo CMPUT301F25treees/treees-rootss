@@ -89,6 +89,7 @@ public class UHomeFrag extends Fragment {
                 "Willow Studio",
                 "Jamie Lee",
                 "$25",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(15),
                 ContextCompat.getColor(context, R.color.event_banner_charcoal)
         ));
@@ -98,6 +99,7 @@ public class UHomeFrag extends Fragment {
                 "Loft Gym",
                 "Marcus Chen",
                 "$18",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(4),
                 ContextCompat.getColor(context, R.color.event_banner_midnight)
         ));
@@ -107,6 +109,7 @@ public class UHomeFrag extends Fragment {
                 "Harbor Club",
                 "Aisha Gomez",
                 "$32",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(6) + TimeUnit.MINUTES.toMillis(45),
                 ContextCompat.getColor(context, R.color.event_banner_merlot)
         ));
@@ -116,6 +119,7 @@ public class UHomeFrag extends Fragment {
                 "Riverside Park",
                 "Omar Yusuf",
                 "$12",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(1) + TimeUnit.MINUTES.toMillis(5),
                 ContextCompat.getColor(context, R.color.event_banner_forest)
         ));
@@ -125,6 +129,7 @@ public class UHomeFrag extends Fragment {
                 "Forge Studio",
                 "Kelly Bryant",
                 "$28",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(9),
                 ContextCompat.getColor(context, R.color.event_banner_charcoal)
         ));
@@ -134,6 +139,7 @@ public class UHomeFrag extends Fragment {
                 "Zen Collective",
                 "Priya Patel",
                 "$14",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(12) + TimeUnit.MINUTES.toMillis(30),
                 ContextCompat.getColor(context, R.color.event_banner_midnight)
         ));
@@ -143,6 +149,7 @@ public class UHomeFrag extends Fragment {
                 "Velocity Loft",
                 "Nina Brooks",
                 "$22",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(15),
                 ContextCompat.getColor(context, R.color.event_banner_merlot)
         ));
@@ -152,6 +159,7 @@ public class UHomeFrag extends Fragment {
                 "Studio Noir",
                 "Leo Martins",
                 "$20",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(18) + TimeUnit.MINUTES.toMillis(10),
                 ContextCompat.getColor(context, R.color.event_banner_charcoal)
         ));
@@ -161,6 +169,7 @@ public class UHomeFrag extends Fragment {
                 "Athlete Lab",
                 "Sasha Kim",
                 "$26",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(20) + TimeUnit.MINUTES.toMillis(45),
                 ContextCompat.getColor(context, R.color.event_banner_forest)
         ));
@@ -170,6 +179,7 @@ public class UHomeFrag extends Fragment {
                 "Skyline Terrace",
                 "Jordan Blake",
                 "$24",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(22),
                 ContextCompat.getColor(context, R.color.event_banner_midnight)
         ));
@@ -179,6 +189,7 @@ public class UHomeFrag extends Fragment {
                 "Corner Gym",
                 "Riley Moore",
                 "$19",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(24) + TimeUnit.MINUTES.toMillis(5),
                 ContextCompat.getColor(context, R.color.event_banner_charcoal)
         ));
@@ -188,6 +199,7 @@ public class UHomeFrag extends Fragment {
                 "Lotus Lounge",
                 "Mira Das",
                 "$18",
+                "NUll",
                 now + TimeUnit.HOURS.toMillis(26) + TimeUnit.MINUTES.toMillis(40),
                 ContextCompat.getColor(context, R.color.event_banner_merlot)
         ));
