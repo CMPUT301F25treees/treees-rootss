@@ -35,4 +35,25 @@ public class FirebaseEventRepository {
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }
+
+
+    /**
+     * This method removes the specified users id from the waitlist of a given event.
+     *
+     * The method will update the "events" collection in the application FireStore by removing
+     * the user id (uid) from an array named "waitlist". "waitlist" is an array of user ids
+     * that are a part of the specified event waitlist.
+     *
+     * @param eventId The id of event the user wants to leave
+     * @param uid The id of the user themselves
+     * @param successListener Callback on success
+     * @param failureListener Callback on failure
+     */
+    public void leaveWaitlist(String eventId, String uid, OnSuccessListener<Void> successListener, OnFailureListener failureListener){
+        db.collection("events")
+                .document(eventId)
+                .update("waitlist", FieldValue.arrayRemove(uid))
+                .addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
+    }
 }
