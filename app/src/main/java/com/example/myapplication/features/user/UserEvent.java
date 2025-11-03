@@ -4,16 +4,22 @@ import androidx.annotation.ColorInt;
 
 import java.util.List;
 
-class UserEvent {
-    private final String id;
-    private final String name;
-    private final String location;
-    private final String instructor;
-    private final String price;
-    private final String descr;
-    private final long endTimeMillis;
-    private final int bannerColor;
-    private final List<String> waitlist;
+public class UserEvent {
+    private String id;
+    private  String name;
+    private  String location;
+    private  String instructor;
+    private  String price;
+    private  String descr;
+    private  long endTimeMillis;
+    private  int bannerColor;
+    private  List<String> waitlist;
+
+
+    /**
+     * This method is required for Firestore to construct the object
+     */
+    public UserEvent() {}
 
     UserEvent(String id, String name, String location, String instructor,
               String price, String descr, long endTimeMillis, @ColorInt int bannerColor, List<String> waitlist) {
@@ -28,13 +34,23 @@ class UserEvent {
         this.waitlist = waitlist;
     }
 
-    String getId() { return id; }
-    String getName() { return name; }
-    String getLocation() { return location; }
-    String getInstructor() { return instructor; }
-    String getPrice() { return price; }
-    String getDescr(){ return descr; }
-    List<String> getWaitlist() { return waitlist; }
-    long getEndTimeMillis() { return endTimeMillis; }
-    int getBannerColor() { return bannerColor; }
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getLocation() { return location; }
+    public String getInstructor() { return instructor; }
+    public String getPrice() { return price; }
+    public String getDescr(){ return descr; }
+    public List<String> getWaitlist() { return waitlist; }
+    public long getEndTimeMillis() { return endTimeMillis; }
+    public int getBannerColor() { return bannerColor; }
+
+    public void setId(String id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setLocation(String location) { this.location = location; }
+    public void setInstructor(String instructor) { this.instructor = instructor; }
+    public void setPrice(String price) { this.price = price; }
+    public void setDescr(String descr) { this.descr = descr; }
+    public void setEndTimeMillis(long endTimeMillis) { this.endTimeMillis = endTimeMillis; }
+    public void setBannerColor(int bannerColor) { this.bannerColor = bannerColor; }
+    public void setWaitlist(List<String> waitlist) { this.waitlist = waitlist; }
 }
