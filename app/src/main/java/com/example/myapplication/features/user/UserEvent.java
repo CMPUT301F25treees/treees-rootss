@@ -2,7 +2,7 @@ package com.example.myapplication.features.user;
 
 import androidx.annotation.ColorInt;
 
-class UserEvent {
+public class UserEvent {
     private final String id;
     private final String name;
     private final String location;
@@ -12,8 +12,8 @@ class UserEvent {
     private final long endTimeMillis;
     private final int bannerColor;
 
-    UserEvent(String id, String name, String location, String instructor,
-              String price, String descr, long endTimeMillis, @ColorInt int bannerColor) {
+    public UserEvent(String id, String name, String location, String instructor,
+                     String price, String descr, long endTimeMillis, @ColorInt int bannerColor) {
         this.id = id;
         this.name = name;
         this.location = location;
@@ -24,12 +24,12 @@ class UserEvent {
         this.bannerColor = bannerColor;
     }
 
-    String getId() { return id; }
-    String getName() { return name; }
-    String getLocation() { return location; }
-    String getInstructor() { return instructor; }
-    String getPrice() { return price; }
-    String getDescr(){ return descr; }
-    long getEndTimeMillis() { return endTimeMillis; }
-    int getBannerColor() { return bannerColor; }
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getLocation() { return location; }
+    public String getInstructor() { return instructor; }
+    public String getPrice() { return price; }
+    public String getDescr(){ return descr; }
+    public long getEndTimeMillis() { return endTimeMillis; }
+    public int getBannerColor() { return bannerColor; }
 }

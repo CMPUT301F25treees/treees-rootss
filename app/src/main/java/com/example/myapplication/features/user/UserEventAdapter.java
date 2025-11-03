@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.EventViewHolder> {
+public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.EventViewHolder> {
 
     private final List<UserEvent> original = new ArrayList<>();
     private final List<UserEvent> visible = new ArrayList<>();
 
-    void submit(List<UserEvent> events) {
+    public void submit(List<UserEvent> events) {
         original.clear();
         visible.clear();
         if (events != null) {
@@ -28,7 +28,7 @@ class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.EventViewHo
         notifyDataSetChanged();
     }
 
-    void filter(String query) {
+    public void filter(String query) {
         visible.clear();
         if (TextUtils.isEmpty(query)) {
             visible.addAll(original);
