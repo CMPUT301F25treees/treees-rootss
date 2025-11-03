@@ -37,7 +37,18 @@
     <fragment
         android:id="@+id/navigation_user_home"
         android:name="com.example.myapplication.features.user.UHomeFrag"
-        tools:layout="@layout/fragment_u_home" />
+        tools:layout="@layout/fragment_u_home" >
+
+        <action
+            android:id="@+id/action_to_user_event_detail"
+            app:destination="@id/navigation_user_event_detail" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_user_event_detail"
+        android:name="com.example.myapplication.features.user.UEventDetailFrag"
+        android:layout="@layout/fragment_u_event_detail"/>
 
     <fragment
         android:id="@+id/navigation_user_profile"

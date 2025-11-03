@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
@@ -54,7 +55,14 @@ public class UHomeFrag extends Fragment {
         });
 
         fetchEventsFromFirestore();
-        //adapter.submit(buildDummyEvents(context));
+
+        adapter.setOnEventClickListener(event -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("eventId", event.getId());
+
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_to_user_event_detail, bundle);
+        });
 
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
