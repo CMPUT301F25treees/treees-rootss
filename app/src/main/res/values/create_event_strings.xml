@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="create_event_title_text">Create Event</string>
-    <string name="event_title_text">Title *</string>
+    <string name="o_event_title_text">Title *</string>
     <string name="event_title_hint_text">Please input event title</string>
     <string name="event_address_title_text">Address *</string>
     <string name="event_address_hint_text">Please input event location</string>

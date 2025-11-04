@@ -28,7 +28,7 @@
         android:layout_marginStart="48dp"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/noto_sans_arabic_thin"
-        android:text="@string/event_title_text"
+        android:text="@string/o_event_title_text"
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.EventViewHolder> {
+public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.EventViewHolder> {
 
     private final List<UserEvent> original = new ArrayList<>();
     private final List<UserEvent> visible = new ArrayList<>();

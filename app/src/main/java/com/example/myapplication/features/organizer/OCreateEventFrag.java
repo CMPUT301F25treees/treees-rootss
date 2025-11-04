@@ -3,6 +3,7 @@ package com.example.myapplication.features.organizer;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -25,6 +26,8 @@ import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.Event;
 import com.example.myapplication.data.repo.EventRepository;
 import com.google.android.material.button.MaterialButton;
+import com.google.zxing.BarcodeFormat;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -163,12 +166,12 @@ public class OCreateEventFrag extends Fragment {
     private void onCreateClicked() {
         String title = titleInput.getText().toString().trim();
         String address = addressInput.getText().toString().trim();
-        String desc = descInput.getText().toString().trim();
+        String descr = descInput.getText().toString().trim();
         String capacityStr = capacityInput.getText().toString().trim();
         String entrantsStr = entrantsDrawnInput.getText().toString().trim();
 
         // basic validation
-        if (title.isEmpty() || address.isEmpty() || desc.isEmpty()
+        if (title.isEmpty() || address.isEmpty() || descr.isEmpty()
                 || entrantsStr.isEmpty()
                 || startDateMillis == 0 || endDateMillis == 0 || selectionDateMillis == 0) {
             Toast.makeText(getContext(), "Please fill all required fields", Toast.LENGTH_SHORT).show();
@@ -194,20 +197,20 @@ public class OCreateEventFrag extends Fragment {
         }
 
         Event event = new Event();
-        event.title = title;
-        event.address = address;
-        event.desc = desc;
-        event.capacity = capacity;
-        event.startDateMillis = startDateMillis;
-        event.endDateMillis = endDateMillis;
-        event.selectionDateMillis = selectionDateMillis;
-        event.entrantsToDraw = entrantsToDraw;
-        event.geoRequired = geoSwitch.isChecked();
-        event.organizerId = UserSession.getInstance().getCurrentUser().getUid();
+        event.setTitle(title);
+        event.setAddress(address);
+        event.setDescr(descr);
+        event.setCapacity(capacity);
+        event.setStartDateMillis(startDateMillis);
+        event.setEndDateMillis(endDateMillis);
+        event.setSelectionDateMillis(selectionDateMillis);
+        event.setEntrantsToDraw(entrantsToDraw);
+        event.setGeoRequired(geoSwitch.isChecked());
+        event.setOrganizerId(UserSession.getInstance().getCurrentUser().getUid());
 
         if (posterUri != null) {
             eventRepository.uploadPoster(posterUri, url -> {
-                event.posterUrl = url;
+                event.setPosterUrl(url);
                 saveEvent(event);
             }, e -> Toast.makeText(getContext(),
                     "Poster upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
@@ -216,11 +219,27 @@ public class OCreateEventFrag extends Fragment {
         }
     }
 
+    private void generateQrCode(String data) {
+        try {
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+            Bitmap bitmap = barcodeEncoder.encodeBitmap(
+                    data,
+                    BarcodeFormat.QR_CODE,
+                    600, // width
+                    600  // height
+            );
+            qrImageView.setImageBitmap(bitmap);
+            qrImageView.setVisibility(View.VISIBLE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void saveEvent(Event event) {
         eventRepository.createEvent(event,
                 aVoid -> {
                     Toast.makeText(getContext(), "Event created!", Toast.LENGTH_SHORT).show();
-                    // TODO: navigate to organizer home
+                    // TODO: navigate to OEventDetails
                 },
                 e -> Toast.makeText(getContext(),
                         "Failed to create event: " + e.getMessage(), Toast.LENGTH_LONG).show());
