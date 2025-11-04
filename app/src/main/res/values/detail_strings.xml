@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="event_title_text">Event Title</string>
+    <string name="waitinglist_text">Currently in Waitinglist:</string>
+    <string name="organizer_text">Organizer:</string>
+    <string name="location_text">Location</string>
+    <string name="price_text">$15.00</string>
+    <string name="endtime_text">Days Left:</string>
+    <string name="descr_text">Description will go here</string>
+</resources>

@@ -18,7 +18,16 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
     private final List<UserEvent> original = new ArrayList<>();
     private final List<UserEvent> visible = new ArrayList<>();
 
-    public void submit(List<UserEvent> events) {
+    interface OnEventClickListener {
+        void onEventClick(UserEvent event);
+    }
+
+    private OnEventClickListener listener;
+
+    public void setOnEventClickListener(OnEventClickListener listener) {
+        this.listener = listener;
+    }
+    void submit(List<UserEvent> events) {
         original.clear();
         visible.clear();
         if (events != null) {
@@ -62,6 +71,12 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         holder.location.setText(event.getLocation());
         holder.instructor.setText(String.format(Locale.getDefault(), "With %s", event.getInstructor()));
         holder.timeRemaining.setText(formatTimeRemaining(event.getEndTimeMillis()));
+
+        holder.itemView.setOnClickListener(x -> {
+            if(listener != null) {
+                listener.onEventClick(event);
+            }
+        });
     }
 
     @Override

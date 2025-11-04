@@ -14,9 +14,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
+import com.example.myapplication.data.firebase.FirebaseEventRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +53,16 @@ public class UHomeFrag extends Fragment {
             v.getParent().requestDisallowInterceptTouchEvent(true);
             return false;
         });
-        adapter.submit(buildDummyEvents(context));
+
+        fetchEventsFromFirestore();
+
+        adapter.setOnEventClickListener(event -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("eventId", event.getId());
+
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_to_user_event_detail, bundle);
+        });
 
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -68,6 +80,26 @@ public class UHomeFrag extends Fragment {
         filterButton.setOnClickListener(v -> showFilterMenu(v));
     }
 
+    private void fetchEventsFromFirestore(){
+        FirebaseEventRepository repo = new FirebaseEventRepository();
+
+        repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
+            @Override
+            public void onEventsFetched(List<UserEvent> events){
+                if(events != null && !events.isEmpty()) {
+                    adapter.submit(events);
+                } else{
+                    Toast.makeText(requireContext(), "No events found", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onError(Exception e){
+                Toast.makeText(requireContext(), "Failed to fetch:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void showFilterMenu(View anchor) {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
         menu.getMenu().add("Option 1");
@@ -80,131 +112,7 @@ public class UHomeFrag extends Fragment {
         menu.show();
     }
 
-    private List<UserEvent> buildDummyEvents(Context context) {
-        long now = System.currentTimeMillis();
-        List<UserEvent> events = new ArrayList<>();
-        events.add(new UserEvent(
-                "1",
-                "Sunrise Yoga",
-                "Willow Studio",
-                "Jamie Lee",
-                "$25",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(2) + TimeUnit.MINUTES.toMillis(15),
-                ContextCompat.getColor(context, R.color.event_banner_charcoal)
-        ));
-        events.add(new UserEvent(
-                "2",
-                "HIIT Express",
-                "Loft Gym",
-                "Marcus Chen",
-                "$18",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(4),
-                ContextCompat.getColor(context, R.color.event_banner_midnight)
-        ));
-        events.add(new UserEvent(
-                "3",
-                "Pilates Sculpt",
-                "Harbor Club",
-                "Aisha Gomez",
-                "$32",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(6) + TimeUnit.MINUTES.toMillis(45),
-                ContextCompat.getColor(context, R.color.event_banner_merlot)
-        ));
-        events.add(new UserEvent(
-                "4",
-                "Mindful Breathwork",
-                "Riverside Park",
-                "Omar Yusuf",
-                "$12",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(1) + TimeUnit.MINUTES.toMillis(5),
-                ContextCompat.getColor(context, R.color.event_banner_forest)
-        ));
-        events.add(new UserEvent(
-                "5",
-                "Strength Fundamentals",
-                "Forge Studio",
-                "Kelly Bryant",
-                "$28",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(9),
-                ContextCompat.getColor(context, R.color.event_banner_charcoal)
-        ));
-        events.add(new UserEvent(
-                "6",
-                "Evening Stretch",
-                "Zen Collective",
-                "Priya Patel",
-                "$14",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(12) + TimeUnit.MINUTES.toMillis(30),
-                ContextCompat.getColor(context, R.color.event_banner_midnight)
-        ));
-        events.add(new UserEvent(
-                "7",
-                "Cycle Club",
-                "Velocity Loft",
-                "Nina Brooks",
-                "$22",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(15),
-                ContextCompat.getColor(context, R.color.event_banner_merlot)
-        ));
-        events.add(new UserEvent(
-                "8",
-                "Cardio Dance",
-                "Studio Noir",
-                "Leo Martins",
-                "$20",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(18) + TimeUnit.MINUTES.toMillis(10),
-                ContextCompat.getColor(context, R.color.event_banner_charcoal)
-        ));
-        events.add(new UserEvent(
-                "9",
-                "Mobility Reset",
-                "Athlete Lab",
-                "Sasha Kim",
-                "$26",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(20) + TimeUnit.MINUTES.toMillis(45),
-                ContextCompat.getColor(context, R.color.event_banner_forest)
-        ));
-        events.add(new UserEvent(
-                "10",
-                "Sunset Flow",
-                "Skyline Terrace",
-                "Jordan Blake",
-                "$24",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(22),
-                ContextCompat.getColor(context, R.color.event_banner_midnight)
-        ));
-        events.add(new UserEvent(
-                "11",
-                "Boxing Basics",
-                "Corner Gym",
-                "Riley Moore",
-                "$19",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(24) + TimeUnit.MINUTES.toMillis(5),
-                ContextCompat.getColor(context, R.color.event_banner_charcoal)
-        ));
-        events.add(new UserEvent(
-                "12",
-                "Restorative Yin",
-                "Lotus Lounge",
-                "Mira Das",
-                "$18",
-                "NUll",
-                now + TimeUnit.HOURS.toMillis(26) + TimeUnit.MINUTES.toMillis(40),
-                ContextCompat.getColor(context, R.color.event_banner_merlot)
-        ));
-        return events;
-    }
+
 
     private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
         private final int spanCount;
