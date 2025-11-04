@@ -81,4 +81,27 @@ public class FirebaseEventRepository {
                 })
                 .addOnFailureListener(callback::onError);
     }
+
+    public interface SingleEventCallback {
+        void onEventFetched(UserEvent event);
+        void onError(Exception e);
+    }
+
+    public void fetchEventById(String eventId, SingleEventCallback callback) {
+        db.collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        UserEvent event = doc.toObject(UserEvent.class);
+                        if (event != null) {
+                            event.setId(doc.getId());
+                        }
+                        callback.onEventFetched(event);
+                    } else {
+                        callback.onError(new Exception("Event not found"));
+                    }
+                })
+                .addOnFailureListener(callback::onError);
+    }
 }
