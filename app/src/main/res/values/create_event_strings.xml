@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="create_event_title_text">Create Event</string>
+    <string name="event_title_text">Title *</string>
+    <string name="event_title_hint_text">Please input event title</string>
+    <string name="event_address_title_text">Address *</string>
+    <string name="event_address_hint_text">Please input event location</string>
+    <string name="event_desc_title_text">Description *</string>
+    <string name="event_desc_hint_text">Please input event description</string>
+    <string name="event_capacity_title_text">Capacity</string>
+    <string name="event_capacity_hint_text">Please input event capacity</string>
+    <string name="event_price_title_text">Price *</string>
+    <string name="event_price_hint_text">Please input event price</string>
+    <string name="event_start_date_title_text">Event Start Date *</string>
+    <string name="event_start_date_hint_text">Please input event start date</string>
+    <string name="event_end_date_title_text">Event End Date *</string>
+    <string name="event_end_date_hint_text">Please input event end date</string>
+    <string name="event_add_poster_title_text">Insert Event Poster *</string>
+    <string name="event_add_poster_hint_text">Please attach event poster</string>
+    <string name="event_draw_date_title_text">Selection Date *</string>
+    <string name="event_draw_date_hint_text">Please input lottery draw date</string>
+    <string name="event_entrants_drawn_title_text">Entrants Drawn *</string>
+    <string name="event_entrants_hint_text">Please input number of entrants to be drawn</string>
+    <string name="event_toggle_geolocation_title_text">Enable Geolocation</string>
+    <string name="event_toggle_hint_text">Enable event geolocation? (Optional)</string>
+
+    <string name="create_button_text">Create</string>
+
+</resources>

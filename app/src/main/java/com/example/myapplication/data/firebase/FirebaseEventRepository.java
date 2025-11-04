@@ -1,9 +1,15 @@
 package com.example.myapplication.data.firebase;
 
+import android.net.Uri;
+
+import com.example.myapplication.data.model.Event;
+import com.example.myapplication.data.repo.EventRepository;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 
 /**
@@ -12,9 +18,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * Methods in this class:
  * joinWaitlist(...) - Allows users to join the waitlist of an event
  */
-public class FirebaseEventRepository {
+public class FirebaseEventRepository implements EventRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
 
     /**
      * This method adds the specified users id into the waitlist of a given event.
@@ -55,5 +62,40 @@ public class FirebaseEventRepository {
                 .update("waitlist", FieldValue.arrayRemove(uid))
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
+    }
+
+    @Override
+    public void createEvent(Event event,
+                            OnSuccessListener<Void> onSuccess,
+                            OnFailureListener onFailure) {
+
+        // create a new doc id
+        String id = db.collection("events").document().getId();
+        event.id = id;
+
+        db.collection("events")
+                .document(id)
+                .set(event)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
+
+    @Override
+    public void uploadPoster(Uri imageUri,
+                             OnSuccessListener<String> onSuccess,
+                             OnFailureListener onFailure) {
+
+        String path = "posters/" + System.currentTimeMillis() + ".jpg";
+        StorageReference ref = storage.getReference().child(path);
+
+        ref.putFile(imageUri)
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return ref.getDownloadUrl();
+                })
+                .addOnSuccessListener(uri -> onSuccess.onSuccess(uri.toString()))
+                .addOnFailureListener(onFailure);
     }
 }

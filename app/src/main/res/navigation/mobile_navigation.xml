@@ -49,4 +49,10 @@
         android:name="com.example.myapplication.features.user.UScanFrag"
         tools:layout="@layout/fragment_u_scan" />
 
+    <fragment
+        android:id="@+id/createEventFrag"
+        android:name="com.example.myapplication.features.organizer.OCreateEventFrag"
+        android:label="Create Event"
+        tools:layout="@layout/fragment_o_create_event" />
+
 </navigation>
