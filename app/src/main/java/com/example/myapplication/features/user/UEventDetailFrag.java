@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +15,8 @@ import androidx.navigation.Navigation;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class UEventDetailFrag extends Fragment {
 
@@ -43,6 +46,21 @@ public class UEventDetailFrag extends Fragment {
         });
 
         String eventId = getArguments() != null ? getArguments().getString("eventId") : null;
+
+        MaterialButton joinWaitlistButton = view.findViewById(R.id.joinWaitlist);
+        joinWaitlistButton.setOnClickListener(x -> {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            assert user != null;
+            String uid = user.getUid();
+
+            FirebaseEventRepository repo = new FirebaseEventRepository();
+            repo.joinWaitlist(eventId, uid, a -> {
+                Toast.makeText(getContext(), "You have joined the waitlist!", Toast.LENGTH_SHORT).show();
+                refreshEventDetail(eventId);
+            }, e-> Toast.makeText(getContext(), "Sorry, you could not join at the moment!", Toast.LENGTH_SHORT).show());
+        });
+
+
         if(eventId != null){
             FirebaseEventRepository repo = new FirebaseEventRepository();
             repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
@@ -72,5 +90,18 @@ public class UEventDetailFrag extends Fragment {
         waitingList.setText("Currently in Waitinglist: " +
                 (event.getWaitlist() != null ? event.getWaitlist().size() : 0)
         );
+    }
+
+    private void refreshEventDetail(String eventId) {
+        FirebaseEventRepository repo = new FirebaseEventRepository();
+        repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
+            @Override
+            public void onEventFetched(UserEvent event) {
+                bindEventData(event);
+            }
+
+            @Override
+            public void onError(Exception e) { }
+        });
     }
 }
