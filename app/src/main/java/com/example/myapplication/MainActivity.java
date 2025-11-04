@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.os.Bundle;
 import android.view.View;
+import androidx.annotation.IdRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -24,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
 
         NavigationUI.setupWithNavController(navView, navController);
-        currentMenuResId = R.menu.bottom_nav_admin;
+        currentMenuResId = -1;
 
         navController.addOnDestinationChangedListener((c, d, a) -> {
             boolean hide = d.getId() == R.id.navigation_welcome
@@ -42,10 +43,7 @@ public class MainActivity extends AppCompatActivity {
         User currentUser = UserSession.getInstance().getCurrentUser();
         String role = currentUser != null ? currentUser.getRole() : null;
 
-        int desiredMenu = R.menu.bottom_nav_admin;
-        if (role != null && !"admin".equalsIgnoreCase(role)) {
-            desiredMenu = R.menu.bottom_nav_user;
-        }
+        int desiredMenu = resolveMenuForRole(role);
 
         if (currentMenuResId == desiredMenu) {
             return;
@@ -55,5 +53,26 @@ public class MainActivity extends AppCompatActivity {
         navView.inflateMenu(desiredMenu);
         NavigationUI.setupWithNavController(navView, navController);
         currentMenuResId = desiredMenu;
+    }
+
+    private int resolveMenuForRole(String role) {
+        if (role == null) {
+            return R.menu.bottom_nav_user;
+        }
+        if ("admin".equalsIgnoreCase(role)) {
+            return R.menu.bottom_nav_admin;
+        }
+        if ("organizer".equalsIgnoreCase(role)) {
+            return R.menu.bottom_nav_organizer;
+        }
+        return R.menu.bottom_nav_user;
+    }
+
+    public void refreshNavigationForRole() {
+        updateBottomNavMenu();
+    }
+
+    public void navigateToBottomDestination(@IdRes int destinationId) {
+        navView.setSelectedItemId(destinationId);
     }
 }

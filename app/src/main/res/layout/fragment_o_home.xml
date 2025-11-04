@@ -11,8 +11,8 @@
         android:layout_width="0dp"
         android:layout_height="52dp"
         android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
         android:layout_marginTop="24dp"
+        android:layout_marginEnd="20dp"
         app:cardBackgroundColor="@android:color/white"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
@@ -33,8 +33,8 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:contentDescription="Search"
-                android:src="@drawable/ic_search"
-                android:scaleType="centerInside" />
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_search" />
 
             <EditText
                 android:id="@+id/etSearchEvents"
@@ -54,30 +54,43 @@
                 android:id="@+id/btnFilter"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:adjustViewBounds="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Filter"
-                android:adjustViewBounds="true"
                 android:padding="6dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_filter" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <TextView
+        android:id="@+id/tvHeading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:text=""
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardSearch" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvEvents"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="20dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginTop="16dp"
         android:layout_marginBottom="@dimen/user_event_spacing"
         android:clipToPadding="false"
         android:overScrollMode="always"
-        android:scrollbars="vertical"
         android:paddingBottom="@dimen/user_home_bottom_padding"
+        android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cardSearch" />
+        app:layout_constraintTop_toBottomOf="@id/tvHeading" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

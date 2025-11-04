@@ -61,9 +61,13 @@
         tools:layout="@layout/fragment_u_scan" />
 
     <fragment
-        android:id="@+id/navigation_organizer_create_event"
-        android:name="com.example.myapplication.features.organizer.OCreateEventFrag"
-        android:label="Create Event"
-        tools:layout="@layout/fragment_o_create_event" />
+        android:id="@+id/navigation_organizer_home"
+        android:name="com.example.myapplication.features.organizer.OHomeFrag"
+        tools:layout="@layout/fragment_o_home" />
+
+    <fragment
+        android:id="@+id/navigation_organizer_create"
+        android:name="com.example.myapplication.features.organizer.OCreateFrag"
+        tools:layout="@layout/fragment_o_create" />
 
 </navigation>

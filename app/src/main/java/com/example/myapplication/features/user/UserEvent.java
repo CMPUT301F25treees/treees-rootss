@@ -6,6 +6,7 @@ import java.util.List;
 
 public class UserEvent {
     private String id;
+    private String organizerID;
     private  String name;
     private  String location;
     private  String instructor;
@@ -21,9 +22,10 @@ public class UserEvent {
      */
     public UserEvent() {}
 
-    UserEvent(String id, String name, String location, String instructor,
+    UserEvent(String id, String organizerID, String name, String location, String instructor,
               String price, String descr, long endTimeMillis, @ColorInt int bannerColor, List<String> waitlist) {
         this.id = id;
+        this.organizerID = organizerID;
         this.name = name;
         this.location = location;
         this.instructor = instructor;
@@ -35,6 +37,7 @@ public class UserEvent {
     }
 
     public String getId() { return id; }
+    public String getOrganizerID() { return organizerID; }
     public String getName() { return name; }
     public String getLocation() { return location; }
     public String getInstructor() { return instructor; }
@@ -45,6 +48,7 @@ public class UserEvent {
     public int getBannerColor() { return bannerColor; }
 
     public void setId(String id) { this.id = id; }
+    public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
     public void setName(String name) { this.name = name; }
     public void setLocation(String location) { this.location = location; }
     public void setInstructor(String instructor) { this.instructor = instructor; }

@@ -98,11 +98,14 @@ public class LoginFrag extends Fragment {
                 // Store in session
                 UserSession.getInstance().setCurrentUser(user);
 
+                int destination = R.id.navigation_user_home;
                 if ("admin".equalsIgnoreCase(user.getRole())) {
-                    NavHostFragment.findNavController(this).navigate(R.id.navigation_admin_home);
-                } else {
-                    NavHostFragment.findNavController(this).navigate(R.id.navigation_user_home);
+                    destination = R.id.navigation_admin_home;
+                } else if ("organizer".equalsIgnoreCase(user.getRole())) {
+                    destination = R.id.navigation_organizer_home;
                 }
+
+                NavHostFragment.findNavController(this).navigate(destination);
             });
         });
     }
