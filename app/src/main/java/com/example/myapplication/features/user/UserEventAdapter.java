@@ -27,7 +27,7 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
     public void setOnEventClickListener(OnEventClickListener listener) {
         this.listener = listener;
     }
-    void submit(List<UserEvent> events) {
+    public void submit(List<UserEvent> events) {
         original.clear();
         visible.clear();
         if (events != null) {

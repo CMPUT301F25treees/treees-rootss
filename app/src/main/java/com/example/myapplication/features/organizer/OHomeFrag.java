@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
+import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.example.myapplication.features.user.UserEvent;
 import com.example.myapplication.features.user.UserEventAdapter;
 import java.util.ArrayList;
@@ -51,7 +52,8 @@ public class OHomeFrag extends Fragment {
             v.getParent().requestDisallowInterceptTouchEvent(true);
             return false;
         });
-        adapter.submit(buildDummyEvents(context));
+
+        fetchMyEventsFromFirestore();
 
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -69,6 +71,48 @@ public class OHomeFrag extends Fragment {
         filterButton.setOnClickListener(this::showFilterMenu);
     }
 
+    private void fetchMyEventsFromFirestore(){
+        FirebaseEventRepository repo = new FirebaseEventRepository();
+
+        String currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance()
+                .getCurrentUser()
+                .getUid();
+
+        repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
+            @Override
+            public void onEventsFetched(List<UserEvent> events) {
+
+                if (events != null) {
+                    List<UserEvent> myEvents = new ArrayList<>();
+
+                    for (UserEvent event : events) {
+                        if (event.getOrganizerID() != null &&
+                                event.getOrganizerID().equals(currentUserId)) {
+                            myEvents.add(event);
+                        }
+                    }
+
+                    if (!myEvents.isEmpty()) {
+                        adapter.submit(myEvents);
+                    } else {
+                        Toast.makeText(requireContext(),
+                                "No events created by you",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(requireContext(),
+                        "Failed to fetch: " + e.getMessage(),
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+    }
+
     private void showFilterMenu(View anchor) {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
         menu.getMenu().add("Upcoming");
@@ -81,21 +125,6 @@ public class OHomeFrag extends Fragment {
         menu.show();
     }
 
-    private List<UserEvent> buildDummyEvents(Context context) {
-        long now = System.currentTimeMillis();
-        List<UserEvent> events = new ArrayList<>();
-        events.add(new UserEvent(
-                "ORG_PLACEHOLDER",
-                "Your First Event",
-                "Pick a venue",
-                "You",
-                "Add price",
-                "Draft placeholder until you publish.",
-                now + TimeUnit.DAYS.toMillis(3),
-                ContextCompat.getColor(context, R.color.event_banner_charcoal)
-        ));
-        return events;
-    }
 
     private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
         private final int spanCount;

@@ -2,22 +2,11 @@ package com.example.myapplication.features.user;
 
 import androidx.annotation.ColorInt;
 
-public class UserEvent {
-    private final String id;
-    private final String name;
-    private final String location;
-    private final String instructor;
-    private final String price;
-    private final String descr;
-    private final long endTimeMillis;
-    private final int bannerColor;
-
-    public UserEvent(String id, String name, String location, String instructor,
-                     String price, String descr, long endTimeMillis, @ColorInt int bannerColor) {
 import java.util.List;
 
 public class UserEvent {
     private String id;
+    private String organizerID;
     private  String name;
     private  String location;
     private  String instructor;
@@ -33,9 +22,10 @@ public class UserEvent {
      */
     public UserEvent() {}
 
-    UserEvent(String id, String name, String location, String instructor,
+    UserEvent(String id, String organizerID, String name, String location, String instructor,
               String price, String descr, long endTimeMillis, @ColorInt int bannerColor, List<String> waitlist) {
         this.id = id;
+        this.organizerID = organizerID;
         this.name = name;
         this.location = location;
         this.instructor = instructor;
@@ -47,18 +37,18 @@ public class UserEvent {
     }
 
     public String getId() { return id; }
+    public String getOrganizerID() { return organizerID; }
     public String getName() { return name; }
     public String getLocation() { return location; }
     public String getInstructor() { return instructor; }
     public String getPrice() { return price; }
     public String getDescr(){ return descr; }
-    public long getEndTimeMillis() { return endTimeMillis; }
-    public int getBannerColor() { return bannerColor; }
     public List<String> getWaitlist() { return waitlist; }
     public long getEndTimeMillis() { return endTimeMillis; }
     public int getBannerColor() { return bannerColor; }
 
     public void setId(String id) { this.id = id; }
+    public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
     public void setName(String name) { this.name = name; }
     public void setLocation(String location) { this.location = location; }
     public void setInstructor(String instructor) { this.instructor = instructor; }
