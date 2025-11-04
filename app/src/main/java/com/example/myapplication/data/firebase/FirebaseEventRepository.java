@@ -1,9 +1,13 @@
 package com.example.myapplication.data.firebase;
 
+import com.example.myapplication.features.user.UserEvent;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -55,5 +59,49 @@ public class FirebaseEventRepository {
                 .update("waitlist", FieldValue.arrayRemove(uid))
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
+    }
+
+
+    public interface EventListCallback {
+        void onEventsFetched(List<UserEvent> events);
+        void onError(Exception e);
+    }
+
+    public void getAllEvents(EventListCallback callback){
+        db.collection("events")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<UserEvent> events = new ArrayList<>();
+                    for(var doc : queryDocumentSnapshots) {
+                        UserEvent event = doc.toObject(UserEvent.class);
+                        event.setId(doc.getId());
+                        events.add(event);
+                    }
+                    callback.onEventsFetched(events);
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
+    public interface SingleEventCallback {
+        void onEventFetched(UserEvent event);
+        void onError(Exception e);
+    }
+
+    public void fetchEventById(String eventId, SingleEventCallback callback) {
+        db.collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        UserEvent event = doc.toObject(UserEvent.class);
+                        if (event != null) {
+                            event.setId(doc.getId());
+                        }
+                        callback.onEventFetched(event);
+                    } else {
+                        callback.onError(new Exception("Event not found"));
+                    }
+                })
+                .addOnFailureListener(callback::onError);
     }
 }
