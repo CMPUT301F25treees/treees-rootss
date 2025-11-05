@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -171,6 +172,7 @@ public class OCreateEventFrag extends Fragment {
         String address = addressInput.getText().toString().trim();
         String descr = descInput.getText().toString().trim();
         String capacityStr = capacityInput.getText().toString().trim();
+        String priceStr = priceInput.getText().toString().trim();
         String entrantsStr = entrantsDrawnInput.getText().toString().trim();
 
         // basic validation
@@ -192,9 +194,9 @@ public class OCreateEventFrag extends Fragment {
         }
 
         int price = 0;
-        if (!capacityStr.isEmpty()) {
+        if (!priceStr.isEmpty()) {
             try {
-                price = Integer.parseInt(capacityStr);
+                price = Integer.parseInt(priceStr);
             } catch (NumberFormatException e) {
                 Toast.makeText(getContext(), "Price must be a number", Toast.LENGTH_SHORT).show();
                 return;
