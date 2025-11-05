@@ -57,6 +57,8 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
 
+    // FirebaseUI Firestore (needed for FirestoreRecyclerAdapter/Options)
+    implementation("com.firebaseui:firebase-ui-firestore:9.0.0")
 
     // ZXing dependency (QR)
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")

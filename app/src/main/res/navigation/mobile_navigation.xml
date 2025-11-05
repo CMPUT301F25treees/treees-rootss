@@ -42,6 +42,17 @@
     </fragment>
 
     <fragment
+        android:id="@+id/navigation_user_scan"
+        android:name="com.example.myapplication.features.user.UScanFrag"
+        tools:layout="@layout/fragment_u_scan">
+
+        <action
+            android:id="@+id/action_UScanFrag_to_UEventDetailFrag"
+            app:destination="@id/navigation_user_event_detail" />
+
+    </fragment>
+
+    <fragment
         android:id="@+id/navigation_user_event_detail"
         android:name="com.example.myapplication.features.user.UEventDetailFrag"
         android:layout="@layout/fragment_u_event_detail"/>
@@ -96,7 +107,7 @@
 
     <fragment
         android:id="@+id/navigation_organizer_create"
-        android:name="com.example.myapplication.features.organizer.OCreateFrag"
-        tools:layout="@layout/fragment_o_create" />
+        android:name="com.example.myapplication.features.organizer.OCreateEventFrag"
+        tools:layout="@layout/fragment_o_create_event" />
 
 </navigation>
