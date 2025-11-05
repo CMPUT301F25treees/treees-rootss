@@ -41,7 +41,7 @@
             android:minHeight="0dp"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
-            android:text="All Events"
+            android:text="Please Select One"
             android:textAllCaps="false"
             android:textColor="@android:color/black"
             android:textSize="16sp"

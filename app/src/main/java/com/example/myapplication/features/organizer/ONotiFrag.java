@@ -30,11 +30,12 @@ public class ONotiFrag extends Fragment {
     private MaterialButton btnEvent, btnResendInvites, btnCustomNoti;
 
     private String selectedEventId = null;
-    private String selectedEventName = "All Events";
+    private String selectedEventName = "Please select an event!";
 
     private final FirebaseEventRepository repo = new FirebaseEventRepository();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    private String organizerName = "Organizer";
 
     @Nullable
     @Override
@@ -60,6 +61,7 @@ public class ONotiFrag extends Fragment {
             }
             promptAndSendCustomPush(selectedEventId);
         });
+        preloadOrganizerName();
     }
 
     private void openEventPicker(){
@@ -70,7 +72,10 @@ public class ONotiFrag extends Fragment {
         repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
             @Override
             public void onEventsFetched(List<UserEvent> events) {
-                if (events != null) { toast("No events."); return; }
+                if (events == null || events.isEmpty()) {
+                    toast("No events.");
+                    return;
+                }
 
                 List<UserEvent> myEvents = new ArrayList<>();
                 for (UserEvent event : events) {
@@ -117,53 +122,76 @@ public class ONotiFrag extends Fragment {
             }
         });
     }
-
+    private enum Audience { INVITED, WAITING, ALL, CANCELLED }
     private void promptAndSendCustomPush(String eventId) {
         final android.widget.EditText input = new android.widget.EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint("Message to...");
+        input.setHint("Message...");
 
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+
+        final CharSequence[] audiences = {"Invited", "Waiting", "ALL", "CANCELLED"};
+        final int[] chosen = {0};
+
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Custom Notification")
+                .setSingleChoiceItems(audiences, 0, (d, which) -> chosen[0] = which)
                 .setView(input)
                 .setPositiveButton("Send", (d, w) -> {
                     String msg = input.getText().toString().trim();
                     if (msg.isEmpty()) { toast("Message is empty."); return; }
-                    sendCustomPush(eventId, msg);
+                    Audience a = (chosen[0] == 0) ? Audience.INVITED
+                            : (chosen[0] == 1) ? Audience.WAITING
+                            : (chosen[0] == 2) ? Audience.ALL
+                            : Audience.CANCELLED;
+                    sendCustomPush(eventId, msg, a);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-    private void sendCustomPush(String eventId, String message) {
-        String eventName= selectedEventName;
-        final String myName = getMyDisplayName();
 
-        db.collection("notificationList").document(eventId).get().addOnSuccessListener(doc -> {
-            if (!doc.exists()) {
-                toast("Recipient list not found.");
-                return;
-            }
+    private void sendCustomPush(String eventId, String message, Audience audience) {
+        final String eventName = selectedEventName;
 
-            List<String> all = castStringList(doc.get("all"));
-            List<String> invited = castStringList(doc.get("invited"));
-            List<String> recipients = !all.isEmpty() ? all : invited;
+        db.collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(qs -> {
+                    if (qs.isEmpty()) { toast("Recipient list not found."); return; }
+                    var doc = qs.getDocuments().get(0);
 
-            if (recipients.isEmpty()) {
-                toast("No recipients found.");
-                return;
-            }
+                    List<String> recipients;
+                    switch (audience) {
+                        case ALL:
+                            recipients = castStringList(doc.get("all"));
+                            break;
+                        case INVITED:
+                            recipients = castStringList(doc.get("invited"));
+                            break;
+                        case WAITING:
+                            recipients = castStringList(doc.get("waiting"));
+                            break;
+                        case CANCELLED:
+                            recipients = castStringList(doc.get("cancelled"));
+                            break;
+                        default:
+                            recipients = new ArrayList<>();
+                    }
 
-            var payload = new java.util.HashMap<String, Object>();
-            payload.put("dateMade", Timestamp.now());
-            payload.put("event", eventName);
-            payload.put("from", myName);
-            payload.put("message", message);
-            payload.put("uID", recipients);
+                    if (recipients == null || recipients.isEmpty()) { toast("No recipients found."); return; }
 
-            db.collection("notifications").add(payload)
-                    .addOnSuccessListener(ref -> toast("Notification sent!"))
-                    .addOnFailureListener(e -> toast("Failed to send notification: " + e.getMessage()));
-        });
+                    var payload = new java.util.HashMap<String, Object>();
+                    payload.put("dateMade", Timestamp.now());
+                    payload.put("event", eventName);
+                    payload.put("from", organizerName);
+                    payload.put("message", message);
+                    payload.put("uID", recipients);
+
+                    db.collection("notifications").add(payload)
+                            .addOnSuccessListener(ref -> toast("Notification sent!"))
+                            .addOnFailureListener(e -> toast("Failed to send notification: " + e.getMessage()));
+                })
+                .addOnFailureListener(e -> toast("Error: " + e.getMessage()));
     }
 
     private void toast(String msg) {
@@ -179,13 +207,37 @@ public class ONotiFrag extends Fragment {
         return new ArrayList<>();
     }
 
-    private String getMyDisplayName() {
-        var user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return "Organizer";
-        if (user.getDisplayName() != null && !user.getDisplayName().isEmpty()) return user.getDisplayName();
-        if (user.getEmail() != null && !user.getEmail().isEmpty()) return user.getEmail();
-        return user.getUid();
-    }
+    private void preloadOrganizerName() {
+        var user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
 
+        FirebaseFirestore.getInstance()
+                .collection("users").document(user.getUid()).get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        String first = doc.getString("firstName");
+                        String last  = doc.getString("lastName");
+                        String full  = ((first != null ? first.trim() : "") + " " +
+                                (last  != null ? last.trim()  : "")).trim();
+
+                        // Optional other schemas:
+                        if (full.isEmpty()) {
+                            String name = doc.getString("name");        // if you store a single-name field
+                            if (name != null && !name.trim().isEmpty()) full = name.trim();
+                        }
+
+                        if (!full.isEmpty()) organizerName = full;
+                    }
+                    // last resort: FirebaseAuth displayName
+                    else if (user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
+                        organizerName = user.getDisplayName();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (user.getDisplayName() != null && !user.getDisplayName().isEmpty()) {
+                        organizerName = user.getDisplayName();
+                    }
+                });
+    }
 }
 
