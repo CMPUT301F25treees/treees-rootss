@@ -1,5 +1,7 @@
 package com.example.myapplication.data.model;
 
+import java.util.List;
+
 public class Event {
     private String eventId;
     private String title;
@@ -17,6 +19,8 @@ public class Event {
     private String posterUrl;
     private String organizerId;
     private String qrData;
+
+    private List<String> waitlist;
 
     public String getQrData() {
         return qrData;
@@ -130,12 +134,20 @@ public class Event {
         this.organizerId = organizerId;
     }
 
+    public List<String> getWaitlist() {
+        return waitlist;
+    }
+
+    public void setWaitlist(List<String> waitlist) {
+        this.waitlist = waitlist;
+    }
+
     public Event(){
 
     }
     public Event(String title, String address, String descr, int capacity,
                  long startDateMillis, long endDateMillis, long selectionDateMillis,
-                 int entrantsToDraw, boolean geoRequired, String posterUrl, String organizerId, String qrData) {
+                 int entrantsToDraw, boolean geoRequired, String posterUrl, String organizerId, String qrData, List<String> waitlist) {
         this.title = title;
         this.address = address;
         this.descr = descr;
@@ -148,5 +160,7 @@ public class Event {
         this.posterUrl = posterUrl;
         this.organizerId = organizerId;
         this.qrData = qrData;
+        this.waitlist = waitlist;
     }
+
 }

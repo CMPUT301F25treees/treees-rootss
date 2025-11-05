@@ -25,6 +25,7 @@ import com.example.myapplication.core.ServiceLocator;
 import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.Event;
 import com.example.myapplication.data.repo.EventRepository;
+import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
@@ -43,6 +44,7 @@ public class OCreateEventFrag extends Fragment {
     private EditText descInput;
     private EditText capacityInput;
     private EditText entrantsDrawnInput;
+    private EditText priceInput;
 
     // Dates
     private TextView startDateLabel;
@@ -82,6 +84,7 @@ public class OCreateEventFrag extends Fragment {
         addressInput = view.findViewById(R.id.event_address_input);
         descInput = view.findViewById(R.id.event_desc_input);
         capacityInput = view.findViewById(R.id.event_cap_input);
+        priceInput = view.findViewById(R.id.event_price_input);
         entrantsDrawnInput = view.findViewById(R.id.entrants_drawn_input);
 
         // Buttons and Switch
@@ -188,6 +191,16 @@ public class OCreateEventFrag extends Fragment {
             }
         }
 
+        int price = 0;
+        if (!capacityStr.isEmpty()) {
+            try {
+                price = Integer.parseInt(capacityStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Price must be a number", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
         int entrantsToDraw;
         try {
             entrantsToDraw = Integer.parseInt(entrantsStr);
@@ -196,17 +209,18 @@ public class OCreateEventFrag extends Fragment {
             return;
         }
 
-        Event event = new Event();
-        event.setTitle(title);
-        event.setAddress(address);
+        UserEvent event = new UserEvent();
+        event.setName(title);
+        event.setLocation(address);
         event.setDescr(descr);
         event.setCapacity(capacity);
-        event.setStartDateMillis(startDateMillis);
-        event.setEndDateMillis(endDateMillis);
+        event.setPrice(price);
+        event.setStartTimeMillis(startDateMillis);
+        event.setEndTimeMillis(endDateMillis);
         event.setSelectionDateMillis(selectionDateMillis);
         event.setEntrantsToDraw(entrantsToDraw);
         event.setGeoRequired(geoSwitch.isChecked());
-        event.setOrganizerId(UserSession.getInstance().getCurrentUser().getUid());
+        event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
 
         if (posterUri != null) {
             eventRepository.uploadPoster(posterUri, url -> {
@@ -228,14 +242,14 @@ public class OCreateEventFrag extends Fragment {
                     600, // width
                     600  // height
             );
-            qrImageView.setImageBitmap(bitmap);
-            qrImageView.setVisibility(View.VISIBLE);
+            //qrImageView.setImageBitmap(bitmap);
+            //qrImageView.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void saveEvent(Event event) {
+    private void saveEvent(UserEvent event) {
         eventRepository.createEvent(event,
                 aVoid -> {
                     Toast.makeText(getContext(), "Event created!", Toast.LENGTH_SHORT).show();

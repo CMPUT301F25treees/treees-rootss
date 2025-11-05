@@ -56,18 +56,22 @@
         tools:layout="@layout/fragment_u_profile" />
 
     <fragment
-        android:id="@+id/navigation_user_scan"
-        android:name="com.example.myapplication.features.user.UScanFrag"
-        tools:layout="@layout/fragment_u_scan" />
-
-    <fragment
         android:id="@+id/navigation_organizer_home"
         android:name="com.example.myapplication.features.organizer.OHomeFrag"
         tools:layout="@layout/fragment_o_home" />
 
     <fragment
         android:id="@+id/navigation_organizer_create"
-        android:name="com.example.myapplication.features.organizer.OCreateFrag"
-        tools:layout="@layout/fragment_o_create" />
+        android:name="com.example.myapplication.features.organizer.OCreateEventFrag"
+        tools:layout="@layout/fragment_o_create_event" />
+
+    <fragment
+        android:id="@+id/navigation_user_scan"
+        android:name="com.example.myapplication.features.user.UScanFrag">
+
+        <action
+            android:id="@+id/action_UScanFrag_to_UEventDetailFrag"
+            app:destination="@id/navigation_user_event_detail" />
+    </fragment>
 
 </navigation>

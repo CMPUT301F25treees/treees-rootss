@@ -114,11 +114,11 @@ public class FirebaseEventRepository implements EventRepository {
     }
 
     @Override
-    public void createEvent(Event event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+    public void createEvent(UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
         // create a new doc id
         String id = db.collection("events").document().getId();
-        event.setEventId(id);
+        event.setId(id);
 
         db.collection("events")
                 .document(id)
