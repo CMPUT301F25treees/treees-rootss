@@ -1,6 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/navigation_user_profile"
+        android:id="@+id/navigation_organizer_profile"
         android:icon="@drawable/ic_dodo_red"
         android:iconTint="@null"
         android:title="Profile"/>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_login_gradient">
+
+    <LinearLayout
+        android:id="@+id/currentlyContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvCurrently"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Selected Event:"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEvent"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/profile_role_button_height"
+            android:layout_marginStart="12dp"
+            android:gravity="center"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:text="All Events"
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            app:backgroundTint="@color/profile_card_gray"
+            app:cornerRadius="24dp" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/resendInvitescustomNoti"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="24dp"
+        android:text="Resend Invites"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        app:backgroundTint="@color/dodo_maroon"
+        app:cornerRadius="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currentlyContainer" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/customNoti"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="536dp"
+        android:text="Custom Push Notification"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        app:backgroundTint="@color/dodo_maroon"
+        app:cornerRadius="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
