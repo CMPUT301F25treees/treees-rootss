@@ -18,17 +18,13 @@
     <fragment
         android:id="@+id/navigation_register"
         android:name="com.example.myapplication.features.auth.RegisterFrag"
-        android:layout="@layout/fragment_auth_registration"/>
-
+        tools:layout="@layout/fragment_auth_registration" />
 
     <fragment
         android:id="@+id/navigation_admin_home"
         android:name="com.example.myapplication.features.admin.AHomeFrag"
         tools:layout="@layout/fragment_a_home" />
-    <fragment
-        android:id="@+id/navigation_admin_profile"
-        android:name="com.example.myapplication.features.admin.AProfileFrag"
-        tools:layout="@layout/fragment_a_profile" />
+
     <fragment
         android:id="@+id/navigation_admin_users"
         android:name="com.example.myapplication.features.admin.AUsersFrag"
@@ -53,12 +49,34 @@
     <fragment
         android:id="@+id/navigation_user_profile"
         android:name="com.example.myapplication.features.user.UProfileFrag"
-        tools:layout="@layout/fragment_u_profile" />
+        tools:layout="@layout/fragment_u_profile">
+
+        <!-- user profile -> user notifications -->
+        <action
+            android:id="@+id/action_user_profile_to_user_notifications"
+            app:destination="@id/navigation_user_notifications" />
+    </fragment>
 
     <fragment
-        android:id="@+id/navigation_user_scan"
-        android:name="com.example.myapplication.features.user.UScanFrag"
-        tools:layout="@layout/fragment_u_scan" />
+        android:id="@+id/navigation_admin_profile"
+        android:name="com.example.myapplication.features.admin.AProfileFrag"
+        tools:layout="@layout/fragment_a_profile">
+
+        <!-- admin profile -> admin notifications -->
+        <action
+            android:id="@+id/action_admin_profile_to_admin_notifications"
+            app:destination="@id/navigation_admin_notifications" />
+    </fragment>
+
+    <!-- USER notifications destination -->
+    <fragment
+        android:id="@+id/navigation_user_notifications"
+        android:name="com.example.myapplication.features.user.UNotiFrag"
+        tools:layout="@layout/fragment_u_notifications" />
+    <fragment
+        android:id="@+id/navigation_admin_notifications"
+        android:name="com.example.myapplication.features.admin.ANotiFrag"
+        tools:layout="@layout/fragment_u_notifications" />
 
     <fragment
         android:id="@+id/navigation_organizer_home"
