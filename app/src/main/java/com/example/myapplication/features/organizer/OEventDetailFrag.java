@@ -1,4 +1,4 @@
-package com.example.myapplication.features.user;
+package com.example.myapplication.features.organizer;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.navigation.Navigation;
 
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
+import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class UEventDetailFrag extends Fragment {
-
+public class OEventDetailFrag extends Fragment {
     private TextView title, organizer, location, price, endTime, descr, waitingList;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
-        return  inflater.inflate(R.layout.fragment_u_event_detail, container, false);
+        return  inflater.inflate(R.layout.fragment_o_event_details, container, false);
     }
 
     @Override
@@ -47,6 +47,7 @@ public class UEventDetailFrag extends Fragment {
 
         String eventId = getArguments() != null ? getArguments().getString("eventId") : null;
 
+        // TODO: Change this to edit event, load create event with filled up details
         MaterialButton joinWaitlistButton = view.findViewById(R.id.joinWaitlist);
         joinWaitlistButton.setOnClickListener(x -> {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -84,7 +85,7 @@ public class UEventDetailFrag extends Fragment {
         title.setText(event.getName());
         organizer.setText("Organizer: " + event.getInstructor());
         location.setText(event.getLocation());
-        price.setText("Price: $" + event.getPrice());
+        price.setText("Price: " + event.getPrice());
         descr.setText(event.getDescr());
         endTime.setText("Days Left: " + Math.max(daysLeft, 0));
         waitingList.setText("Currently in Waitinglist: " +
