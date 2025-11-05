@@ -42,8 +42,8 @@ public class ANotiFrag extends Fragment {
         recyclerView.setHasFixedSize(true);
 
         Query query = FirebaseFirestore.getInstance()
-                .collection("notifications")
-                .orderBy("dateMade", Query.Direction.DESCENDING);
+                .collection("notifications");
+
 
         FirestoreRecyclerOptions<UNotiItem> options = new FirestoreRecyclerOptions.Builder<UNotiItem>()
                 .setQuery(query, UNotiItem.class)

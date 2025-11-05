@@ -21,7 +21,7 @@ public class AProfileFrag extends Fragment {
         //Open Notifications Fragment
         cardNotifications.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)
-                    .navigate(R.id.navigation_user_notifications);
+                    .navigate(R.id.navigation_admin_notifications);
         });
 
     }
