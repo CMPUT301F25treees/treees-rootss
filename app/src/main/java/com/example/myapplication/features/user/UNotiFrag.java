@@ -1,5 +1,5 @@
-// ANotiFrag.java (Admin)
-package com.example.myapplication.features.admin;
+// UNotiFrag.java (User)
+package com.example.myapplication.features.user;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,13 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
-import com.example.myapplication.features.user.UNotiAdapter;
-import com.example.myapplication.features.user.UNotiItem;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
-public class ANotiFrag extends Fragment {
+public class UNotiFrag extends Fragment {
 
     private RecyclerView recyclerView;
     private UNotiAdapter adapter;
@@ -34,15 +33,20 @@ public class ANotiFrag extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        requireActivity().setTitle("ADMIN Notifications");
+        requireActivity().setTitle("USER Notifications");
 
 
         recyclerView = view.findViewById(R.id.notifications_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setHasFixedSize(true);
 
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+        if (uid == null) return;
+
         Query query = FirebaseFirestore.getInstance()
                 .collection("notifications")
+                .whereArrayContains("uID", uid)
                 .orderBy("dateMade", Query.Direction.DESCENDING);
 
         FirestoreRecyclerOptions<UNotiItem> options = new FirestoreRecyclerOptions.Builder<UNotiItem>()
@@ -52,17 +56,13 @@ public class ANotiFrag extends Fragment {
 
         adapter = new UNotiAdapter(options, snapshot -> {
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("ADMIN DIALOG")
-                    .setItems(new CharSequence[]{"Delete"}, (dialog, which) -> {
+                    .setTitle("USER DIALOG")
+                    .setItems(new CharSequence[]{"View Details"}, (dialog, which) -> {
                         if (which == 0) {
-                            snapshot.getReference().delete()
-                                    .addOnSuccessListener(aVoid ->
-                                            Toast.makeText(requireContext(), "Notification deleted", Toast.LENGTH_SHORT).show())
-                                    .addOnFailureListener(e ->
-                                            Toast.makeText(requireContext(), "Error deleting notification", Toast.LENGTH_SHORT).show());
+                            Toast.makeText(requireContext(), "View details coming soon", Toast.LENGTH_SHORT).show();
                         }
                     })
-                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                    .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
                     .show();
         });
         recyclerView.setAdapter(adapter);

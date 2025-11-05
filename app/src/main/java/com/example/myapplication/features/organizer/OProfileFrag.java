@@ -1,7 +1,9 @@
-package com.example.myapplication.features.user;
+package com.example.myapplication.features.organizer;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -10,19 +12,18 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.example.myapplication.R;
 import com.example.myapplication.MainActivity;
+import com.example.myapplication.R;
 import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.User;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.Locale;
 
-public class UProfileFrag extends Fragment {
-    public UProfileFrag() {
-        super(R.layout.fragment_u_profile);
+public class OProfileFrag extends Fragment {
+    public OProfileFrag() {
+        super(R.layout.fragment_o_profile);
     }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -51,10 +52,9 @@ public class UProfileFrag extends Fragment {
             menu.show();
         });
 
-        // Open Notifications Fragment
         cardNotifications.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)
-                    .navigate(R.id.navigation_user_notifications);
+                    .navigate(R.id.navigation_organizer_notifications);
         });
     }
 

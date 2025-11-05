@@ -106,6 +106,8 @@ public class RegisterFrag extends Fragment {
                             userMap.put("email", email);
                             userMap.put("cell", phone.isEmpty() ? null : phone);
                             userMap.put("role", "User");
+                            userMap.put("wantNoti", true);
+
 
                             db.collection("users").document(uid)
                                     .set(userMap)
