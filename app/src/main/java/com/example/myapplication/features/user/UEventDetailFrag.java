@@ -84,7 +84,7 @@ public class UEventDetailFrag extends Fragment {
         title.setText(event.getName());
         organizer.setText("Organizer: " + event.getInstructor());
         location.setText(event.getLocation());
-        price.setText("Price: " + event.getPrice());
+        price.setText("Price: $" + event.getPrice());
         descr.setText(event.getDescr());
         endTime.setText("Days Left: " + Math.max(daysLeft, 0));
         waitingList.setText("Currently in Waitinglist: " +
