@@ -1,11 +1,10 @@
-package com.example.myapplication.features.user;
+package com.example.myapplication.features.organizer;
 
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -14,22 +13,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
-
+import com.example.myapplication.features.user.UserEvent;
+import com.example.myapplication.features.user.UserEventAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class UHomeFrag extends Fragment {
+public class OHomeFrag extends Fragment {
 
     private UserEventAdapter adapter;
 
-    public UHomeFrag() {
-        super(R.layout.fragment_u_home);
+    public OHomeFrag() {
+        super(R.layout.fragment_o_home);
     }
 
     @Override
@@ -54,15 +53,7 @@ public class UHomeFrag extends Fragment {
             return false;
         });
 
-        fetchEventsFromFirestore();
-
-        adapter.setOnEventClickListener(event -> {
-            Bundle bundle = new Bundle();
-            bundle.putString("eventId", event.getId());
-
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.action_to_user_event_detail, bundle);
-        });
+        fetchMyEventsFromFirestore();
 
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -77,41 +68,62 @@ public class UHomeFrag extends Fragment {
             public void afterTextChanged(Editable s) {}
         });
 
-        filterButton.setOnClickListener(v -> showFilterMenu(v));
+        filterButton.setOnClickListener(this::showFilterMenu);
     }
 
-    private void fetchEventsFromFirestore(){
+    private void fetchMyEventsFromFirestore(){
         FirebaseEventRepository repo = new FirebaseEventRepository();
+
+        String currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance()
+                .getCurrentUser()
+                .getUid();
 
         repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
             @Override
-            public void onEventsFetched(List<UserEvent> events){
-                if(events != null && !events.isEmpty()) {
-                    adapter.submit(events);
-                } else{
-                    Toast.makeText(requireContext(), "No events found", Toast.LENGTH_SHORT).show();
+            public void onEventsFetched(List<UserEvent> events) {
+
+                if (events != null) {
+                    List<UserEvent> myEvents = new ArrayList<>();
+
+                    for (UserEvent event : events) {
+                        if (event.getOrganizerID() != null &&
+                                event.getOrganizerID().equals(currentUserId)) {
+                            myEvents.add(event);
+                        }
+                    }
+
+                    if (!myEvents.isEmpty()) {
+                        adapter.submit(myEvents);
+                    } else {
+                        Toast.makeText(requireContext(),
+                                "No events created by you",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
                 }
             }
-            
+
             @Override
-            public void onError(Exception e){
-                Toast.makeText(requireContext(), "Failed to fetch:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onError(Exception e) {
+                Toast.makeText(requireContext(),
+                        "Failed to fetch: " + e.getMessage(),
+                        Toast.LENGTH_SHORT
+                ).show();
             }
         });
     }
 
     private void showFilterMenu(View anchor) {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
-        menu.getMenu().add("Option 1");
-        menu.getMenu().add("Option 2");
-        menu.getMenu().add("Option 3");
+        menu.getMenu().add("Upcoming");
+        menu.getMenu().add("Drafts");
+        menu.getMenu().add("Archived");
         menu.setOnMenuItemClickListener(item -> {
             Toast.makeText(requireContext(), item.getTitle() + " selected", Toast.LENGTH_SHORT).show();
             return true;
         });
         menu.show();
     }
-
 
 
     private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
