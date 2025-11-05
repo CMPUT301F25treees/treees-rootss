@@ -84,6 +84,17 @@
         tools:layout="@layout/fragment_o_home" />
 
     <fragment
+        android:id="@+id/navigation_organizer_profile"
+        android:name="com.example.myapplication.features.organizer.OProfileFrag"
+        tools:layout="@layout/fragment_o_profile" />
+
+    <fragment
+        android:id="@+id/navigation_organizer_notifications"
+        android:name="com.example.myapplication.features.organizer.ONotiFrag"
+        tools:layout="@layout/fragment_o_notifications" />
+
+
+    <fragment
         android:id="@+id/navigation_organizer_create"
         android:name="com.example.myapplication.features.organizer.OCreateFrag"
         tools:layout="@layout/fragment_o_create" />
