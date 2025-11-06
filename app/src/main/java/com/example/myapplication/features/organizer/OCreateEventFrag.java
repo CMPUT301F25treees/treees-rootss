@@ -227,17 +227,16 @@ public class OCreateEventFrag extends Fragment {
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
 
         if (posterUri != null) {
-            File file = new File(FileConvert.getPath(requireContext(), posterUri));
-            imageRepository.uploadImage(file, new ImageRepository.UploadCallback() {
+            imageRepository.uploadImage(requireContext(), posterUri, new ImageRepository.UploadCallback() {
                 @Override
                 public void onSuccess(String secureUrl) {
-                    event.setImageUrl(secureUrl);
+                    event.setImageUrl((secureUrl));
                     saveEvent(event);
                 }
 
                 @Override
-                public void onError(Exception e) {
-                    Toast.makeText(getContext(), "Image upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                public void onError(String e) {
+                    Toast.makeText(getContext(), "Image Upload failed: " + e, Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
@@ -262,7 +261,7 @@ public class OCreateEventFrag extends Fragment {
     }
 
     private void saveEvent(UserEvent event) {
-        eventRepository.createEvent(event,
+        ServiceLocator.getEventRepository().createEvent(event,
                 aVoid -> {
                     Toast.makeText(getContext(), "Event created!", Toast.LENGTH_SHORT).show();
                     // TODO: navigate to OEventDetails
