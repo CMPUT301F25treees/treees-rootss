@@ -143,4 +143,71 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnSuccessListener(uri -> onSuccess.onSuccess(uri.toString()))
                 .addOnFailureListener(onFailure);
     }
+
+    public void sendLotteryWinNotifications(String eventId, String eventName, List<String> winnerIds,
+                                            OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+
+        var payload = new java.util.HashMap<String, Object>();
+        payload.put("dateMade", com.google.firebase.Timestamp.now());
+        payload.put("event", eventName);
+        payload.put("eventId", eventId);
+        payload.put("from", "System");
+        payload.put("message", "🎉 Congratulations! You've been selected to participate in this event.");
+        payload.put("type", "lottery_win");
+        payload.put("uID", winnerIds);
+
+        db.collection("notifications")
+                .add(payload)
+                .addOnSuccessListener(ref -> onSuccess.onSuccess(null))
+                .addOnFailureListener(onFailure);
+    }
+
+    public void runLottery(String eventId, String eventName, List<String> waitlist, int numToSelect,
+                           OnSuccessListener<Integer> onSuccess, OnFailureListener onFailure) {
+
+        if (waitlist == null || waitlist.isEmpty()) {
+            onFailure.onFailure(new Exception("Waitlist is empty"));
+            return;
+        }
+
+        int actualSelection = Math.min(numToSelect, waitlist.size());
+        List<String> shuffled = new ArrayList<>(waitlist);
+        java.util.Collections.shuffle(shuffled);
+        List<String> winners = shuffled.subList(0, actualSelection);
+
+        db.collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(qs -> {
+                    if (!qs.isEmpty()) {
+                        var doc = qs.getDocuments().get(0);
+                        doc.getReference()
+                                .update("invited", FieldValue.arrayUnion(winners.toArray()))
+                                .addOnSuccessListener(aVoid -> {
+                                    sendLotteryWinNotifications(eventId, eventName, winners,
+                                            v -> onSuccess.onSuccess(winners.size()),
+                                            onFailure);
+                                })
+                                .addOnFailureListener(onFailure);
+                    } else {
+                        var payload = new java.util.HashMap<String, Object>();
+                        payload.put("eventId", eventId);
+                        payload.put("invited", winners);
+                        payload.put("waiting", new ArrayList<>());
+                        payload.put("cancelled", new ArrayList<>());
+                        payload.put("all", winners);
+
+                        db.collection("notificationList")
+                                .add(payload)
+                                .addOnSuccessListener(ref -> {
+                                    sendLotteryWinNotifications(eventId, eventName, winners,
+                                            v -> onSuccess.onSuccess(winners.size()),
+                                            onFailure);
+                                })
+                                .addOnFailureListener(onFailure);
+                    }
+                })
+                .addOnFailureListener(onFailure);
+    }
 }
