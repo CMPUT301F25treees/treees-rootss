@@ -1,10 +1,15 @@
 package com.example.myapplication.features.user;
 
+import com.google.firebase.Timestamp;
+
+import java.util.List;
+
 public class UNotiItem {
     private String from;
     private String message;
     private String event;
-
+    private Timestamp dateMade;
+    private List<String> uID;
     public UNotiItem() {}
     public UNotiItem(String from, String message, String event) {
         this.from = from;
@@ -24,5 +29,8 @@ public class UNotiItem {
     public String getEvent() {
         return event;
     }
+
+    public Timestamp getDateMade() { return dateMade; }
+    public List<String> getUID() { return uID; }
 
 }
