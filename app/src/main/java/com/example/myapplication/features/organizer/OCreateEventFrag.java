@@ -215,7 +215,6 @@ public class OCreateEventFrag extends Fragment {
             return;
         }
 
-        Log.d("OCreateEventFrag", "Passed Validation");
 
         UserEvent event = new UserEvent();
         event.setName(title);
@@ -230,19 +229,17 @@ public class OCreateEventFrag extends Fragment {
         event.setGeoRequired(geoSwitch.isChecked());
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
 
-        Log.d("OCreateEventFrag", "Poster URI = " + posterUri);
+
         if (posterUri != null) {
             imageRepository.uploadImage( posterUri, new ImageRepository.UploadCallback() {
                 @Override
                 public void onSuccess(String secureUrl) {
-                    Log.d("OCreateEventFrag", "Image uploaded successfully: " + secureUrl);
                     event.setImageUrl((secureUrl));
                     saveEvent(event);
                 }
 
                 @Override
                 public void onError(String e) {
-                    Log.e("OCreateEventFrag", "Image upload failed: " + e);
                     Toast.makeText(getContext(), "Image Upload failed: " + e, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -268,7 +265,6 @@ public class OCreateEventFrag extends Fragment {
     }
 
     private void saveEvent(UserEvent event) {
-        Log.d("OCreateEventFrag", "saveEvent() called");
         ServiceLocator.getEventRepository().createEvent(event,
                 aVoid -> {
                     Toast.makeText(getContext(), "Event created!", Toast.LENGTH_SHORT).show();
