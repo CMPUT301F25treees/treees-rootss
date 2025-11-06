@@ -13,10 +13,20 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         FirebaseApp.initializeApp(this);
+        initCloudinary();
+    }
+
+    private void initCloudinary(){
 
         Map<String, Object> config = new HashMap<>();
         config.put("cloud_name", "dyb8t5n7k");
+        config.put("api_key", "991229776395468");
         config.put("upload_preset", "treees_images");
-        MediaManager.init(this, config);
+        try{
+            MediaManager.init(this, config);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
+
 }
