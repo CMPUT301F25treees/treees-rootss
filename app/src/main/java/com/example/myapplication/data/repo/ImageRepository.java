@@ -1,14 +1,23 @@
 package com.example.myapplication.data.repo;
 
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 
-import java.io.File;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import java.io.File;
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class ImageRepository {
 
@@ -36,5 +45,26 @@ public class ImageRepository {
                 .url(ENDPOINT)
                 .post(request)
                 .build();
+
+        client.newCall(request1).enqueue(new Callback(){
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e){
+                callback.onError(e);
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException{
+                if(!response.isSuccessful()){
+                    callback.onError(new IOException("Upload failed: " + response.message()));
+                    return;
+                }
+
+                String responseBody = response.body().string();
+                JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
+                String secureUrl = json.get("secure_url").getAsString();
+                callback.onSuccess(secureUrl);
+            }
+        });
     }
 }
