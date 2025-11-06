@@ -65,7 +65,6 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         UserEvent event = visible.get(position);
-        holder.banner.setBackgroundColor(event.getBannerColor());
         holder.name.setText(event.getName());
         holder.price.setText(String.valueOf(event.getPrice()));
         holder.location.setText(event.getLocation());

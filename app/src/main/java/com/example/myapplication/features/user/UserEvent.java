@@ -13,7 +13,6 @@ public class UserEvent {
     private  int price;
     private  String descr;
     private  long endTimeMillis;
-    private  int bannerColor;
     private  List<String> waitlist;
     private boolean geoRequired;
     private int capacity;
@@ -39,7 +38,6 @@ public class UserEvent {
         this.price = price;
         this.descr = descr;
         this.endTimeMillis = endTimeMillis;
-        this.bannerColor = bannerColor;
         this.waitlist = waitlist;
     }
 
@@ -52,7 +50,6 @@ public class UserEvent {
     public String getDescr(){ return descr; }
     public List<String> getWaitlist() { return waitlist; }
     public long getEndTimeMillis() { return endTimeMillis; }
-    public int getBannerColor() { return bannerColor; }
 
     public void setId(String id) { this.id = id; }
     public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
@@ -62,7 +59,6 @@ public class UserEvent {
     public void setPrice(int price) { this.price = price; }
     public void setDescr(String descr) { this.descr = descr; }
     public void setEndTimeMillis(long endTimeMillis) { this.endTimeMillis = endTimeMillis; }
-    public void setBannerColor(int bannerColor) { this.bannerColor = bannerColor; }
     public void setWaitlist(List<String> waitlist) { this.waitlist = waitlist; }
 
     public void setGeoRequired(boolean geoRequired){ this.geoRequired = geoRequired; }
