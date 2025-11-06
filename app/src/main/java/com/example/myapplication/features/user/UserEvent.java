@@ -17,12 +17,12 @@ public class UserEvent {
     private  List<String> waitlist;
     private boolean geoRequired;
     private int capacity;
-
     private long startTimeMillis;
     private long selectionDateMillis;
     private int entrantsToDraw;
     private String posterUrl;
     private String qrData;
+    private String imageUrl;
 
     /**
      * This method is required for Firestore to construct the object
@@ -118,5 +118,11 @@ public class UserEvent {
         this.qrData = qrData;
     }
 
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
 }
