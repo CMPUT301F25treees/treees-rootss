@@ -162,6 +162,29 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(onFailure);
     }
 
+    public void sendLotteryLostNotifications(String eventId, String eventName, List<String> loserIds,
+                                             OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+
+        if (loserIds == null || loserIds.isEmpty()) {
+            onSuccess.onSuccess(null); // No losers to notify
+            return;
+        }
+
+        var payload = new java.util.HashMap<String, Object>();
+        payload.put("dateMade", com.google.firebase.Timestamp.now());
+        payload.put("event", eventName);
+        payload.put("eventId", eventId);
+        payload.put("from", "System");
+        payload.put("message", "Unfortunately, you were not selected for this event. Better luck next time!");
+        payload.put("type", "lottery_lost");
+        payload.put("uID", loserIds);
+
+        db.collection("notifications")
+                .add(payload)
+                .addOnSuccessListener(ref -> onSuccess.onSuccess(null))
+                .addOnFailureListener(onFailure);
+    }
+
     public void runLottery(String eventId, String eventName, List<String> waitlist, int numToSelect,
                            OnSuccessListener<Integer> onSuccess, OnFailureListener onFailure) {
 
@@ -175,6 +198,10 @@ public class FirebaseEventRepository implements EventRepository {
         java.util.Collections.shuffle(shuffled);
         List<String> winners = shuffled.subList(0, actualSelection);
 
+        // Get the losers (those not selected)
+        List<String> losers = new ArrayList<>(waitlist);
+        losers.removeAll(winners);
+
         db.collection("notificationList")
                 .whereEqualTo("eventId", eventId)
                 .limit(1)
@@ -185,8 +212,14 @@ public class FirebaseEventRepository implements EventRepository {
                         doc.getReference()
                                 .update("invited", FieldValue.arrayUnion(winners.toArray()))
                                 .addOnSuccessListener(aVoid -> {
+                                    // Notify winners
                                     sendLotteryWinNotifications(eventId, eventName, winners,
-                                            v -> onSuccess.onSuccess(winners.size()),
+                                            v -> {
+                                                // After winners are notified, notify losers
+                                                sendLotteryLostNotifications(eventId, eventName, losers,
+                                                        v2 -> onSuccess.onSuccess(winners.size()),
+                                                        onFailure);
+                                            },
                                             onFailure);
                                 })
                                 .addOnFailureListener(onFailure);
@@ -201,8 +234,14 @@ public class FirebaseEventRepository implements EventRepository {
                         db.collection("notificationList")
                                 .add(payload)
                                 .addOnSuccessListener(ref -> {
+                                    // Notify winners
                                     sendLotteryWinNotifications(eventId, eventName, winners,
-                                            v -> onSuccess.onSuccess(winners.size()),
+                                            v -> {
+                                                // After winners are notified, notify losers
+                                                sendLotteryLostNotifications(eventId, eventName, losers,
+                                                        v2 -> onSuccess.onSuccess(winners.size()),
+                                                        onFailure);
+                                            },
                                             onFailure);
                                 })
                                 .addOnFailureListener(onFailure);
