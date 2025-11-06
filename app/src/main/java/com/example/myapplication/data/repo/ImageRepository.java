@@ -23,7 +23,7 @@ public class ImageRepository {
         void onError(String e);
     }
 
-    public void uploadImage(Context context, Uri imageUri, UploadCallback callback){
+    public void uploadImage( Uri imageUri, UploadCallback callback){
         MediaManager.get().upload(imageUri)
                 .callback(new com.cloudinary.android.callback.UploadCallback(){
 
@@ -52,6 +52,7 @@ public class ImageRepository {
                     public void onReschedule(String requestId, ErrorInfo error) {
 
                     }
-                });
+                })
+                .dispatch();
     }
 }
