@@ -14,14 +14,14 @@ import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
- * Instrumented test, which will execute on an Android device.
+ * Instrumented test for event-related functionality (waitlist operations).
+ *
+ * For authentication tests, see AuthenticationTest.java
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
@@ -33,6 +33,7 @@ public class ExampleInstrumentedTest {
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals("com.example.myapplication", appContext.getPackageName());
     }
+
 
     @Test
     public void testJoinWaitlistDirect() throws Exception {

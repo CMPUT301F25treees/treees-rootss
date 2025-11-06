@@ -67,7 +67,13 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         UserEvent event = visible.get(position);
         holder.banner.setBackgroundColor(event.getBannerColor());
         holder.name.setText(event.getName());
-        holder.price.setText(String.valueOf(event.getPrice()));
+        String priceText = event.getPriceDisplay();
+        if (TextUtils.isEmpty(priceText)) {
+            holder.price.setVisibility(View.GONE);
+        } else {
+            holder.price.setVisibility(View.VISIBLE);
+            holder.price.setText(priceText);
+        }
         holder.location.setText(event.getLocation());
         holder.instructor.setText(String.format(Locale.getDefault(), "With %s", event.getInstructor()));
         holder.timeRemaining.setText(formatTimeRemaining(event.getEndTimeMillis()));

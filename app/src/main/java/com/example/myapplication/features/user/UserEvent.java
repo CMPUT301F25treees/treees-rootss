@@ -2,7 +2,10 @@ package com.example.myapplication.features.user;
 
 import androidx.annotation.ColorInt;
 
+import com.google.firebase.firestore.PropertyName;
+
 import java.util.List;
+import java.util.Locale;
 
 public class UserEvent {
     private String id;
@@ -10,7 +13,7 @@ public class UserEvent {
     private  String name;
     private  String location;
     private  String instructor;
-    private  int price;
+    private  Double price;
     private  String descr;
     private  long endTimeMillis;
     private  int bannerColor;
@@ -30,7 +33,7 @@ public class UserEvent {
     public UserEvent() {}
 
     UserEvent(String id, String organizerID, String name, String location, String instructor,
-              int price, String descr, long endTimeMillis, @ColorInt int bannerColor, List<String> waitlist) {
+              Double price, String descr, long endTimeMillis, @ColorInt int bannerColor, List<String> waitlist) {
         this.id = id;
         this.organizerID = organizerID;
         this.name = name;
@@ -48,7 +51,19 @@ public class UserEvent {
     public String getName() { return name; }
     public String getLocation() { return location; }
     public String getInstructor() { return instructor; }
-    public int getPrice() { return price; }
+
+    @PropertyName("price")
+    public Double getPrice() { return price; }
+    public String getPriceDisplay() {
+        if (price == null) {
+            return "";
+        }
+        long rounded = Math.round(price);
+        if (Math.abs(price - rounded) < 0.005) {
+            return String.valueOf(rounded);
+        }
+        return String.format(Locale.getDefault(), "%.2f", price);
+    }
     public String getDescr(){ return descr; }
     public List<String> getWaitlist() { return waitlist; }
     public long getEndTimeMillis() { return endTimeMillis; }
@@ -59,64 +74,36 @@ public class UserEvent {
     public void setName(String name) { this.name = name; }
     public void setLocation(String location) { this.location = location; }
     public void setInstructor(String instructor) { this.instructor = instructor; }
-    public void setPrice(int price) { this.price = price; }
+
+    @PropertyName("price")
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
     public void setDescr(String descr) { this.descr = descr; }
     public void setEndTimeMillis(long endTimeMillis) { this.endTimeMillis = endTimeMillis; }
     public void setBannerColor(int bannerColor) { this.bannerColor = bannerColor; }
     public void setWaitlist(List<String> waitlist) { this.waitlist = waitlist; }
 
-    public void setGeoRequired(boolean geoRequired){ this.geoRequired = geoRequired; }
-    public boolean isGeoRequired() {
-        return geoRequired;
-    }
+    public boolean isGeoRequired() { return geoRequired; }
+    public void setGeoRequired(boolean geoRequired) { this.geoRequired = geoRequired; }
 
-    public int getCapacity() {
-        return capacity;
-    }
+    public int getCapacity() { return capacity; }
+    public void setCapacity(int capacity) { this.capacity = capacity; }
 
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
+    public long getStartTimeMillis() { return startTimeMillis; }
+    public void setStartTimeMillis(long startTimeMillis) { this.startTimeMillis = startTimeMillis; }
 
-    public long getStartTimeMillis() {
-        return startTimeMillis;
-    }
+    public long getSelectionDateMillis() { return selectionDateMillis; }
+    public void setSelectionDateMillis(long selectionDateMillis) { this.selectionDateMillis = selectionDateMillis; }
 
-    public void setStartTimeMillis(long startTimeMillis) {
-        this.startTimeMillis = startTimeMillis;
-    }
+    public int getEntrantsToDraw() { return entrantsToDraw; }
+    public void setEntrantsToDraw(int entrantsToDraw) { this.entrantsToDraw = entrantsToDraw; }
 
-    public long getSelectionDateMillis() {
-        return selectionDateMillis;
-    }
+    public String getPosterUrl() { return posterUrl; }
+    public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
 
-    public void setSelectionDateMillis(long selectionDateMillis) {
-        this.selectionDateMillis = selectionDateMillis;
-    }
-
-    public int getEntrantsToDraw() {
-        return entrantsToDraw;
-    }
-
-    public void setEntrantsToDraw(int entrantsToDraw) {
-        this.entrantsToDraw = entrantsToDraw;
-    }
-
-    public String getPosterUrl() {
-        return posterUrl;
-    }
-
-    public void setPosterUrl(String posterUrl) {
-        this.posterUrl = posterUrl;
-    }
-
-    public String getQrData() {
-        return qrData;
-    }
-
-    public void setQrData(String qrData) {
-        this.qrData = qrData;
-    }
-
+    public String getQrData() { return qrData; }
+    public void setQrData(String qrData) { this.qrData = qrData; }
 
 }
