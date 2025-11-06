@@ -92,7 +92,11 @@
     <fragment
         android:id="@+id/navigation_organizer_home"
         android:name="com.example.myapplication.features.organizer.OHomeFrag"
-        tools:layout="@layout/fragment_o_home" />
+        tools:layout="@layout/fragment_o_home" >
+        <action
+            android:id="@+id/action_navigation_organizer_home_to_navigation_organizer_event_detail"
+            app:destination="@id/navigation_organizer_event_detail" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_organizer_profile"
@@ -109,5 +113,26 @@
         android:id="@+id/navigation_organizer_create"
         android:name="com.example.myapplication.features.organizer.OCreateEventFrag"
         tools:layout="@layout/fragment_o_create_event" />
+
+    <fragment
+        android:id="@+id/navigation_organizer_event_detail"
+        android:name="com.example.myapplication.features.organizer.OEventDetailFrag"
+        tools:layout="@layout/fragment_o_event_details" >
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_navigation_organizer_event_detail_to_navigation_organizer_event_edit"
+            app:destination="@id/navigation_organizer_event_edit" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_organizer_event_edit"
+        android:name="com.example.myapplication.features.organizer.OEditEventFrag"
+        tools:layout="@layout/fragment_o_edit" >
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+    </fragment>
 
 </navigation>

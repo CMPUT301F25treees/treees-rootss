@@ -143,4 +143,21 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnSuccessListener(uri -> onSuccess.onSuccess(uri.toString()))
                 .addOnFailureListener(onFailure);
     }
+
+    @Override
+    public void updateEvent(String eventId, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        if (eventId == null || eventId.isEmpty()) {
+            onFailure.onFailure(new IllegalArgumentException("Event ID is required"));
+            return;
+        }
+        if (event != null) {
+            event.setId(eventId);
+        }
+
+        db.collection("events")
+                .document(eventId)
+                .set(event)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
 }

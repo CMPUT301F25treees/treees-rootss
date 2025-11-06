@@ -18,7 +18,7 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
     private final List<UserEvent> original = new ArrayList<>();
     private final List<UserEvent> visible = new ArrayList<>();
 
-    interface OnEventClickListener {
+    public interface OnEventClickListener {
         void onEventClick(UserEvent event);
     }
 

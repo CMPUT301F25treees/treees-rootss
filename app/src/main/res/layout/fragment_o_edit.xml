@@ -16,6 +16,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBack"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/edit_back_button"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp"
+            app:backgroundTint="@android:color/transparent"
+            app:icon="@drawable/ic_arrow_back"
+            app:iconTint="@android:color/white"
+            app:iconPadding="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/tvEditHeading"
             android:layout_width="0dp"
@@ -27,7 +43,8 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/btnBack"
+            android:layout_marginTop="8dp" />
 
         <TextView
             android:id="@+id/tvTitleLabel"

@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,12 +17,11 @@ import androidx.navigation.Navigation;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.example.myapplication.features.user.UserEvent;
-import com.google.android.material.button.MaterialButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class OEventDetailFrag extends Fragment {
     private TextView title, organizer, location, price, endTime, descr, waitingList;
+    private String eventId;
+    private final FirebaseEventRepository eventRepository = new FirebaseEventRepository();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
@@ -41,45 +41,39 @@ public class OEventDetailFrag extends Fragment {
         endTime = view.findViewById(R.id.endTime);
         descr = view.findViewById(R.id.description);
 
-        MaterialButton backButton = view.findViewById(R.id.backButton);
+        Button backButton = view.findViewById(R.id.backButton);
         backButton.setOnClickListener(x -> {
             Navigation.findNavController(view).navigateUp();
         });
 
-        String eventId = getArguments() != null ? getArguments().getString("eventId") : null;
+        eventId = getArguments() != null ? getArguments().getString("eventId") : null;
+        if (eventId == null) {
+            Toast.makeText(requireContext(), "Event not found", Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(view).navigateUp();
+            return;
+        }
 
-        // TODO: Change this to edit event, load create event with filled up details
-        MaterialButton joinWaitlistButton = view.findViewById(R.id.joinWaitlist);
-        joinWaitlistButton.setOnClickListener(x -> {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            assert user != null;
-            String uid = user.getUid();
+        Button viewWaitlistButton = view.findViewById(R.id.viewWaitlist);
+        viewWaitlistButton.setOnClickListener(btn ->
+                Toast.makeText(requireContext(), "Waitlist view coming soon", Toast.LENGTH_SHORT).show()
+        );
 
-            FirebaseEventRepository repo = new FirebaseEventRepository();
-            repo.joinWaitlist(eventId, uid, a -> {
-                Toast.makeText(getContext(), "You have joined the waitlist!", Toast.LENGTH_SHORT).show();
-                refreshEventDetail(eventId);
-            }, e-> Toast.makeText(getContext(), "Sorry, you could not join at the moment!", Toast.LENGTH_SHORT).show());
+        Button editEventButton = view.findViewById(R.id.editEvent);
+        editEventButton.setOnClickListener(button -> {
+            Bundle args = new Bundle();
+            args.putString("eventId", eventId);
+            Navigation.findNavController(view)
+                    .navigate(R.id.action_navigation_organizer_event_detail_to_navigation_organizer_event_edit, args);
         });
 
-
-        if(eventId != null){
-            FirebaseEventRepository repo = new FirebaseEventRepository();
-            repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
-                @Override
-                public void onEventFetched(UserEvent event) {
-                    bindEventData(event);
-                }
-
-                @Override
-                public void onError(Exception e) {
-
-                }
-            });
-        }
+        refreshEventDetail(eventId);
     }
 
     private void bindEventData(UserEvent event) {
+        if (event == null) {
+            Toast.makeText(requireContext(), "Unable to load event", Toast.LENGTH_SHORT).show();
+            return;
+        }
         long millisLeft = event.getEndTimeMillis() - System.currentTimeMillis();
         long daysLeft = (long) Math.ceil(millisLeft / (1000.0 * 60 * 60 * 24));
 
@@ -100,15 +94,24 @@ public class OEventDetailFrag extends Fragment {
     }
 
     private void refreshEventDetail(String eventId) {
-        FirebaseEventRepository repo = new FirebaseEventRepository();
-        repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
+        eventRepository.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
             @Override
             public void onEventFetched(UserEvent event) {
                 bindEventData(event);
             }
 
             @Override
-            public void onError(Exception e) { }
+            public void onError(Exception e) {
+                Toast.makeText(requireContext(), "Failed to load event", Toast.LENGTH_SHORT).show();
+            }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (eventId != null) {
+            refreshEventDetail(eventId);
+        }
     }
 }
