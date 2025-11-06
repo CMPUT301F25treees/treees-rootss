@@ -26,11 +26,13 @@ import com.example.myapplication.core.ServiceLocator;
 import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.Event;
 import com.example.myapplication.data.repo.EventRepository;
+import com.example.myapplication.data.repo.ImageRepository;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -64,7 +66,7 @@ public class OCreateEventFrag extends Fragment {
     private long selectionDateMillis = 0;
     private Uri posterUri = null;
 
-    private EventRepository eventRepository;
+    private ImageRepository imageRepository;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     public OCreateEventFrag(){}
@@ -78,7 +80,7 @@ public class OCreateEventFrag extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
         super.onViewCreated(view, savedInstanceState);
 
-        eventRepository = ServiceLocator.getEventRepository();
+        imageRepository = new ImageRepository();
 
         // Inputs
         titleInput = view.findViewById(R.id.event_title_input);
@@ -225,11 +227,19 @@ public class OCreateEventFrag extends Fragment {
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
 
         if (posterUri != null) {
-            eventRepository.uploadPoster(posterUri, url -> {
-                event.setPosterUrl(url);
-                saveEvent(event);
-            }, e -> Toast.makeText(getContext(),
-                    "Poster upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            File file = new File(FileConvert.getPath(requireContext(), posterUri));
+            imageRepository.uploadImage(file, new ImageRepository.UploadCallback() {
+                @Override
+                public void onSuccess(String secureUrl) {
+                    event.setImageUrl(secureUrl);
+                    saveEvent(event);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Toast.makeText(getContext(), "Image upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
         } else {
             saveEvent(event);
         }

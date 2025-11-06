@@ -64,10 +64,6 @@ dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.5.0")
 
-    //Cloudinary Uplaod Dependencies
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okio:okio:3.9.0")
-
-    //JSON Parser
-    implementation("com.google.code.gson:gson:2.10.1")
+    //Cloudinary Android SDK
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
 }
