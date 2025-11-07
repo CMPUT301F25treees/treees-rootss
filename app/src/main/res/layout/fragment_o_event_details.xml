@@ -163,25 +163,25 @@
             app:layout_constraintTop_toBottomOf="@+id/addressText" />
 
         <TextView
-            android:id="@+id/endTime"
+            android:id="@+id/startDateText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="50dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="@font/noto_sans_arabic_thin"
-            android:text="@string/endtime_text"
+            android:text="@string/start_date_placeholder"
             android:textColor="@color/white"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/joinWaitlist" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/price" />
 
         <TextView
             android:id="@+id/description"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="210dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="12dp"
             android:layout_marginEnd="24dp"
             android:fontFamily="@font/noto_sans_arabic_thin"
             android:text="@string/descr_text"
@@ -189,7 +189,7 @@
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/frameLayout" />
+            app:layout_constraintTop_toBottomOf="@+id/startDateText" />
 
         <Button
             android:id="@+id/backButton"

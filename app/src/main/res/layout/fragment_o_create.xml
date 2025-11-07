@@ -5,5 +5,4 @@
     android:background="@drawable/bg_login_gradient"
     android:padding="24dp">
 
-
 </ScrollView>

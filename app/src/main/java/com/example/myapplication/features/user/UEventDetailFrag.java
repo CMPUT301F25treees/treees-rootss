@@ -2,6 +2,7 @@ package com.example.myapplication.features.user;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,8 @@ import com.bumptech.glide.Glide;
 public class UEventDetailFrag extends Fragment {
 
     private TextView title, organizer, location, price, endTime, descr, waitingList;
+
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
@@ -55,7 +58,10 @@ public class UEventDetailFrag extends Fragment {
         MaterialButton joinWaitlistButton = view.findViewById(R.id.joinWaitlist);
         joinWaitlistButton.setOnClickListener(x -> {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            assert user != null;
+            if (user == null) {
+                Toast.makeText(getContext(), "Please log in first!", Toast.LENGTH_SHORT).show();
+                return;
+            }
             String uid = user.getUid();
 
             FirebaseEventRepository repo = new FirebaseEventRepository();
@@ -108,7 +114,12 @@ public class UEventDetailFrag extends Fragment {
         title.setText(event.getName());
         organizer.setText("Organizer: " + event.getInstructor());
         location.setText(event.getLocation());
-        price.setText("Price: $" + event.getPrice());
+        String priceText = event.getPriceDisplay();
+        if (TextUtils.isEmpty(priceText)) {
+            price.setText(getString(R.string.event_price_unavailable));
+        } else {
+            price.setText(getString(R.string.event_price_label, priceText));
+        }
         descr.setText(event.getDescr());
         endTime.setText("Days Left: " + Math.max(daysLeft, 0));
         waitingList.setText("Currently in Waitinglist: " +

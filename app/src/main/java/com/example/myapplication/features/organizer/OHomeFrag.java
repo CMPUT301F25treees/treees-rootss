@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
@@ -31,6 +33,9 @@ public class OHomeFrag extends Fragment {
         super(R.layout.fragment_o_home);
     }
 
+    /**
+     * Configures the organizer event grid, search/filter UI, and item click navigation.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -41,6 +46,18 @@ public class OHomeFrag extends Fragment {
 
         adapter = new UserEventAdapter();
         Context context = requireContext();
+
+        NavController navController = NavHostFragment.findNavController(this);
+
+        adapter.setOnEventClickListener(event -> {
+            if (event == null || event.getId() == null) {
+                Toast.makeText(requireContext(), "Unable to open event", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Bundle args = new Bundle();
+            args.putString("eventId", event.getId());
+            navController.navigate(R.id.action_navigation_organizer_home_to_navigation_organizer_event_detail, args);
+        });
 
         eventsList.setLayoutManager(new GridLayoutManager(context, 2));
         eventsList.setHasFixedSize(false);
@@ -71,6 +88,9 @@ public class OHomeFrag extends Fragment {
         filterButton.setOnClickListener(this::showFilterMenu);
     }
 
+    /**
+     * Loads events from Firestore and keeps only those owned by the signed-in organizer.
+     */
     private void fetchMyEventsFromFirestore(){
         FirebaseEventRepository repo = new FirebaseEventRepository();
 
@@ -113,6 +133,9 @@ public class OHomeFrag extends Fragment {
         });
     }
 
+    /**
+     * Displays a stub filter menu for future categorization of organizer events.
+     */
     private void showFilterMenu(View anchor) {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
         menu.getMenu().add("Upcoming");
@@ -126,6 +149,9 @@ public class OHomeFrag extends Fragment {
     }
 
 
+    /**
+     * Simple spacing decorator that maintains even padding around grid tiles.
+     */
     private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
         private final int spanCount;
         private final int spacing;

@@ -1,9 +1,12 @@
 package com.example.myapplication.data.firebase;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 
 import com.example.myapplication.data.model.Event;
 import com.example.myapplication.data.repo.EventRepository;
+import com.example.myapplication.data.repo.ImageRepository;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -11,10 +14,14 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.zxing.BarcodeFormat;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 /**
@@ -26,7 +33,6 @@ import java.util.Objects;
 public class FirebaseEventRepository implements EventRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final FirebaseStorage storage = FirebaseStorage.getInstance();
 
     /**
      * This method adds the specified users id into the waitlist of a given event.
@@ -114,33 +120,78 @@ public class FirebaseEventRepository implements EventRepository {
     }
 
     @Override
-    public void createEvent(UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+    public void createEvent(Context context, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
         // create a new doc id
         String id = db.collection("events").document().getId();
         event.setId(id);
 
-        db.collection("events")
-                .document(id)
-                .set(event)
-                .addOnSuccessListener(onSuccess)
-                .addOnFailureListener(onFailure);
+        String qrData = id;
+
+        Bitmap qrBitmap;
+
+        try {
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+            qrBitmap = barcodeEncoder.encodeBitmap(
+                    id,
+                    BarcodeFormat.QR_CODE,
+                    600,  // width
+                    600   // height
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            onFailure.onFailure(e);
+            return;
+        }
+
+        File qrFile;
+        try {
+            qrFile = new File(context.getCacheDir(), "qr_" + id + ".png");
+            FileOutputStream fos = new FileOutputStream(qrFile);
+            qrBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            onFailure.onFailure(e);
+            return;
+        }
+
+        Uri qrUri = Uri.fromFile(qrFile);
+
+        ImageRepository imageRepository = new ImageRepository();
+        imageRepository.uploadImage(qrUri, new ImageRepository.UploadCallback() {
+            @Override
+            public void onSuccess(String secureUrl) {
+                // 6) Store QR URL on the event
+                event.setQrData(secureUrl);
+
+                // 7) Save the event (with qrImageUrl) into Firestore
+                db.collection("events")
+                        .document(id)
+                        .set(event)
+                        .addOnSuccessListener(onSuccess)
+                        .addOnFailureListener(onFailure);
+            }
+
+            @Override
+            public void onError(String e) {
+                onFailure.onFailure(new Exception("QR upload failed: " + e));
+            }
+        });
+
+
     }
 
+
     @Override
-    public void uploadPoster(Uri imageUri, OnSuccessListener<String> onSuccess, OnFailureListener onFailure) {
+    public void updateEvent(String eventId, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        event.setId(eventId); // Ensure the event has the correct ID
 
-        String path = "posters/" + System.currentTimeMillis() + ".jpg";
-        StorageReference ref = storage.getReference().child(path);
-
-        ref.putFile(imageUri)
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        throw Objects.requireNonNull(task.getException());
-                    }
-                    return ref.getDownloadUrl();
-                })
-                .addOnSuccessListener(uri -> onSuccess.onSuccess(uri.toString()))
+        db.collection("events")
+                .document(eventId)
+                .set(event)
+                .addOnSuccessListener(onSuccess)
                 .addOnFailureListener(onFailure);
     }
 

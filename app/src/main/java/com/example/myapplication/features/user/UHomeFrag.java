@@ -33,6 +33,9 @@ public class UHomeFrag extends Fragment {
         super(R.layout.fragment_u_home);
     }
 
+    /**
+     * Sets up the event grid, search/filter controls, and kicks off the initial fetch.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -81,6 +84,9 @@ public class UHomeFrag extends Fragment {
         filterButton.setOnClickListener(v -> showFilterMenu(v));
     }
 
+    /**
+     * Loads all events from Firestore and filters out those owned by the current user.
+     */
     private void fetchEventsFromFirestore(){
         FirebaseEventRepository repo = new FirebaseEventRepository();
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -108,6 +114,9 @@ public class UHomeFrag extends Fragment {
         });
     }
 
+    /**
+     * Placeholder filter menu that demonstrates how filtering options will surface.
+     */
     private void showFilterMenu(View anchor) {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
         menu.getMenu().add("Option 1");
@@ -122,6 +131,9 @@ public class UHomeFrag extends Fragment {
 
 
 
+    /**
+     * Simple spacing decorator that keeps the event cards evenly spaced in the grid.
+     */
     private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
         private final int spanCount;
         private final int spacing;

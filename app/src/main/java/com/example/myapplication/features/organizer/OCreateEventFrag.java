@@ -197,12 +197,12 @@ public class OCreateEventFrag extends Fragment {
             }
         }
 
-        int price = 0;
+        double price = 0.0;
         if (!priceStr.isEmpty()) {
             try {
-                price = Integer.parseInt(priceStr);
+                price = Double.parseDouble(priceStr);
             } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Price must be a number", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Price must be a valid number", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
@@ -248,24 +248,11 @@ public class OCreateEventFrag extends Fragment {
         }
     }
 
-    private void generateQrCode(String data) {
-        try {
-            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-            Bitmap bitmap = barcodeEncoder.encodeBitmap(
-                    data,
-                    BarcodeFormat.QR_CODE,
-                    600, // width
-                    600  // height
-            );
-            //qrImageView.setImageBitmap(bitmap);
-            //qrImageView.setVisibility(View.VISIBLE);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private void saveEvent(UserEvent event) {
-        ServiceLocator.getEventRepository().createEvent(event,
+        ServiceLocator.getEventRepository().createEvent(
+                requireContext(),
+                event,
                 aVoid -> {
                     Toast.makeText(getContext(), "Event created!", Toast.LENGTH_SHORT).show();
                     // TODO: navigate to OEventDetails
