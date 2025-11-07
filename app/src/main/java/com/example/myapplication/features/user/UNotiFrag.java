@@ -31,6 +31,17 @@ public class UNotiFrag extends Fragment {
 
     @Nullable
     @Override
+    /**
+     * Inflates the layout for the fragment.
+     * @param inflater The LayoutInflater object that can be used to inflate
+     *                 any views in the fragment.
+     * @param container If non-null, this is the parent view that the fragment's
+     *                  UI should be attached to. The fragment should not add the view
+     *                  itself, but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being restored
+     *                           from a previous saved state as given here.
+     * @return The View for the fragment's UI, or null.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_u_notifications, container, false);
     }
