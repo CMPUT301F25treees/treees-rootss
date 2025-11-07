@@ -42,13 +42,15 @@ public class AUsersFrag extends Fragment {
         EditText search  = v.findViewById(R.id.etSearchUsers);
         View empty       = v.findViewById(R.id.empty);
 
-        // The reference screenshot for Users is a vertical list (single column)
+        // Vertical list (matches your reference)
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.addItemDecoration(new SpacingDecoration(dp(12)));
         rv.setClipToPadding(false);
         rv.setPadding(rv.getPaddingLeft(), rv.getPaddingTop(), rv.getPaddingRight(), dp(88));
 
         adapter = new AdminUserAdapter();
+
+        // open detail
         adapter.setOnUserClick(u -> {
             Bundle args = new Bundle();
             args.putString("uid", u.id);
@@ -59,6 +61,16 @@ public class AUsersFrag extends Fragment {
             NavHostFragment.findNavController(this)
                     .navigate(R.id.navigation_admin_user_detail, args);
         });
+
+        // remove organizer
+        adapter.setOnRemoveClick(u -> new android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Remove organizer?")
+                .setMessage("This will revoke organizer permissions for " +
+                        (u.name == null || u.name.isEmpty() ? u.email : u.name) + ".")
+                .setPositiveButton("Remove", (d, w) -> demoteOrganizer(u.id))
+                .setNegativeButton("Cancel", null)
+                .show());
+
         rv.setAdapter(adapter);
 
         if (search != null) {
@@ -79,23 +91,22 @@ public class AUsersFrag extends Fragment {
                     if (err != null || snap == null) return;
                     List<AdminUserAdapter.UserRow> list = new ArrayList<>();
                     for (DocumentSnapshot d : snap.getDocuments()) {
-                        String role = safe(d.getString("role"));       // "User", "Organizer", "Admin", etc.
-                        String roleLower = role.toLowerCase();
-                        if (!(roleLower.equals("user") || roleLower.equals("organizer"))) {
-                            // Only browse non-admin profiles per the story
+                        String role = safe(d.getString("role"));  // "User" | "Organizer" | "Admin"
+                        String r = role.toLowerCase();
+                        if (!(r.equals("user") || r.equals("organizer"))) {
+                            // only browse entrant/organizer
                             continue;
                         }
                         String first = safe(d.getString("firstName"));
                         String last  = safe(d.getString("lastName"));
                         String name  = (first + " " + last).trim();
-                        if (name.isEmpty()) name = safe(d.getString("name")); // fallback if your team uses 'name'
+                        if (name.isEmpty()) name = safe(d.getString("name")); // fallback
 
                         AdminUserAdapter.UserRow u = new AdminUserAdapter.UserRow();
                         u.id        = d.getId();
                         u.name      = name;
                         u.email     = safe(d.getString("email"));
-                        u.role      = role; // keep original case for display
-                        // Support either 'avatarUrl' or 'photoUrl' depending on your team:
+                        u.role      = role;
                         String avatar = d.getString("avatarUrl");
                         if (avatar == null) avatar = d.getString("photoUrl");
                         u.avatarUrl = safe(avatar);
@@ -105,6 +116,16 @@ public class AUsersFrag extends Fragment {
                     adapter.submit(list);
                     empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
                 });
+    }
+
+    // Demote organizer to User and flag suspended=true
+    private void demoteOrganizer(String uid){
+        FirebaseFirestore.getInstance().collection("users").document(uid)
+                .update("role", "User", "suspended", true)
+                .addOnSuccessListener(x -> android.widget.Toast.makeText(requireContext(),
+                        "Organizer removed", android.widget.Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> android.widget.Toast.makeText(requireContext(),
+                        "Failed: " + e.getMessage(), android.widget.Toast.LENGTH_SHORT).show());
     }
 
     @Override
