@@ -171,12 +171,7 @@ public class UProfileFrag extends Fragment {
                 .addOnFailureListener(onFailure);
     }
 
-    /**
-     * Handles batch deletion completion for event snapshots, then advances the workflow.
-     */
-                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
-                .addOnFailureListener(onFailure);
-    }
+
 
     /**
      * Handles batch deletion completion for event snapshots, then advances the workflow.

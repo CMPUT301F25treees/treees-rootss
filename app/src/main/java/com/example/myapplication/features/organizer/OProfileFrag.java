@@ -171,12 +171,6 @@ public class OProfileFrag extends Fragment {
                 .addOnFailureListener(onFailure);
     }
 
-    /**
-     * Deletes the snapshot results and advances once all deletes complete.
-     */
-                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
-                .addOnFailureListener(onFailure);
-    }
 
     /**
      * Deletes the snapshot results and advances once all deletes complete.
