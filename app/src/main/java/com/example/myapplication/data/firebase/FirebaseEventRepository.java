@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 /**
@@ -34,7 +33,6 @@ import java.util.Objects;
 public class FirebaseEventRepository implements EventRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final FirebaseStorage storage = FirebaseStorage.getInstance();
 
     /**
      * This method adds the specified users id into the waitlist of a given event.
@@ -187,19 +185,13 @@ public class FirebaseEventRepository implements EventRepository {
 
 
     @Override
-    public void uploadPoster(Uri imageUri, OnSuccessListener<String> onSuccess, OnFailureListener onFailure) {
+    public void updateEvent(String eventId, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        event.setId(eventId); // Ensure the event has the correct ID
 
-        String path = "posters/" + System.currentTimeMillis() + ".jpg";
-        StorageReference ref = storage.getReference().child(path);
-
-        ref.putFile(imageUri)
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        throw Objects.requireNonNull(task.getException());
-                    }
-                    return ref.getDownloadUrl();
-                })
-                .addOnSuccessListener(uri -> onSuccess.onSuccess(uri.toString()))
+        db.collection("events")
+                .document(eventId)
+                .set(event)
+                .addOnSuccessListener(onSuccess)
                 .addOnFailureListener(onFailure);
     }
 

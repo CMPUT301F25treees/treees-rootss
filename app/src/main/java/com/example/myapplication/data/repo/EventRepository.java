@@ -11,5 +11,5 @@ import com.google.android.gms.tasks.OnSuccessListener;
 public interface EventRepository {
     void createEvent(Context context, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure);
 
-    void uploadPoster(Uri imageUri, OnSuccessListener<String> onSuccess, OnFailureListener onFailure);
+    void updateEvent(String eventId, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure);
 }

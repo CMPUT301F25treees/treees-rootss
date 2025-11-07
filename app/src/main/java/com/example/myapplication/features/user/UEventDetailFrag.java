@@ -1,6 +1,8 @@
 package com.example.myapplication.features.user;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +66,26 @@ public class UEventDetailFrag extends Fragment {
 
             FirebaseEventRepository repo = new FirebaseEventRepository();
             repo.joinWaitlist(eventId, uid, a -> {
-                Toast.makeText(getContext(), "You have joined the waitlist!", Toast.LENGTH_SHORT).show();
+                repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
+                    @Override
+                    public void onEventFetched(UserEvent event) {
+                        int cap = event.getCapacity();
+                        int drawn = event.getEntrantsToDraw();
+
+
+                        new AlertDialog.Builder(requireContext())
+                                .setTitle("You have joined the waitlist!")
+                                .setMessage("The event has a waitlist capacity of " + cap + ", from which " +
+                                        drawn + " will be drawn randomly. We promise.")
+                                .setPositiveButton("Okay", (dialogInterface, i) -> dialogInterface.dismiss())
+                                .show();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Toast.makeText(getContext(), "Unable to get event", Toast.LENGTH_SHORT).show();
+                    }
+                });
                 refreshEventDetail(eventId);
             }, e-> Toast.makeText(getContext(), "Sorry, you could not join at the moment!", Toast.LENGTH_SHORT).show());
         });
@@ -93,7 +114,12 @@ public class UEventDetailFrag extends Fragment {
         title.setText(event.getName());
         organizer.setText("Organizer: " + event.getInstructor());
         location.setText(event.getLocation());
-        price.setText("Price: $" + event.getPrice());
+        String priceText = event.getPriceDisplay();
+        if (TextUtils.isEmpty(priceText)) {
+            price.setText(getString(R.string.event_price_unavailable));
+        } else {
+            price.setText(getString(R.string.event_price_label, priceText));
+        }
         descr.setText(event.getDescr());
         endTime.setText("Days Left: " + Math.max(daysLeft, 0));
         waitingList.setText("Currently in Waitinglist: " +

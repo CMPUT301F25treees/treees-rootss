@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
@@ -41,6 +43,18 @@ public class OHomeFrag extends Fragment {
 
         adapter = new UserEventAdapter();
         Context context = requireContext();
+
+        NavController navController = NavHostFragment.findNavController(this);
+
+        adapter.setOnEventClickListener(event -> {
+            if (event == null || event.getId() == null) {
+                Toast.makeText(requireContext(), "Unable to open event", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Bundle args = new Bundle();
+            args.putString("eventId", event.getId());
+            navController.navigate(R.id.action_navigation_organizer_home_to_navigation_organizer_event_detail, args);
+        });
 
         eventsList.setLayoutManager(new GridLayoutManager(context, 2));
         eventsList.setHasFixedSize(false);
