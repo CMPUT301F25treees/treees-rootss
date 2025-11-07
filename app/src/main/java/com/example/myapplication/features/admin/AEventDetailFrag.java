@@ -21,17 +21,41 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
+/**
+ * Admin Event Detail screen that reuses the user-facing event detail layout but replaces
+ * the primary action with an administrative “Remove” button that navigates to the
+ * Remove Options screen. Binds event data (title, image, location, price, etc.) from
+ * {@code /events/{eventId}} to the UI.
+ */
 public class AEventDetailFrag extends Fragment {
 
     private String eventId;
 
+    /**
+     * Default no-argument constructor.
+     */
     public AEventDetailFrag() {}
 
+    /**
+     * Inflates the user event detail layout to maintain consistent look-and-feel.
+     *
+     * @param inflater  the {@link LayoutInflater} used to inflate views
+     * @param container the parent view that the fragment's UI should attach to
+     * @param savedInstanceState previously saved state, if any
+     * @return the inflated root {@link View} for this fragment
+     */
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_u_event_detail, container, false);
     }
 
+    /**
+     * Called immediately after {@link #onCreateView}. Wires UI elements, sets up the
+     * admin “Remove” action, back navigation, and loads event data from Firestore.
+     *
+     * @param v the root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * @param b previously saved state, or {@code null}
+     */
     @Override public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
         super.onViewCreated(v, b);
         eventId = getArguments() != null ? getArguments().getString("eventId") : null;
@@ -71,6 +95,19 @@ public class AEventDetailFrag extends Fragment {
                         Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Binds fields from the provided event {@link DocumentSnapshot} into the UI controls.
+     *
+     * @param d          the Firestore snapshot for {@code /events/{eventId}}
+     * @param tvTitle    TextView for the event title
+     * @param tvOrganizer TextView for the organizer label/value
+     * @param tvLocation TextView for the location/address
+     * @param tvPrice    TextView for the price
+     * @param tvEndTime  TextView for “Days Left”/end time display
+     * @param tvDescr    TextView for the event description
+     * @param tvWaiting  TextView showing the waiting list count
+     * @param ivHeader   ImageView for the header/preview image
+     */
     private void bindEventDoc(DocumentSnapshot d,
                               TextView tvTitle, TextView tvOrganizer, TextView tvLocation,
                               TextView tvPrice, TextView tvEndTime, TextView tvDescr,
