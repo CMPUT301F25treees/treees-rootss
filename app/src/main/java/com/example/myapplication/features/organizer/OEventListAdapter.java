@@ -13,7 +13,7 @@ import com.example.myapplication.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OEventWaitlistAdapter extends RecyclerView.Adapter<OEventWaitlistAdapter.NameVH> {
+public class OEventListAdapter extends RecyclerView.Adapter<OEventListAdapter.NameVH> {
 
     private final List<String> names = new ArrayList<>();
 

@@ -167,7 +167,7 @@ public class OProfileFrag extends Fragment {
         firestore.collection("events")
                 .whereEqualTo(fieldName, uid)
                 .get();
-    }
+}
 
 
     /**
