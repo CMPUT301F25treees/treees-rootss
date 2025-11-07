@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,12 +83,19 @@ public class UHomeFrag extends Fragment {
 
     private void fetchEventsFromFirestore(){
         FirebaseEventRepository repo = new FirebaseEventRepository();
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
             @Override
             public void onEventsFetched(List<UserEvent> events){
                 if(events != null && !events.isEmpty()) {
-                    adapter.submit(events);
+                    List<UserEvent> filteredEvents = new ArrayList<>();
+                    for(UserEvent event :events){
+                        if(!event.getOrganizerID().equals(currentUserId)){
+                            filteredEvents.add(event);
+                        }
+                    }
+                    adapter.submit(filteredEvents);
                 } else{
                     Toast.makeText(requireContext(), "No events found", Toast.LENGTH_SHORT).show();
                 }
