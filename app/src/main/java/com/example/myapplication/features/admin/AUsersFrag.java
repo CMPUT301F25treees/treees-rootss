@@ -22,20 +22,39 @@ import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Admin “Browse Profiles” fragment.
+ * <p>Shows a searchable list of non-admin users (User/Organizer), opens profile detail on tap,
+ * and supports inline organizer demotion via a confirmation dialog.</p>
+ */
 public class AUsersFrag extends Fragment {
 
     private ListenerRegistration reg;
     private AdminUserAdapter adapter;
 
+    /** Default no-argument constructor. */
     public AUsersFrag() {}
 
+    /**
+     * Inflates the admin users layout.
+     *
+     * @param i  layout inflater
+     * @param c  optional parent container
+     * @param b  saved instance state, if any
+     * @return   the inflated root view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater i, @Nullable ViewGroup c, @Nullable Bundle b) {
         return i.inflate(R.layout.fragment_a_users, c, false);
     }
 
+    /**
+     * Initializes list, search behavior, and Firestore snapshot subscription.
+     *
+     * @param v root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * @param b saved instance state, if any
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
         RecyclerView rv = v.findViewById(R.id.rvUsers);
@@ -118,7 +137,11 @@ public class AUsersFrag extends Fragment {
                 });
     }
 
-    // Demote organizer to User and flag suspended=true
+    /**
+     * Demotes an organizer to {@code role="User"} and sets {@code suspended=true}.
+     *
+     * @param uid user document id
+     */
     private void demoteOrganizer(String uid){
         FirebaseFirestore.getInstance().collection("users").document(uid)
                 .update("role", "User", "suspended", true)
@@ -128,22 +151,49 @@ public class AUsersFrag extends Fragment {
                         "Failed: " + e.getMessage(), android.widget.Toast.LENGTH_SHORT).show());
     }
 
+    /** Removes the Firestore snapshot listener when the view is destroyed. */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (reg != null) reg.remove();
     }
 
+    /**
+     * Null-safe helper for optional strings.
+     *
+     * @param s input string (may be {@code null})
+     * @return empty string if {@code s} is null; otherwise {@code s}
+     */
     private static String safe(String s){ return s == null ? "" : s; }
 
+    /**
+     * Converts density-independent pixels to raw pixels.
+     *
+     * @param dp value in dp
+     * @return pixel value rounded to the nearest integer
+     */
     private int dp(int dp) {
         float density = getResources().getDisplayMetrics().density;
         return (int)(dp * density + 0.5f);
     }
 
+    /** ItemDecoration that adds symmetrical spacing between list items. */
     static class SpacingDecoration extends RecyclerView.ItemDecoration {
         private final int space;
+        /**
+         * Creates a spacing decoration.
+         *
+         * @param space spacing in pixels
+         */
         SpacingDecoration(int space){ this.space = space; }
+        /**
+         * Applies spacing offsets to each item.
+         *
+         * @param outRect output rectangle to receive offsets
+         * @param view    child view
+         * @param parent  RecyclerView containing the item
+         * @param state   current RecyclerView state
+         */
         @Override
         public void getItemOffsets(@NonNull android.graphics.Rect outRect, @NonNull View view,
                                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
