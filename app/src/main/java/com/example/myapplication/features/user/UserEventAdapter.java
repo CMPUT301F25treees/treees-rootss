@@ -29,6 +29,10 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
     public void setOnEventClickListener(OnEventClickListener listener) {
         this.listener = listener;
     }
+
+    /**
+     * Replaces the current dataset with the provided events and refreshes the grid.
+     */
     public void submit(List<UserEvent> events) {
         original.clear();
         visible.clear();
@@ -39,6 +43,9 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         notifyDataSetChanged();
     }
 
+    /**
+     * Filters the in-memory list using the provided query and updates the visible items.
+     */
     public void filter(String query) {
         visible.clear();
         if (TextUtils.isEmpty(query)) {
@@ -113,6 +120,9 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         }
     }
 
+    /**
+     * Returns a friendly time-remaining string (e.g., “2d 3h left”) for the event card.
+     */
     private String formatTimeRemaining(long endTimeMillis) {
         long now = System.currentTimeMillis();
         long diff = endTimeMillis - now;
@@ -135,6 +145,9 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         return String.format(Locale.getDefault(), "%dm left", Math.max(minutes, 1));
     }
 
+    /**
+     * Loads the event poster/image into the banner view, falling back to a gradient background.
+     */
     private void bindBannerImage(UserEvent event, EventViewHolder holder) {
         if (holder.bannerImage == null) {
             return;
