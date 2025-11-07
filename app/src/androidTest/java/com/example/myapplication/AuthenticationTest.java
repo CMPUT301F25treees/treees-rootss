@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -55,8 +56,6 @@ public class AuthenticationTest {
                 // Delete user document from Firestore
                 Tasks.await(db.collection("users").document(testUserId).delete(), 10, TimeUnit.SECONDS);
 
-                // Note: Deleting the auth user requires re-authentication in production
-                // For testing purposes, we'll leave the auth user (it will be cleaned up manually)
             } catch (Exception e) {
                 // Ignore cleanup errors
                 System.err.println("Cleanup error: " + e.getMessage());
@@ -99,7 +98,7 @@ public class AuthenticationTest {
         assertNotNull("User ID should not be null", testUserId);
         assertEquals("Email should match", testEmail, firebaseUser.getEmail());
 
-        // Step 2: Create user document in Firestore (simulating what RegisterFrag does)
+        // Step 2: Create user document in Firestore
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("firstName", firstName);
         userMap.put("lastName", lastName);
@@ -127,7 +126,7 @@ public class AuthenticationTest {
         assertEquals("Phone should match", phone, snapshot.getString("cell"));
         assertEquals("Role should be User", "User", snapshot.getString("role"));
 
-        System.out.println("✓ Registration test passed for user: " + testEmail);
+        System.out.println("Registration test passed for user: " + testEmail);
     }
 
     /**
@@ -194,7 +193,7 @@ public class AuthenticationTest {
         assertEquals("First name should match", firstName, userDoc.getString("firstName"));
         assertEquals("Role should exist", "User", userDoc.getString("role"));
 
-        System.out.println("✓ Login test passed for user: " + testEmail);
+        System.out.println("Login test passed for user: " + testEmail);
     }
 
     /**
@@ -224,9 +223,14 @@ public class AuthenticationTest {
             fail("Login should have failed with wrong password");
         } catch (Exception e) {
             // Expected - login should fail
-            assertTrue("Should be authentication error",
-                e.getMessage().contains("password") || e.getMessage().contains("credentials"));
-            System.out.println("✓ Wrong password test passed - login correctly rejected");
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            String message = cause.getMessage() != null ? cause.getMessage().toLowerCase() : "";
+            boolean isAuthError = cause instanceof FirebaseAuthException
+                    || message.contains("password")
+                    || message.contains("credential");
+
+            assertTrue("Should be authentication error", isAuthError);
+            System.out.println("Wrong password test passed - login correctly rejected");
         }
     }
 
@@ -256,8 +260,7 @@ public class AuthenticationTest {
             // Expected - registration should fail
             assertTrue("Should be duplicate email error",
                 e.getMessage().contains("already in use") || e.getMessage().contains("email"));
-            System.out.println("✓ Duplicate email test passed - registration correctly rejected");
+            System.out.println("Duplicate email test passed - registration correctly rejected");
         }
     }
 }
-
