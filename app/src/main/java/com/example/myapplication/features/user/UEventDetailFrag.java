@@ -24,6 +24,12 @@ import com.google.firebase.auth.FirebaseUser;
 
 import com.bumptech.glide.Glide;
 
+/**
+ * This class is for displaying the detailed information about an event
+ * that the user has selected.
+ *
+ * From here the user can view details and join waitlist
+ */
 public class UEventDetailFrag extends Fragment {
 
     private TextView title, organizer, location, price, endTime, descr, waitingList;
@@ -107,6 +113,14 @@ public class UEventDetailFrag extends Fragment {
         }
     }
 
+    /**
+     * This method binde the details of an event to teh UI elements.
+     *
+     * It takes the details and changes the title, description, location, price,
+     * days left to join, waitlist count, and loads in the event image.
+     *
+     * @param event the UserEvent object that holds all the detials
+     */
     private void bindEventData(UserEvent event) {
         long millisLeft = event.getEndTimeMillis() - System.currentTimeMillis();
         long daysLeft = (long) Math.ceil(millisLeft / (1000.0 * 60 * 60 * 24));
@@ -136,6 +150,13 @@ public class UEventDetailFrag extends Fragment {
         }
     }
 
+    /**
+     * This method is for refresshing teh current event's deatils.
+     *
+     * For example: after the user joins the waitlist, the count gets updated.
+     *
+     * @param eventId event ID of the event.
+     */
     private void refreshEventDetail(String eventId) {
         FirebaseEventRepository repo = new FirebaseEventRepository();
         repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
