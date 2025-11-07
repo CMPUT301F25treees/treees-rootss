@@ -20,6 +20,9 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
 import java.util.List;
 
+/**
+ * This class deals with scanning a QR code and identifying which event to navigate to.
+ */
 public class UScanFrag extends Fragment {
     private DecoratedBarcodeView barcodeView;
     private static final int CAMERA_REQUEST_CODE = 101;
@@ -55,6 +58,9 @@ public class UScanFrag extends Fragment {
         });
     }
 
+    /**
+     * When the fragment becomes visible this method will resume the barcode scanner
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -67,12 +73,25 @@ public class UScanFrag extends Fragment {
         }
     }
 
+    /**
+     * When fragment is not beign shown to teh user the barcode scanner is paused.
+     */
     @Override
     public void onPause() {
         if (barcodeView != null) barcodeView.pause();
         super.onPause();
     }
 
+    /**
+     * This method handles the camera permission request.
+     *
+     * @param requestCode The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
+     *
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
