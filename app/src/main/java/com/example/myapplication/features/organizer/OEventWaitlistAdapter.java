@@ -13,7 +13,7 @@ import com.example.myapplication.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OFinalListAdapter extends RecyclerView.Adapter<OFinalListAdapter.NameVH> {
+public class OEventWaitlistAdapter extends RecyclerView.Adapter<OEventWaitlistAdapter.NameVH> {
 
     private final List<String> names = new ArrayList<>();
 
@@ -27,7 +27,7 @@ public class OFinalListAdapter extends RecyclerView.Adapter<OFinalListAdapter.Na
     @NonNull
     @Override
     public NameVH onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_finallist_name, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_waitlist_name, parent, false);
         return new NameVH(view);
     }
 

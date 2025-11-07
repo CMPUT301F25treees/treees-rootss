@@ -17,7 +17,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_finallist_name" />
+        tools:listitem="@layout/item_waitlist_name" />
 
     <TextView
         android:id="@+id/emptyState"
@@ -31,5 +31,31 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDraw"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/profile_role_button_height"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="center"
+        android:insetLeft="0dp"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:text="Draw Applicant"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:backgroundTint="@color/profile_role_rouge"
+        app:cornerRadius="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
