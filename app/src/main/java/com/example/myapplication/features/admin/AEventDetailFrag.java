@@ -22,43 +22,42 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
 
 /**
- * Admin Event Detail – shows event info using the user layout, replaces the user CTA with
- * an admin “Remove” action that navigates to the Remove Options screen.
- * Reads: /events/{eventId} and binds fields (title, price, image, description, location, etc.).
+ * Admin Event Detail screen that reuses the user-facing event detail layout but replaces
+ * the primary action with an administrative “Remove” button that navigates to the
+ * Remove Options screen. Binds event data (title, image, location, price, etc.) from
+ * {@code /events/{eventId}} to the UI.
  */
 public class AEventDetailFrag extends Fragment {
 
     private String eventId;
 
+    /**
+     * Default no-argument constructor.
+     */
     public AEventDetailFrag() {}
 
     /**
-     * Inflates the fragment layout using the user event detail to keep visuals consistent.
+     * Inflates the user event detail layout to maintain consistent look-and-feel.
      *
-     * @param inflater  LayoutInflater to inflate the layout
-     * @param container Parent view group
-     * @param savedInstanceState Previously saved state, if any
-     * @return The inflated view
+     * @param inflater  the {@link LayoutInflater} used to inflate views
+     * @param container the parent view that the fragment's UI should attach to
+     * @param savedInstanceState previously saved state, if any
+     * @return the inflated root {@link View} for this fragment
      */
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    @Nullable @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_u_event_detail, container, false);
     }
 
     /**
-     * Initializes views and wires listeners after the view hierarchy is created.
-     * Binds Firestore fields and repurposes the user “Join” button as “Remove”.
+     * Called immediately after {@link #onCreateView}. Wires UI elements, sets up the
+     * admin “Remove” action, back navigation, and loads event data from Firestore.
      *
-     * @param v Root view returned by onCreateView
-     * @param b Previously saved state, if any
+     * @param v the root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * @param b previously saved state, or {@code null}
      */
-    @Override
-    public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
+    @Override public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
         super.onViewCreated(v, b);
-
         eventId = getArguments() != null ? getArguments().getString("eventId") : null;
 
         final TextView tvTitle     = v.findViewById(R.id.EventTitle);
@@ -73,9 +72,8 @@ public class AEventDetailFrag extends Fragment {
         final MaterialButton btnRemove = v.findViewById(R.id.joinWaitlist);
         btnRemove.setText("Remove");
         btnRemove.setAllCaps(false);
-        btnRemove.setBackgroundTintList(
-                ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.dodo_maroon))
-        );
+        btnRemove.setBackgroundTintList(ColorStateList.valueOf(
+                ContextCompat.getColor(requireContext(), R.color.dodo_maroon)));
         btnRemove.setOnClickListener(x -> {
             Bundle args = new Bundle();
             args.putString("eventId", eventId);
@@ -90,39 +88,30 @@ public class AEventDetailFrag extends Fragment {
             );
         }
 
-        FirebaseFirestore.getInstance()
-                .collection("events")
-                .document(eventId)
-                .get()
-                .addOnSuccessListener(d ->
-                        bindEventDoc(d, tvTitle, tvOrganizer, tvLocation,
-                                tvPrice, tvEndTime, tvDescr, tvWaiting, ivHeader))
+        FirebaseFirestore.getInstance().collection("events").document(eventId).get()
+                .addOnSuccessListener(d -> bindEventDoc(d, tvTitle, tvOrganizer, tvLocation,
+                        tvPrice, tvEndTime, tvDescr, tvWaiting, ivHeader))
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     /**
-     * Binds Firestore event fields to the corresponding UI views.
+     * Binds fields from the provided event {@link DocumentSnapshot} into the UI controls.
      *
-     * @param d         Event snapshot
-     * @param tvTitle   Title view
-     * @param tvOrganizer Organizer label view
-     * @param tvLocation Location/address view
-     * @param tvPrice   Price view
-     * @param tvEndTime Remaining time/days view
-     * @param tvDescr   Description view
-     * @param tvWaiting Waiting list count view
-     * @param ivHeader  Header image view
+     * @param d          the Firestore snapshot for {@code /events/{eventId}}
+     * @param tvTitle    TextView for the event title
+     * @param tvOrganizer TextView for the organizer label/value
+     * @param tvLocation TextView for the location/address
+     * @param tvPrice    TextView for the price
+     * @param tvEndTime  TextView for “Days Left”/end time display
+     * @param tvDescr    TextView for the event description
+     * @param tvWaiting  TextView showing the waiting list count
+     * @param ivHeader   ImageView for the header/preview image
      */
     private void bindEventDoc(DocumentSnapshot d,
-                              TextView tvTitle,
-                              TextView tvOrganizer,
-                              TextView tvLocation,
-                              TextView tvPrice,
-                              TextView tvEndTime,
-                              TextView tvDescr,
-                              TextView tvWaiting,
-                              ImageView ivHeader) {
+                              TextView tvTitle, TextView tvOrganizer, TextView tvLocation,
+                              TextView tvPrice, TextView tvEndTime, TextView tvDescr,
+                              TextView tvWaiting, ImageView ivHeader) {
 
         if (!d.exists()) return;
 

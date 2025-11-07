@@ -27,23 +27,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Admin Home – lists events and routes to admin actions (detail, remove options).
- * Mirrors the user home layout and reads /events (typically ordered by startTimeMillis).
+ * Admin Home fragment that lists events and routes to administrative actions.
+ * Reuses the user home layout and subscribes to {@code /events} updates.
  */
 public class AHomeFrag extends Fragment {
 
     private ListenerRegistration reg;
     private UserEventAdapter adapter;
 
+    /**
+     * Default constructor.
+     */
     public AHomeFrag() {}
 
     /**
-     * Inflates the fragment layout (reuses the user home layout for consistent visuals).
+     * Inflates the user home layout for consistent UI between user and admin views.
      *
-     * @param inflater  layout inflater
-     * @param container parent container
-     * @param savedInstanceState saved state
-     * @return inflated view
+     * @param inflater           layout inflater
+     * @param container          parent container
+     * @param savedInstanceState saved state, if any
+     * @return the inflated root view
      */
     @Nullable
     @Override
@@ -54,16 +57,17 @@ public class AHomeFrag extends Fragment {
     }
 
     /**
-     * Initializes RecyclerView, search filtering, and Firestore snapshot subscription.
+     * Initializes RecyclerView, search handling, and Firestore snapshot subscription.
      *
-     * @param v root view
+     * @param v                  root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
      * @param savedInstanceState saved state, if any
      */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(v, savedInstanceState);
+
         RecyclerView rv = v.findViewById(R.id.rvEvents);
         EditText search = v.findViewById(R.id.etSearchEvents);
-
         rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         rv.addItemDecoration(new SpacingDecoration(dp(12)));
 
@@ -79,27 +83,31 @@ public class AHomeFrag extends Fragment {
         if (search != null) {
             search.addTextChangedListener(new TextWatcher() {
                 /**
+                 * No-op before text changes.
+                 *
                  * @param s     text before change
                  * @param start start index
-                 * @param count count of old chars
-                 * @param after count of new chars
+                 * @param count number of characters before change
+                 * @param after number of characters that will be added
                  */
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
                 /**
-                 * Filters the list while the query text changes.
+                 * Filters the event list as the user types.
                  *
-                 * @param s      current text
-                 * @param start  start index
-                 * @param before count of chars before
-                 * @param count  count of new chars
+                 * @param s       current text
+                 * @param start   start index
+                 * @param before  number of characters replaced
+                 * @param count   number of characters added
                  */
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                     adapter.filter(s == null ? "" : s.toString());
                 }
 
                 /**
-                 * @param s editable after change
+                 * No-op after text changes.
+                 *
+                 * @param s editable text after change
                  */
                 @Override public void afterTextChanged(Editable s) {}
             });
@@ -110,7 +118,6 @@ public class AHomeFrag extends Fragment {
                 .orderBy("startTimeMillis", Query.Direction.DESCENDING)
                 .addSnapshotListener((snap, err) -> {
                     if (err != null || snap == null) return;
-
                     List<UserEvent> list = new ArrayList<>();
                     for (DocumentSnapshot d : snap.getDocuments()) {
                         UserEvent e = d.toObject(UserEvent.class);
@@ -124,7 +131,8 @@ public class AHomeFrag extends Fragment {
     }
 
     /**
-     * Cleans up snapshot listener when the view is destroyed.
+     * Cleans up resources tied to the fragment view lifecycle.
+     * Removes the Firestore listener when the view is destroyed.
      */
     @Override
     public void onDestroyView() {
@@ -136,7 +144,7 @@ public class AHomeFrag extends Fragment {
      * Converts density-independent pixels to raw pixels.
      *
      * @param dp value in dp
-     * @return pixel value
+     * @return pixel value rounded to the nearest integer
      */
     private int dp(int dp) {
         float density = getResources().getDisplayMetrics().density;
@@ -144,29 +152,29 @@ public class AHomeFrag extends Fragment {
     }
 
     /**
-     * ItemDecoration that adds symmetric spacing around event cards in the grid.
+     * ItemDecoration that adds symmetric spacing between grid items.
      */
     static class SpacingDecoration extends RecyclerView.ItemDecoration {
         private final int space;
 
         /**
+         * Creates a spacing decoration.
+         *
          * @param space spacing in pixels
          */
         SpacingDecoration(int space) { this.space = space; }
 
         /**
-         * Adds spacing offsets around each item.
+         * Applies spacing offsets to each item.
          *
-         * @param outRect output rect to modify
+         * @param outRect output rectangle to receive the offsets
          * @param view    child view
-         * @param parent  RecyclerView
-         * @param state   RecyclerView state
+         * @param parent  RecyclerView containing the item
+         * @param state   current RecyclerView state
          */
         @Override
-        public void getItemOffsets(@NonNull android.graphics.Rect outRect,
-                                   @NonNull View view,
-                                   @NonNull RecyclerView parent,
-                                   @NonNull RecyclerView.State state) {
+        public void getItemOffsets(@NonNull android.graphics.Rect outRect, @NonNull View view,
+                                   @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
             outRect.left = space / 2;
             outRect.right = space / 2;
             outRect.bottom = space;
