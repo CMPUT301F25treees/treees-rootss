@@ -1,15 +1,16 @@
-// UNotiFrag.java (User)
 package com.example.myapplication.features.user;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,32 +21,48 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 /**
- * This class displays the list of notifications for the logged in user.
- *
- * Will retrieve all notifications to the logged in user.
+ * Fragment responsible for displaying a list of notifications for the currently logged-in user.
+ * <p>
+ * This fragment retrieves user-specific notifications from the Firestore database,
+ * orders them by the date they were created, and displays them using a RecyclerView
+ * populated by a {@link UNotiAdapter}.
  */
 public class UNotiFrag extends Fragment {
 
+    /** RecyclerView for displaying user notifications. */
     private RecyclerView recyclerView;
+
+    /** Adapter that binds Firestore notification data to the RecyclerView. */
     private UNotiAdapter adapter;
 
-    @Nullable
-    @Override
     /**
-     * Inflates the layout for the fragment.
-     * @param inflater The LayoutInflater object that can be used to inflate
-     *                 any views in the fragment.
+     * Called to have the fragment instantiate its user interface view.
+     *
+     * @param inflater  The LayoutInflater object that can be used to inflate
+     *                  any views in the fragment.
      * @param container If non-null, this is the parent view that the fragment's
-     *                  UI should be attached to. The fragment should not add the view
-     *                  itself, but this can be used to generate the LayoutParams of the view.
+     *                  UI should be attached to.
      * @param savedInstanceState If non-null, this fragment is being restored
      *                           from a previous saved state as given here.
-     * @return The View for the fragment's UI, or null.
+     * @return The View for the fragment's UI, or {@code null}.
      */
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    @Override
+    @Nullable
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_u_notifications, container, false);
     }
 
+    /**
+     * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)} has returned.
+     * Sets up the RecyclerView, initializes the adapter, and defines user interactions for
+     * accepting or declining invitations.
+     *
+     * @param view               The View returned by {@link #onCreateView}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -54,6 +71,11 @@ public class UNotiFrag extends Fragment {
         recyclerView = view.findViewById(R.id.notifications_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setHasFixedSize(true);
+
+        Button backButton = view.findViewById(R.id.bckButton);
+        backButton.setOnClickListener(x -> {
+            Navigation.findNavController(view).navigateUp();
+        });
 
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
@@ -69,13 +91,15 @@ public class UNotiFrag extends Fragment {
                 .setLifecycleOwner(getViewLifecycleOwner())
                 .build();
 
-        adapter = new UNotiAdapter(options,
+        adapter = new UNotiAdapter(
+                options,
                 snapshot -> {
                     new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                             .setTitle("USER DIALOG")
                             .setItems(new CharSequence[]{"View Details"}, (dialog, which) -> {
                                 if (which == 0) {
-                                    Toast.makeText(requireContext(), "View details coming soon", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(requireContext(),
+                                            "View details coming soon", Toast.LENGTH_SHORT).show();
                                 }
                             })
                             .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
@@ -93,15 +117,27 @@ public class UNotiFrag extends Fragment {
                     }
                 }
         );
+
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * Called when the view previously created by {@link #onCreateView} is about to be destroyed.
+     * Cleans up resources by detaching the adapter from the RecyclerView.
+     */
     @Override
     public void onDestroyView() {
         recyclerView.setAdapter(null);
         super.onDestroyView();
     }
 
+    /**
+     * Handles accepting a notification invitation.
+     * Displays a confirmation dialog before performing the action via Firebase.
+     *
+     * @param notificationId The unique ID of the notification document.
+     * @param item           The {@link UNotiItem} representing the invitation.
+     */
     private void handleAcceptInvitation(String notificationId, UNotiItem item) {
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
@@ -115,13 +151,22 @@ public class UNotiFrag extends Fragment {
                             new com.example.myapplication.data.firebase.FirebaseEventRepository();
 
                     repo.acceptInvitation(notificationId, item.getEventId(), uid,
-                            aVoid -> Toast.makeText(requireContext(), "Invitation accepted!", Toast.LENGTH_SHORT).show(),
-                            e -> Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            aVoid -> Toast.makeText(requireContext(),
+                                    "Invitation accepted!", Toast.LENGTH_SHORT).show(),
+                            e -> Toast.makeText(requireContext(),
+                                    "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
+    /**
+     * Handles declining a notification invitation.
+     * Displays a confirmation dialog before performing the action via Firebase.
+     *
+     * @param notificationId The unique ID of the notification document.
+     * @param item           The {@link UNotiItem} representing the invitation.
+     */
     private void handleDeclineInvitation(String notificationId, UNotiItem item) {
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
@@ -135,8 +180,10 @@ public class UNotiFrag extends Fragment {
                             new com.example.myapplication.data.firebase.FirebaseEventRepository();
 
                     repo.declineInvitation(notificationId, item.getEventId(), uid,
-                            aVoid -> Toast.makeText(requireContext(), "Invitation declined.", Toast.LENGTH_SHORT).show(),
-                            e -> Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            aVoid -> Toast.makeText(requireContext(),
+                                    "Invitation declined.", Toast.LENGTH_SHORT).show(),
+                            e -> Toast.makeText(requireContext(),
+                                    "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

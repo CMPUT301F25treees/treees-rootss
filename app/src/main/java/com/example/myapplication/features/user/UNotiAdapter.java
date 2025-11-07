@@ -49,7 +49,7 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
     }
 
     /**
-     * Binds teh UNotiItem to the UI Elements
+     * Binds the UNotiItem to the UI Elements
      *
      * @param holder ViewHolder that holds the notification layout
      * @param position the position of teh item in the adapter
