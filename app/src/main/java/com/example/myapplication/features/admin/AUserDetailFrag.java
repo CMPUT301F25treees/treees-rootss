@@ -16,15 +16,36 @@ import com.example.myapplication.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.*;
 
+/**
+ * Admin Profile Detail fragment.
+ * <p>
+ * Displays a read-only view of a user's profile (name, email, role, avatar) with
+ * administrative controls to navigate back or delete the user's profile document.
+ * If the user is an organizer, related events can be flagged as disabled prior to deletion.
+ */
 public class AUserDetailFrag extends Fragment {
 
     private String uid, name, email, role, avatarUrl;
 
+    /**
+     * Inflates the admin profile detail layout.
+     *
+     * @param i the {@link LayoutInflater}
+     * @param c the optional parent container
+     * @param b previously saved state, or {@code null}
+     * @return the inflated root view
+     */
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater i, @Nullable ViewGroup c, @Nullable Bundle b) {
         return i.inflate(R.layout.fragment_a_user_detail, c, false);
     }
 
+    /**
+     * Binds argument values to UI and wires the Back and Delete actions.
+     *
+     * @param v the root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * @param b previously saved state, or {@code null}
+     */
     @Override public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
         Bundle args = getArguments() != null ? getArguments() : Bundle.EMPTY;
         uid       = args.getString("uid", "");
@@ -49,6 +70,10 @@ public class AUserDetailFrag extends Fragment {
         delete.setOnClickListener(x -> confirmDelete());
     }
 
+    /**
+     * Shows a confirmation dialog before deleting the user's profile document.
+     * If confirmed, proceeds to {@link #deleteProfile()}.
+     */
     private void confirmDelete() {
         String who = !name.isEmpty() ? name : email;
         new AlertDialog.Builder(requireContext())
@@ -61,6 +86,10 @@ public class AUserDetailFrag extends Fragment {
                 .show();
     }
 
+    /**
+     * Deletes the user's profile document. If the user is an organizer, first attempts
+     * to mark their events as disabled, then proceeds to delete the user document.
+     */
     private void deleteProfile() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -79,6 +108,11 @@ public class AUserDetailFrag extends Fragment {
         }
     }
 
+    /**
+     * Performs the final deletion of the user's profile document and navigates back on success.
+     *
+     * @param db the {@link FirebaseFirestore} instance used to access the {@code /users} collection
+     */
     private void actuallyDeleteUserDoc(FirebaseFirestore db) {
         db.collection("users").document(uid).delete()
                 .addOnSuccessListener(v -> {

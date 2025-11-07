@@ -24,6 +24,17 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.storage.FirebaseStorage;
 
+/**
+ * Remove Options fragment for administrators.
+ * <p>
+ * Provides three destructive actions for a selected event:
+ * <ul>
+ *   <li>Remove preview image (clears {@code imageUrl}/{@code posterUrl})</li>
+ *   <li>Remove event (deletes {@code /events/{eventId}} and its {@code /images} subcollection,
+ *       with best-effort deletion of any referenced storage objects)</li>
+ *   <li>Remove organizer (demotes to {@code role="User"} and sets {@code suspended=true})</li>
+ * </ul>
+ */
 public class ARemoveFrag extends Fragment {
 
     private String eventId;
@@ -31,13 +42,31 @@ public class ARemoveFrag extends Fragment {
     private String eventName = "";
     private String organizerId = "";
 
+    /**
+     * Default no-argument constructor.
+     */
     public ARemoveFrag() {}
 
+    /**
+     * Inflates the remove-options layout.
+     *
+     * @param i  layout inflater
+     * @param c  parent container
+     * @param b  saved instance state, if any
+     * @return   the inflated root view for this fragment
+     */
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater i, @Nullable ViewGroup c, @Nullable Bundle b) {
         return i.inflate(R.layout.fragment_a_remove, c, false);
     }
 
+    /**
+     * Initializes UI and wires destructive actions after the view is created.
+     * Loads event data (name, organizer, preview image) to drive button state/labels.
+     *
+     * @param v root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * @param b saved instance state, if any
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
         super.onViewCreated(v, b);
@@ -120,6 +149,10 @@ public class ARemoveFrag extends Fragment {
                 .show());
     }
 
+    /**
+     * Deletes the event’s image documents under {@code /events/{eventId}/images}, attempts to
+     * delete any referenced storage objects, and then proceeds to delete the event document.
+     */
     private void removeEvent() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final DocumentReference eventRef = db.collection("events").document(eventId);
@@ -141,6 +174,12 @@ public class ARemoveFrag extends Fragment {
                 .addOnFailureListener(e -> deleteEventDoc(eventRef));
     }
 
+    /**
+     * Finalizes the event deletion by removing the event document.
+     * Navigates back on success and shows a toast on failure.
+     *
+     * @param eventRef reference to {@code /events/{eventId}}
+     */
     private void deleteEventDoc(DocumentReference eventRef) {
         eventRef.delete()
                 .addOnSuccessListener(v ->
@@ -152,6 +191,10 @@ public class ARemoveFrag extends Fragment {
                         Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Demotes the event’s organizer to {@code role="User"} and sets {@code suspended=true}.
+     * Shows a message if the organizer id is unavailable or on failure.
+     */
     private void removeOrganizerForEvent() {
         if (organizerId.isEmpty()) {
             Toast.makeText(requireContext(), "No organizer ID on event", Toast.LENGTH_SHORT).show();
@@ -165,5 +208,11 @@ public class ARemoveFrag extends Fragment {
                         Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Null-safe string helper.
+     *
+     * @param s input string (may be {@code null})
+     * @return empty string if {@code s} is null; otherwise {@code s}
+     */
     private static String safe(String s){ return s == null ? "" : s; }
 }
