@@ -25,6 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class shows the user home screen.
+ *
+ * From teh home screen the user can click on an event in the lsit of events to
+ * got the detailed view of that sepecified event, go to the scan view, user profile
+ * view, or search and filter the events.
+ */
 public class UHomeFrag extends Fragment {
 
     private UserEventAdapter adapter;
