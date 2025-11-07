@@ -125,8 +125,10 @@
     <fragment
         android:id="@+id/navigation_admin_remove_options"
         android:name="com.example.myapplication.features.admin.ARemoveFrag"
-        tools:layout="@layout/fragment_a_remove">
+        tools:layout="@layout/fragment_a_remove" >
         <argument android:name="eventId" app:argType="string" />
+    </fragment>
+
     <fragment
         android:id="@+id/navigation_organizer_event_detail"
         android:name="com.example.myapplication.features.organizer.OEventDetailFrag"
