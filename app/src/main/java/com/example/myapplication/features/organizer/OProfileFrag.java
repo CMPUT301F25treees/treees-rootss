@@ -166,9 +166,7 @@ public class OProfileFrag extends Fragment {
     private void deleteEventsByField(String fieldName, String uid, Runnable onComplete, OnFailureListener onFailure) {
         firestore.collection("events")
                 .whereEqualTo(fieldName, uid)
-                .get()
-                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
-                .addOnFailureListener(onFailure);
+                .get();
     }
 
 
