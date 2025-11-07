@@ -152,6 +152,8 @@
 
     <fragment
         android:id="@+id/navigation_organizer_waitlist"
+        android:name="com.example.myapplication.features.organizer.OEventListFrag"
+        tools:layout="@layout/fragment_o_event_waitlist">
         android:name="com.example.myapplication.features.organizer.OEventWaitlistFrag"
         tools:layout="@layout/fragment_o_event_waitlist"/>
         <argument

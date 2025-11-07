@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,9 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.google.android.material.button.MaterialButton;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -31,7 +30,14 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class OEventWaitlistFrag extends Fragment {
+public class OEventListFrag extends Fragment {
+
+    private static final String FIELD_WAITING = "waiting";
+    private static final String FIELD_FINAL   = "final";   // change if your field is named differently
+
+    private enum ListMode { WAITING, FINAL }
+
+    private ListMode currentMode = ListMode.WAITING;
 
     private String eventId;
     private String notificationDocId;
@@ -41,14 +47,14 @@ public class OEventWaitlistFrag extends Fragment {
     private RecyclerView waitlistRecycler;
     private TextView emptyState;
     private MaterialButton drawBtn;
+    private MaterialButton btnEvent;
 
-    private OEventWaitlistAdapter adapter;
+    private OEventListAdapter adapter;
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final Random rng = new Random();
 
-    // Data
-    private final List<String> waitingUids = new ArrayList<>();
+    private final List<String> currentUids = new ArrayList<>();
     private final Map<String, String> nameByUid = new HashMap<>();
 
     private long capacity = Long.MAX_VALUE;
@@ -71,21 +77,53 @@ public class OEventWaitlistFrag extends Fragment {
         waitlistRecycler = view.findViewById(R.id.waitlistRecycler);
         emptyState       = view.findViewById(R.id.emptyState);
         drawBtn          = view.findViewById(R.id.btnDraw);
+        btnEvent         = view.findViewById(R.id.btnEvent);
 
         waitlistRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         waitlistRecycler.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
 
-        adapter = new OEventWaitlistAdapter();
+        adapter = new OEventListAdapter();
         waitlistRecycler.setAdapter(adapter);
 
+        // Initial UI state
+        updateListSelectorButton();
         showEmpty();
 
         if (eventId != null) {
             loadEventMeta();
-            loadWaitlist();
+            loadListForCurrentMode();
         }
 
         drawBtn.setOnClickListener(v -> drawApplicants());
+
+        btnEvent.setOnClickListener(v -> showListChooser());
+    }
+
+    private void showListChooser() {
+        PopupMenu menu = new PopupMenu(requireContext(), btnEvent);
+        menu.getMenu().add(0, 1, 0, "Waiting list");
+        menu.getMenu().add(0, 2, 1, "Final list");
+
+        menu.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            ListMode chosen = (id == 1) ? ListMode.WAITING : ListMode.FINAL;
+            if (chosen != currentMode) {
+                currentMode = chosen;
+                updateListSelectorButton();
+                loadListForCurrentMode();
+            }
+            return true;
+        });
+
+        menu.show();
+    }
+
+    private void updateListSelectorButton() {
+        if (btnEvent == null) return;
+        String label = (currentMode == ListMode.WAITING) ? "Waiting list" : "Final list";
+        btnEvent.setText(label);
+
+        drawBtn.setVisibility(currentMode == ListMode.WAITING ? View.VISIBLE : View.GONE);
     }
 
     private void loadEventMeta() {
@@ -106,7 +144,7 @@ public class OEventWaitlistFrag extends Fragment {
                 });
     }
 
-    private void loadWaitlist() {
+    private void loadListForCurrentMode() {
         final int myEpoch = ++dataEpoch;
 
         db.collection("notificationList")
@@ -117,7 +155,7 @@ public class OEventWaitlistFrag extends Fragment {
                     if (myEpoch != dataEpoch) return;
 
                     if (query.isEmpty()) {
-                        waitingUids.clear();
+                        currentUids.clear();
                         nameByUid.clear();
                         applyNames(myEpoch, new ArrayList<>());
                         notificationDocId = null;
@@ -127,30 +165,38 @@ public class OEventWaitlistFrag extends Fragment {
                     DocumentSnapshot doc = query.getDocuments().get(0);
                     notificationDocId = doc.getId();
 
-                    @SuppressWarnings("unchecked")
-                    List<String> waitingIds = (List<String>) doc.get("waiting");
+                    String field = (currentMode == ListMode.WAITING) ? FIELD_WAITING : FIELD_FINAL;
 
-                    if (waitingIds == null || waitingIds.isEmpty()) {
-                        waitingUids.clear();
+                    @SuppressWarnings("unchecked")
+                    List<String> ids = (List<String>) doc.get(field);
+
+                    if (ids == null || ids.isEmpty()) {
+                        currentUids.clear();
                         nameByUid.clear();
                         applyNames(myEpoch, new ArrayList<>());
                         return;
                     }
 
-                    Set<String> uniqueOrdered = new LinkedHashSet<>(waitingIds);
-                    waitingUids.clear();
-                    waitingUids.addAll(uniqueOrdered);
+                    // keep insertion order but drop duplicates
+                    Set<String> uniqueOrdered = new LinkedHashSet<>(ids);
+                    currentUids.clear();
+                    currentUids.addAll(uniqueOrdered);
 
-                    fetchUserNames(myEpoch, new ArrayList<>(waitingUids));
+                    fetchUserNames(myEpoch, new ArrayList<>(currentUids));
                 })
                 .addOnFailureListener(e -> {
                     if (!isAdded()) return;
-                    Toast.makeText(requireContext(), "Failed to load waitlist.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Failed to load list.", Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void fetchUserNames(int epoch, List<String> userIds) {
         nameByUid.clear();
+
+        if (userIds.isEmpty()) {
+            applyNames(epoch, new ArrayList<>());
+            return;
+        }
 
         AtomicInteger done = new AtomicInteger(0);
         int total = userIds.size();
@@ -176,9 +222,8 @@ public class OEventWaitlistFrag extends Fragment {
     }
 
     private void applyCurrentMapping(int epoch) {
-
-        List<String> names = new ArrayList<>(waitingUids.size());
-        for (String uid : waitingUids) {
+        List<String> names = new ArrayList<>(currentUids.size());
+        for (String uid : currentUids) {
             names.add(nameByUid.getOrDefault(uid, uid));
         }
         applyNames(epoch, names);
@@ -197,24 +242,44 @@ public class OEventWaitlistFrag extends Fragment {
     private void applyNames(int epoch, List<String> names) {
         if (epoch != dataEpoch || !isAdded()) return;
         adapter.setNames(names);
+
         waitlistRecycler.setVisibility(View.VISIBLE);
-        emptyState.setVisibility(names.isEmpty() ? View.VISIBLE : View.GONE);
-        drawBtn.setEnabled(!waitingUids.isEmpty());
+
+        boolean empty = names.isEmpty();
+        emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
+        emptyState.setText(
+                (currentMode == ListMode.WAITING)
+                        ? "No one on the waitlist."
+                        : "No one on the final list."
+        );
+
+        // Draw button only enabled when showing non-empty waiting list
+        boolean enableDraw = (currentMode == ListMode.WAITING) && !currentUids.isEmpty();
+        drawBtn.setEnabled(enableDraw);
     }
 
     private void showEmpty() {
         if (!isAdded()) return;
         waitlistRecycler.setVisibility(View.VISIBLE);
         emptyState.setVisibility(View.VISIBLE);
+        emptyState.setText(
+                (currentMode == ListMode.WAITING)
+                        ? "No one on the waitlist."
+                        : "No one on the final list."
+        );
         drawBtn.setEnabled(false);
     }
 
     private void drawApplicants() {
+        if (currentMode != ListMode.WAITING) {
+            Toast.makeText(requireContext(), "Switch to the Waiting list to draw.", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (notificationDocId == null) {
             Toast.makeText(requireContext(), "Waitlist not loaded yet.", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (waitingUids.isEmpty()) {
+        if (currentUids.isEmpty()) {
             Toast.makeText(requireContext(), "No one is on the waitlist.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -239,16 +304,14 @@ public class OEventWaitlistFrag extends Fragment {
 
         eventRepo.runLottery(
                 eventId,
-                eventName,                          // ✅ pass the name we ensured
-                new ArrayList<>(waitingUids),
+                eventName,
+                new ArrayList<>(currentUids), // pulling from waiting list (enforced above)
                 toSelect,
-                selectedCount -> {
-                    Toast.makeText(
-                            requireContext(),
-                            "Invited " + selectedCount + " user(s). Notifications sent for \"" + eventName + "\".",
-                            Toast.LENGTH_LONG
-                    ).show();
-                },
+                selectedCount -> Toast.makeText(
+                        requireContext(),
+                        "Invited " + selectedCount + " user(s). Notifications sent for \"" + eventName + "\".",
+                        Toast.LENGTH_LONG
+                ).show(),
                 e -> Toast.makeText(
                         requireContext(),
                         "Draw failed: " + e.getMessage(),
@@ -256,6 +319,4 @@ public class OEventWaitlistFrag extends Fragment {
                 ).show()
         );
     }
-
-
 }
