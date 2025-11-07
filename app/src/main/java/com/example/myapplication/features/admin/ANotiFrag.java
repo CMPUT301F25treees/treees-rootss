@@ -20,22 +20,43 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+/**
+ * Administrative notifications/logs fragment.
+ * <p>
+ * Displays a list of notification items from {@code /notifications} using
+ * {@link UNotiAdapter} backed by {@link FirestoreRecyclerOptions}. Provides an
+ * admin dialog to delete individual notifications.
+ */
 public class ANotiFrag extends Fragment {
 
     private RecyclerView recyclerView;
     private UNotiAdapter adapter;
 
+    /**
+     * Inflates the notifications layout for the admin view.
+     *
+     * @param inflater           the layout inflater
+     * @param container          the parent view that the fragment's UI should be attached to
+     * @param savedInstanceState previously saved instance state, if any
+     * @return the inflated root view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_u_notifications, container, false);
     }
 
+    /**
+     * Initializes UI after the view is created: sets the title, configures the RecyclerView,
+     * builds the Firestore query and options, and attaches the {@link UNotiAdapter}.
+     *
+     * @param view               the root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * @param savedInstanceState previously saved instance state, if any
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("ADMIN Notifications");
-
 
         recyclerView = view.findViewById(R.id.notifications_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -43,7 +64,6 @@ public class ANotiFrag extends Fragment {
 
         Query query = FirebaseFirestore.getInstance()
                 .collection("notifications");
-
 
         FirestoreRecyclerOptions<UNotiItem> options = new FirestoreRecyclerOptions.Builder<UNotiItem>()
                 .setQuery(query, UNotiItem.class)
@@ -69,6 +89,10 @@ public class ANotiFrag extends Fragment {
 
     }
 
+    /**
+     * Cleans up view-bound resources before the view is destroyed.
+     * Detaches the adapter to avoid leaking the RecyclerView.
+     */
     @Override
     public void onDestroyView() {
         recyclerView.setAdapter(null);
