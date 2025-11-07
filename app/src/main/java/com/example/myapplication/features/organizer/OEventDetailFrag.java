@@ -71,9 +71,12 @@ public class OEventDetailFrag extends Fragment {
         }
 
         Button viewWaitlistButton = view.findViewById(R.id.viewWaitlist);
-        viewWaitlistButton.setOnClickListener(btn ->
-                Toast.makeText(requireContext(), "Waitlist view coming soon", Toast.LENGTH_SHORT).show()
-        );
+        viewWaitlistButton.setOnClickListener(btn -> {
+                Bundle args = new Bundle();
+                args.putString("eventId", eventId);
+                Navigation.findNavController(view)
+                        .navigate(R.id.navigation_organizer_waitlist, args);
+        });
 
         Button editEventButton = view.findViewById(R.id.editEvent);
         editEventButton.setOnClickListener(button -> {
