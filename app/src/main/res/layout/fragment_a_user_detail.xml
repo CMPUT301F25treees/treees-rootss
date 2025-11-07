@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@drawable/bg_login_gradient"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/ivAvatar"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_time_chip"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/ic_launcher_round"/>
+
+    <TextView
+        android:id="@+id/tvName"
+        android:text="Name"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="12dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tvEmail"
+        android:text="email@example.com"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tvRole"
+        android:text="User"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="2dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBack"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Back"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="16dp"
+        app:cornerRadius="24dp"
+        app:backgroundTint="@color/dodo_maroon"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDeleteProfile"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Delete Profile"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="12dp"
+        app:cornerRadius="24dp"
+        app:backgroundTint="@color/dodo_maroon"/>
+</LinearLayout>
