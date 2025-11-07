@@ -2,7 +2,9 @@ package com.example.myapplication.features.admin;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -14,12 +16,20 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.bumptech.glide.Glide;
 import com.example.myapplication.R;
 import com.google.android.material.button.MaterialButton;
-import com.google.firebase.firestore.*;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.storage.FirebaseStorage;
 
 public class ARemoveFrag extends Fragment {
 
     private String eventId;
+    private boolean hasPreview = false;
+    private String eventName = "";
+    private String organizerId = "";
 
     public ARemoveFrag() {}
 
@@ -38,31 +48,66 @@ public class ARemoveFrag extends Fragment {
         MaterialButton btnEvent = v.findViewById(R.id.btnRemoveEvent);
         MaterialButton btnOrg   = v.findViewById(R.id.btnRemoveOrganizer);
 
+        btnImage.setEnabled(false);
+        btnImage.setAlpha(0.55f);
+
         FirebaseFirestore.getInstance().collection("events").document(eventId).get()
                 .addOnSuccessListener(d -> {
-                    String url = d.getString("imageUrl");
-                    if (url != null && !url.isEmpty()) Glide.with(preview).load(url).into(preview);
+                    eventName   = safe(d.getString("name"));
+                    organizerId = safe(d.getString("organizerID"));
+                    String url  = d.getString("imageUrl");
+
+                    if (!eventName.isEmpty()) {
+                        btnEvent.setText("Remove Event: " + eventName);
+                    }
+
+                    if (!organizerId.isEmpty()) {
+                        FirebaseFirestore.getInstance().collection("users").document(organizerId).get()
+                                .addOnSuccessListener(u -> {
+                                    String first = safe(u.getString("firstName"));
+                                    String last  = safe(u.getString("lastName"));
+                                    String full  = (first + " " + last).trim();
+                                    if (full.isEmpty()) full = safe(u.getString("name"));
+                                    if (!full.isEmpty()) btnOrg.setText("Remove Organizer: " + full);
+                                });
+                    }
+
+                    hasPreview = url != null && !url.isEmpty();
+                    if (hasPreview) {
+                        Glide.with(preview).load(url).into(preview);
+                        btnImage.setEnabled(true);
+                        btnImage.setAlpha(1f);
+                    }
                 });
 
-        btnImage.setOnClickListener(x -> new AlertDialog.Builder(requireContext())
-                .setTitle("Remove event image?")
-                .setMessage("This will remove the image from the event.")
-                .setPositiveButton("Remove", (dialog, which) ->
-                        FirebaseFirestore.getInstance().collection("events").document(eventId)
-                                .update("imageUrl", FieldValue.delete(), "posterUrl", FieldValue.delete())
-                                .addOnSuccessListener(v1 -> {
-                                    Toast.makeText(requireContext(), "Image removed", Toast.LENGTH_SHORT).show();
-                                    NavHostFragment.findNavController(ARemoveFrag.this).navigateUp();
-                                })
-                                .addOnFailureListener(e ->
-                                        Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show())
-                )
-                .setNegativeButton("Cancel", null)
-                .show());
+        btnImage.setOnClickListener(x -> {
+            if (!hasPreview) {
+                Toast.makeText(requireContext(), "No preview image to remove.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Remove event image?")
+                    .setMessage("This will remove the preview image from this event.")
+                    .setPositiveButton("Remove", (dialog, which) ->
+                            FirebaseFirestore.getInstance().collection("events").document(eventId)
+                                    .update(
+                                            "imageUrl", FieldValue.delete(),
+                                            "posterUrl", FieldValue.delete()
+                                    )
+                                    .addOnSuccessListener(v1 -> {
+                                        Toast.makeText(requireContext(), "Image removed", Toast.LENGTH_SHORT).show();
+                                        NavHostFragment.findNavController(ARemoveFrag.this).navigateUp();
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show())
+                    )
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
 
         btnEvent.setOnClickListener(x -> new AlertDialog.Builder(requireContext())
                 .setTitle("Delete event?")
-                .setMessage("This will permanently delete this event and its images. This cannot be undone.")
+                .setMessage("This will permanently delete this event and its images.")
                 .setPositiveButton("Delete", (d1, w1) -> removeEvent())
                 .setNegativeButton("Cancel", null)
                 .show());
@@ -79,28 +124,27 @@ public class ARemoveFrag extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final DocumentReference eventRef = db.collection("events").document(eventId);
 
-        eventRef.collection("images").get()
+        eventRef.collection("images").orderBy("createdAt", Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(q -> {
+                    // Try to delete storage files if storagePath exists
                     for (DocumentSnapshot d : q) {
                         String sp = d.getString("storagePath");
-                        if (sp != null && !sp.isEmpty()) {
-                            FirebaseStorage.getInstance().getReference(sp).delete();
-                        }
+                        if (sp != null && !sp.isEmpty()) FirebaseStorage.getInstance().getReference(sp).delete();
                     }
+                    // Batch delete image docs
                     WriteBatch batch = db.batch();
                     for (DocumentSnapshot d : q) batch.delete(d.getReference());
                     batch.commit()
-                            .addOnCompleteListener(t -> deleteEventDoc(eventRef))  // proceed regardless of success
+                            .addOnCompleteListener(t -> deleteEventDoc(eventRef))
                             .addOnFailureListener(e -> deleteEventDoc(eventRef));
                 })
-                .addOnFailureListener(e -> {
-                    deleteEventDoc(eventRef);
-                });
+                .addOnFailureListener(e -> deleteEventDoc(eventRef));
     }
 
     private void deleteEventDoc(DocumentReference eventRef) {
         eventRef.delete()
-                .addOnSuccessListener(v -> {
+                .addOnSuccessListener(v ->
+                {
                     Toast.makeText(requireContext(), "Event deleted", Toast.LENGTH_SHORT).show();
                     NavHostFragment.findNavController(ARemoveFrag.this).navigateUp();
                 })
@@ -109,22 +153,17 @@ public class ARemoveFrag extends Fragment {
     }
 
     private void removeOrganizerForEvent() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("events").document(eventId).get()
-                .addOnSuccessListener(doc -> {
-                    String orgId = doc.getString("organizerID");
-                    if (orgId == null || orgId.isEmpty()) {
-                        Toast.makeText(requireContext(), "No organizer ID on event", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    db.collection("users").document(orgId)
-                            .update("role", "User", "suspended", true)
-                            .addOnSuccessListener(v ->
-                                    Toast.makeText(requireContext(), "Organizer removed", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                })
+        if (organizerId.isEmpty()) {
+            Toast.makeText(requireContext(), "No organizer ID on event", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        FirebaseFirestore.getInstance().collection("users").document(organizerId)
+                .update("role", "User", "suspended", true)
+                .addOnSuccessListener(v ->
+                        Toast.makeText(requireContext(), "Organizer removed", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+
+    private static String safe(String s){ return s == null ? "" : s; }
 }
