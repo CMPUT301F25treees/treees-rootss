@@ -20,14 +20,39 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
 import java.util.List;
 
+/**
+ * {@code UScanFrag} handles QR code scanning functionality for users.
+ * <p>
+ * This fragment uses the ZXing {@link DecoratedBarcodeView} to scan QR codes continuously
+ * and automatically navigate to the corresponding event detail page upon successful scan.
+ * <p>
+ * The scanned QR code should contain an {@code eventId} that is used to load
+ * the event details in {@link com.example.myapplication.features.user.UEventDetailFrag}.
+ * <p>
+ * It also manages camera permission requests at runtime, ensuring smooth camera access.
+ */
 public class UScanFrag extends Fragment {
+    /** The barcode scanner view component */
     private DecoratedBarcodeView barcodeView;
+    /** Permission request code for camera access */
     private static final int CAMERA_REQUEST_CODE = 101;
 
+    /**
+     * Default public constructor for the fragment.
+     * Inflates {@code R.layout.fragment_u_scan} as the associated view.
+     */
     public UScanFrag() {
         super(R.layout.fragment_u_scan);
     }
 
+    /**
+     * Called immediately after the view hierarchy associated with this fragment has been created.
+     * <p>
+     * Sets up the continuous barcode scanner and defines its callback behavior.
+     *
+     * @param view               the view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved state, if any
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -55,6 +80,12 @@ public class UScanFrag extends Fragment {
         });
     }
 
+    /**
+     * Called when the fragment becomes visible.
+     * <p>
+     * Checks and requests camera permission if necessary.
+     * Resumes barcode scanning once permission is granted.
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -67,12 +98,24 @@ public class UScanFrag extends Fragment {
         }
     }
 
+    /**
+     * Called when the fragment is no longer interacting with the user.
+     * <p>
+     * Pauses the camera to conserve resources.
+     */
     @Override
     public void onPause() {
         if (barcodeView != null) barcodeView.pause();
         super.onPause();
     }
 
+    /**
+     * Handles the result of the runtime camera permission request.
+     *
+     * @param requestCode  the request code passed in {@link #requestPermissions(String[], int)}
+     * @param permissions  the requested permissions
+     * @param grantResults the corresponding grant results
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,

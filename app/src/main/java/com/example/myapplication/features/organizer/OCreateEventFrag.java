@@ -21,6 +21,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.R;
 import com.example.myapplication.core.ServiceLocator;
@@ -28,6 +29,7 @@ import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.Event;
 import com.example.myapplication.data.repo.EventRepository;
 import com.example.myapplication.data.repo.ImageRepository;
+import com.example.myapplication.features.user.UScanFrag;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.zxing.BarcodeFormat;
@@ -38,8 +40,17 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * {@code OCreateEventFrag} is a Fragment that allows organizers to create and upload
+ * new events into the Firebase Firestore database.
+ * <p>
+ * It provides input fields for event details (title, address, description, capacity, price, etc.),
+ * date selection pickers, poster image upload, and geolocation toggle.
+ * Once validated, the event is uploaded via {@link com.example.myapplication.data.repo.EventRepository}.
+ */
 public class OCreateEventFrag extends Fragment {
 
+    /** Request code for image picker intent */
     private static final int REQ_POSTER = 1001;
 
     // Create Event Inputs
@@ -140,6 +151,11 @@ public class OCreateEventFrag extends Fragment {
         void onDateChosen(long millis);
     }
 
+    /**
+     * Opens a date picker dialog and passes the selected date to a callback.
+     *
+     * @param callback callback to receive the chosen date in milliseconds
+     */
     private void pickDate(DateCallback callback) {
         final Calendar calendar = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(
@@ -155,12 +171,22 @@ public class OCreateEventFrag extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Opens an intent for the user to select an image (poster) from their device.
+     */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         startActivityForResult(Intent.createChooser(intent, "Select poster"), REQ_POSTER);
     }
 
+    /**
+     * Handles the result from image picker.
+     *
+     * @param requestCode request code from {@link #startActivityForResult(Intent, int)}
+     * @param resultCode  activity result status
+     * @param data        returned intent containing the image URI
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -170,6 +196,11 @@ public class OCreateEventFrag extends Fragment {
         }
     }
 
+    /**
+     * Validates user input, uploads poster (if any), and saves the event to Firebase.
+     * <p>
+     * Called when the organizer taps the "Create Event" button.
+     */
     private void onCreateClicked() {
         Log.d("OCreateEventFrag", "onCreateClicked Called");
         String title = titleInput.getText().toString().trim();
@@ -200,9 +231,9 @@ public class OCreateEventFrag extends Fragment {
         double price = 0.0;
         if (!priceStr.isEmpty()) {
             try {
-                price = Double.parseDouble(priceStr);
+                price = Integer.parseInt(priceStr);
             } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Price must be a valid number", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Price must be a number", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
@@ -249,6 +280,11 @@ public class OCreateEventFrag extends Fragment {
     }
 
 
+    /**
+     * Uploads the event data to Firestore using {@link ServiceLocator#getEventRepository()}.
+     *
+     * @param event the populated {@link UserEvent} object
+     */
     private void saveEvent(UserEvent event) {
         ServiceLocator.getEventRepository().createEvent(
                 requireContext(),
