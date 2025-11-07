@@ -4,9 +4,11 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.myapplication.R;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +78,7 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         holder.location.setText(event.getLocation());
         holder.instructor.setText(String.format(Locale.getDefault(), "With %s", event.getInstructor()));
         holder.timeRemaining.setText(formatTimeRemaining(event.getEndTimeMillis()));
+        bindBannerImage(event, holder);
 
         holder.itemView.setOnClickListener(x -> {
             if(listener != null) {
@@ -91,6 +94,7 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
 
     static class EventViewHolder extends RecyclerView.ViewHolder {
         final View banner;
+        final ImageView bannerImage;
         final TextView timeRemaining;
         final TextView name;
         final TextView price;
@@ -100,6 +104,7 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         EventViewHolder(@NonNull View itemView) {
             super(itemView);
             banner = itemView.findViewById(R.id.eventBanner);
+            bannerImage = itemView.findViewById(R.id.ivBannerImage);
             timeRemaining = itemView.findViewById(R.id.tvTimeRemaining);
             name = itemView.findViewById(R.id.tvEventName);
             price = itemView.findViewById(R.id.tvPrice);
@@ -128,5 +133,27 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
             return String.format(Locale.getDefault(), "%dh %dm left", hours, minutes);
         }
         return String.format(Locale.getDefault(), "%dm left", Math.max(minutes, 1));
+    }
+
+    private void bindBannerImage(UserEvent event, EventViewHolder holder) {
+        if (holder.bannerImage == null) {
+            return;
+        }
+
+        String imageUrl = !TextUtils.isEmpty(event.getImageUrl())
+                ? event.getImageUrl()
+                : event.getPosterUrl();
+
+        if (!TextUtils.isEmpty(imageUrl)) {
+            holder.bannerImage.setBackground(null);
+            Glide.with(holder.bannerImage.getContext())
+                    .load(imageUrl)
+                    .centerCrop()
+                    .into(holder.bannerImage);
+        } else {
+            Glide.with(holder.bannerImage.getContext()).clear(holder.bannerImage);
+            holder.bannerImage.setImageDrawable(null);
+            holder.bannerImage.setBackgroundResource(R.drawable.bg_login_gradient);
+        }
     }
 }

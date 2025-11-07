@@ -21,6 +21,7 @@ import com.example.myapplication.core.ServiceLocator;
 import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.example.myapplication.data.repo.EventRepository;
+import com.example.myapplication.data.repo.ImageRepository;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -66,6 +67,7 @@ public class OEditEventFrag extends Fragment {
     private UserEvent currentEvent;
     private EventRepository eventRepository;
     private final FirebaseEventRepository firebaseEventRepository = new FirebaseEventRepository();
+    private ImageRepository imageRepository;
 
     @Nullable
     @Override
@@ -78,6 +80,7 @@ public class OEditEventFrag extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         eventRepository = ServiceLocator.getEventRepository();
+        imageRepository = new ImageRepository();
 
         bindViews(view);
         setupInteractions();
@@ -303,10 +306,22 @@ public class OEditEventFrag extends Fragment {
         }
 
         if (posterUri != null) {
-            eventRepository.uploadPoster(posterUri, url -> {
-                currentEvent.setPosterUrl(url);
-                persistChanges();
-            }, e -> Toast.makeText(requireContext(), "Poster upload failed", Toast.LENGTH_SHORT).show());
+            imageRepository.uploadImage(posterUri, new ImageRepository.UploadCallback() {
+                @Override
+                public void onSuccess(String secureUrl) {
+                    currentEvent.setImageUrl(secureUrl);
+                    currentEvent.setPosterUrl(secureUrl);
+                    persistChanges();
+                }
+
+                @Override
+                public void onError(String error) {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    Toast.makeText(requireContext(), "Poster upload failed: " + error, Toast.LENGTH_SHORT).show();
+                }
+            });
         } else {
             persistChanges();
         }
