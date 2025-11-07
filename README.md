@@ -37,6 +37,8 @@ The design centers on the following key classes:
 - **CRC Cards**: https://github.com/CMPUT301F25treees/treees-rootss/wiki/CRC-Cards
 - **Storyboard and UI Mockup Link**: https://github.com/CMPUT301F25treees/treees-rootss/wiki/UI-Mockup-and-Storyboard
 - **Team Reading Minutes / Meeting Notes Link**: https://github.com/CMPUT301F25treees/treees-rootss/wiki/Reading-Minutes
+- **UML**:[UML Class Digram.pdf](https://github.com/user-attachments/files/23427260/UML.Class.Digram.pdf)
+
 
 ---
 
