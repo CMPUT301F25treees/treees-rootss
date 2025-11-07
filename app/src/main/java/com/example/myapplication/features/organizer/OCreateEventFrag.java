@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,11 +27,13 @@ import com.example.myapplication.core.ServiceLocator;
 import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.Event;
 import com.example.myapplication.data.repo.EventRepository;
+import com.example.myapplication.data.repo.ImageRepository;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -64,7 +67,7 @@ public class OCreateEventFrag extends Fragment {
     private long selectionDateMillis = 0;
     private Uri posterUri = null;
 
-    private EventRepository eventRepository;
+    private ImageRepository imageRepository;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     public OCreateEventFrag(){}
@@ -78,7 +81,7 @@ public class OCreateEventFrag extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
         super.onViewCreated(view, savedInstanceState);
 
-        eventRepository = ServiceLocator.getEventRepository();
+        imageRepository = new ImageRepository();
 
         // Inputs
         titleInput = view.findViewById(R.id.event_title_input);
@@ -168,6 +171,7 @@ public class OCreateEventFrag extends Fragment {
     }
 
     private void onCreateClicked() {
+        Log.d("OCreateEventFrag", "onCreateClicked Called");
         String title = titleInput.getText().toString().trim();
         String address = addressInput.getText().toString().trim();
         String descr = descInput.getText().toString().trim();
@@ -211,6 +215,7 @@ public class OCreateEventFrag extends Fragment {
             return;
         }
 
+
         UserEvent event = new UserEvent();
         event.setName(title);
         event.setLocation(address);
@@ -224,12 +229,20 @@ public class OCreateEventFrag extends Fragment {
         event.setGeoRequired(geoSwitch.isChecked());
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
 
+
         if (posterUri != null) {
-            eventRepository.uploadPoster(posterUri, url -> {
-                event.setPosterUrl(url);
-                saveEvent(event);
-            }, e -> Toast.makeText(getContext(),
-                    "Poster upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            imageRepository.uploadImage( posterUri, new ImageRepository.UploadCallback() {
+                @Override
+                public void onSuccess(String secureUrl) {
+                    event.setImageUrl((secureUrl));
+                    saveEvent(event);
+                }
+
+                @Override
+                public void onError(String e) {
+                    Toast.makeText(getContext(), "Image Upload failed: " + e, Toast.LENGTH_SHORT).show();
+                }
+            });
         } else {
             saveEvent(event);
         }
@@ -252,7 +265,7 @@ public class OCreateEventFrag extends Fragment {
     }
 
     private void saveEvent(UserEvent event) {
-        eventRepository.createEvent(event,
+        ServiceLocator.getEventRepository().createEvent(event,
                 aVoid -> {
                     Toast.makeText(getContext(), "Event created!", Toast.LENGTH_SHORT).show();
                     // TODO: navigate to OEventDetails

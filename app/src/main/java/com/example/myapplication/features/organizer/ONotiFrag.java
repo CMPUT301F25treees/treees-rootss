@@ -50,6 +50,7 @@ public class ONotiFrag extends Fragment {
         btnEvent = view.findViewById(R.id.btnEvent);
         btnResendInvites = view.findViewById(R.id.resendInvites);
         btnCustomNoti = view.findViewById(R.id.customNoti);
+        MaterialButton btnRunLottery = view.findViewById(R.id.btnRunLottery);
         btnEvent.setText(selectedEventName);
 
         btnEvent.setOnClickListener(v -> openEventPicker());
@@ -61,6 +62,15 @@ public class ONotiFrag extends Fragment {
             }
             promptAndSendCustomPush(selectedEventId);
         });
+
+        btnRunLottery.setOnClickListener(v -> {
+            if (selectedEventId == null) {
+                Toast.makeText(requireContext(), "Pick an event first.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            runLotteryForEvent(selectedEventId);
+        });
+
         preloadOrganizerName();
     }
 
@@ -238,6 +248,39 @@ public class ONotiFrag extends Fragment {
                         organizerName = user.getDisplayName();
                     }
                 });
+    }
+
+    private void runLotteryForEvent(String eventId) {
+        repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
+            @Override
+            public void onEventFetched(UserEvent event) {
+                if (event.getWaitlist() == null || event.getWaitlist().isEmpty()) {
+                    toast("No users in waitlist");
+                    return;
+                }
+
+                int numToDraw = event.getEntrantsToDraw();
+                if (numToDraw <= 0) numToDraw = event.getWaitlist().size();
+
+                int finalNumToDraw = numToDraw;
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Run Lottery")
+                        .setMessage("Draw " + finalNumToDraw + " winners from " +
+                                event.getWaitlist().size() + " entrants?")
+                        .setPositiveButton("Run Lottery", (d, w) -> {
+                            repo.runLottery(eventId, event.getName(), event.getWaitlist(), finalNumToDraw,
+                                    numWinners -> toast(numWinners + " winners selected and notified!"),
+                                    e -> toast("Error: " + e.getMessage()));
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                toast("Error fetching event: " + e.getMessage());
+            }
+        });
     }
 }
 

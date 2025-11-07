@@ -144,20 +144,109 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(onFailure);
     }
 
-    @Override
-    public void updateEvent(String eventId, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
-        if (eventId == null || eventId.isEmpty()) {
-            onFailure.onFailure(new IllegalArgumentException("Event ID is required"));
+    public void sendLotteryWinNotifications(String eventId, String eventName, List<String> winnerIds,
+                                            OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+
+        var payload = new java.util.HashMap<String, Object>();
+        payload.put("dateMade", com.google.firebase.Timestamp.now());
+        payload.put("event", eventName);
+        payload.put("eventId", eventId);
+        payload.put("from", "System");
+        payload.put("message", "🎉 Congratulations! You've been selected to participate in this event.");
+        payload.put("type", "lottery_win");
+        payload.put("uID", winnerIds);
+
+        db.collection("notifications")
+                .add(payload)
+                .addOnSuccessListener(ref -> onSuccess.onSuccess(null))
+                .addOnFailureListener(onFailure);
+    }
+
+    public void sendLotteryLostNotifications(String eventId, String eventName, List<String> loserIds,
+                                             OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+
+        if (loserIds == null || loserIds.isEmpty()) {
+            onSuccess.onSuccess(null); // No losers to notify
             return;
         }
-        if (event != null) {
-            event.setId(eventId);
+
+        var payload = new java.util.HashMap<String, Object>();
+        payload.put("dateMade", com.google.firebase.Timestamp.now());
+        payload.put("event", eventName);
+        payload.put("eventId", eventId);
+        payload.put("from", "System");
+        payload.put("message", "Unfortunately, you were not selected for this event. Better luck next time!");
+        payload.put("type", "lottery_lost");
+        payload.put("uID", loserIds);
+
+        db.collection("notifications")
+                .add(payload)
+                .addOnSuccessListener(ref -> onSuccess.onSuccess(null))
+                .addOnFailureListener(onFailure);
+    }
+
+    public void runLottery(String eventId, String eventName, List<String> waitlist, int numToSelect,
+                           OnSuccessListener<Integer> onSuccess, OnFailureListener onFailure) {
+
+        if (waitlist == null || waitlist.isEmpty()) {
+            onFailure.onFailure(new Exception("Waitlist is empty"));
+            return;
         }
 
-        db.collection("events")
-                .document(eventId)
-                .set(event)
-                .addOnSuccessListener(onSuccess)
+        int actualSelection = Math.min(numToSelect, waitlist.size());
+        List<String> shuffled = new ArrayList<>(waitlist);
+        java.util.Collections.shuffle(shuffled);
+        List<String> winners = shuffled.subList(0, actualSelection);
+
+        // Get the losers (those not selected)
+        List<String> losers = new ArrayList<>(waitlist);
+        losers.removeAll(winners);
+
+        db.collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(qs -> {
+                    if (!qs.isEmpty()) {
+                        var doc = qs.getDocuments().get(0);
+                        doc.getReference()
+                                .update("invited", FieldValue.arrayUnion(winners.toArray()))
+                                .addOnSuccessListener(aVoid -> {
+                                    // Notify winners
+                                    sendLotteryWinNotifications(eventId, eventName, winners,
+                                            v -> {
+                                                // After winners are notified, notify losers
+                                                sendLotteryLostNotifications(eventId, eventName, losers,
+                                                        v2 -> onSuccess.onSuccess(winners.size()),
+                                                        onFailure);
+                                            },
+                                            onFailure);
+                                })
+                                .addOnFailureListener(onFailure);
+                    } else {
+                        var payload = new java.util.HashMap<String, Object>();
+                        payload.put("eventId", eventId);
+                        payload.put("invited", winners);
+                        payload.put("waiting", new ArrayList<>());
+                        payload.put("cancelled", new ArrayList<>());
+                        payload.put("all", winners);
+
+                        db.collection("notificationList")
+                                .add(payload)
+                                .addOnSuccessListener(ref -> {
+                                    // Notify winners
+                                    sendLotteryWinNotifications(eventId, eventName, winners,
+                                            v -> {
+                                                // After winners are notified, notify losers
+                                                sendLotteryLostNotifications(eventId, eventName, losers,
+                                                        v2 -> onSuccess.onSuccess(winners.size()),
+                                                        onFailure);
+                                            },
+                                            onFailure);
+                                })
+                                .addOnFailureListener(onFailure);
+                    }
+                })
                 .addOnFailureListener(onFailure);
     }
 }
