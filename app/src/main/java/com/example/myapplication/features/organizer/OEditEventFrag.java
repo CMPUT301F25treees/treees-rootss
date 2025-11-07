@@ -53,6 +53,7 @@ public class OEditEventFrag extends Fragment {
     private MaterialButton selectionDateButton;
     private MaterialButton posterButton;
     private MaterialButton updateButton;
+    private MaterialButton backButton;
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -107,6 +108,7 @@ public class OEditEventFrag extends Fragment {
         selectionDateButton = view.findViewById(R.id.btnSelectionDate);
         posterButton = view.findViewById(R.id.btnSelectPoster);
         updateButton = view.findViewById(R.id.btnUpdateEvent);
+        backButton = view.findViewById(R.id.btnBack);
     }
 
     private void setupInteractions() {
@@ -132,6 +134,8 @@ public class OEditEventFrag extends Fragment {
         });
 
         updateButton.setOnClickListener(v -> onUpdateClicked());
+
+        backButton.setOnClickListener(v -> NavHostFragment.findNavController(this).navigateUp());
     }
 
     private interface DateCallback {

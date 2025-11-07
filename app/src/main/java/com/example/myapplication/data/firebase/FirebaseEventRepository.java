@@ -128,6 +128,17 @@ public class FirebaseEventRepository implements EventRepository {
     }
 
     @Override
+    public void updateEvent(String eventId, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        event.setId(eventId); // Ensure the event has the correct ID
+
+        db.collection("events")
+                .document(eventId)
+                .set(event)
+                .addOnSuccessListener(onSuccess)
+                .addOnFailureListener(onFailure);
+    }
+
+    @Override
     public void uploadPoster(Uri imageUri, OnSuccessListener<String> onSuccess, OnFailureListener onFailure) {
 
         String path = "posters/" + System.currentTimeMillis() + ".jpg";

@@ -18,6 +18,7 @@
     <string name="edit_pick_date">Pick Date</string>
     <string name="edit_choose_poster">Choose Poster</string>
     <string name="edit_update_button">Update</string>
+    <string name="edit_back_button">Back</string>
     <string name="event_price_label">Price: %1$s</string>
     <string name="event_price_unavailable">Price: N/A</string>
 </resources>
