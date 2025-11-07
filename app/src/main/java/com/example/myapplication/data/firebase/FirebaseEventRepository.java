@@ -253,6 +253,7 @@ public class FirebaseEventRepository implements EventRepository {
         payload.put("from", "System");
         payload.put("message", "🎉 Congratulations! You've been selected to participate in this event.");
         payload.put("type", "lottery_win");
+        payload.put("status", "pending");
         payload.put("uID", winnerIds);
 
         db.collection("notifications")
@@ -374,4 +375,50 @@ public class FirebaseEventRepository implements EventRepository {
                 })
                 .addOnFailureListener(onFailure);
     }
+
+    public void acceptInvitation(String notificationId, String eventId, String userId,
+                                 OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+
+        // Update notification status to "accepted"
+        db.collection("notifications")
+                .document(notificationId)
+                .update("status", "accepted")
+                .addOnSuccessListener(aVoid -> {
+                    onSuccess.onSuccess(null);
+                })
+                .addOnFailureListener(onFailure);
+    }
+
+    public void declineInvitation(String notificationId, String eventId, String userId,
+                                  OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+
+        // Update notification status to "declined"
+        db.collection("notifications")
+                .document(notificationId)
+                .update("status", "declined")
+                .addOnSuccessListener(aVoid -> {
+                    // Move user from "invited" to "cancelled" list
+                    db.collection("notificationList")
+                            .whereEqualTo("eventId", eventId)
+                            .limit(1)
+                            .get()
+                            .addOnSuccessListener(qs -> {
+                                if (!qs.isEmpty()) {
+                                    var doc = qs.getDocuments().get(0);
+                                    doc.getReference()
+                                            .update(
+                                                    "invited", FieldValue.arrayRemove(userId),
+                                                    "cancelled", FieldValue.arrayUnion(userId)
+                                            )
+                                            .addOnSuccessListener(v -> onSuccess.onSuccess(null))
+                                            .addOnFailureListener(onFailure);
+                                } else {
+                                    onSuccess.onSuccess(null);
+                                }
+                            })
+                            .addOnFailureListener(onFailure);
+                })
+                .addOnFailureListener(onFailure);
+    }
+
 }

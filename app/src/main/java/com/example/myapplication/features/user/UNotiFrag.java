@@ -40,7 +40,6 @@ public class UNotiFrag extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("USER Notifications");
 
-
         recyclerView = view.findViewById(R.id.notifications_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setHasFixedSize(true);
@@ -59,24 +58,76 @@ public class UNotiFrag extends Fragment {
                 .setLifecycleOwner(getViewLifecycleOwner())
                 .build();
 
-        adapter = new UNotiAdapter(options, snapshot -> {
-            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("USER DIALOG")
-                    .setItems(new CharSequence[]{"View Details"}, (dialog, which) -> {
-                        if (which == 0) {
-                            Toast.makeText(requireContext(), "View details coming soon", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
-                    .show();
-        });
-        recyclerView.setAdapter(adapter);
+        adapter = new UNotiAdapter(options,
+                snapshot -> {
+                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("USER DIALOG")
+                            .setItems(new CharSequence[]{"View Details"}, (dialog, which) -> {
+                                if (which == 0) {
+                                    Toast.makeText(requireContext(), "View details coming soon", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
+                            .show();
+                },
+                new UNotiAdapter.OnLotteryActionListener() {
+                    @Override
+                    public void onAccept(com.google.firebase.firestore.DocumentSnapshot snapshot, UNotiItem item) {
+                        handleAcceptInvitation(snapshot.getId(), item);
+                    }
 
+                    @Override
+                    public void onDecline(com.google.firebase.firestore.DocumentSnapshot snapshot, UNotiItem item) {
+                        handleDeclineInvitation(snapshot.getId(), item);
+                    }
+                }
+        );
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
     public void onDestroyView() {
         recyclerView.setAdapter(null);
         super.onDestroyView();
+    }
+
+    private void handleAcceptInvitation(String notificationId, UNotiItem item) {
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+        if (uid == null) return;
+
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Accept Invitation")
+                .setMessage("Are you sure you want to accept the invitation for \"" + item.getEvent() + "\"?")
+                .setPositiveButton("Accept", (dialog, which) -> {
+                    com.example.myapplication.data.firebase.FirebaseEventRepository repo =
+                            new com.example.myapplication.data.firebase.FirebaseEventRepository();
+
+                    repo.acceptInvitation(notificationId, item.getEventId(), uid,
+                            aVoid -> Toast.makeText(requireContext(), "Invitation accepted!", Toast.LENGTH_SHORT).show(),
+                            e -> Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void handleDeclineInvitation(String notificationId, UNotiItem item) {
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+        if (uid == null) return;
+
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Decline Invitation")
+                .setMessage("Are you sure you want to decline the invitation for \"" + item.getEvent() + "\"?")
+                .setPositiveButton("Decline", (dialog, which) -> {
+                    com.example.myapplication.data.firebase.FirebaseEventRepository repo =
+                            new com.example.myapplication.data.firebase.FirebaseEventRepository();
+
+                    repo.declineInvitation(notificationId, item.getEventId(), uid,
+                            aVoid -> Toast.makeText(requireContext(), "Invitation declined.", Toast.LENGTH_SHORT).show(),
+                            e -> Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }
