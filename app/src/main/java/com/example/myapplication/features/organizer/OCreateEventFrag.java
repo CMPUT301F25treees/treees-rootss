@@ -21,6 +21,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.R;
 import com.example.myapplication.core.ServiceLocator;
@@ -28,6 +29,7 @@ import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.Event;
 import com.example.myapplication.data.repo.EventRepository;
 import com.example.myapplication.data.repo.ImageRepository;
+import com.example.myapplication.features.user.UScanFrag;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.zxing.BarcodeFormat;
@@ -46,6 +48,7 @@ import java.util.Locale;
  */
 public class OCreateEventFrag extends Fragment {
 
+    /** Request code for image picker intent */
     private static final int REQ_POSTER = 1001;
 
     // Create Event Inputs
@@ -234,9 +237,9 @@ public class OCreateEventFrag extends Fragment {
         double price = 0.0;
         if (!priceStr.isEmpty()) {
             try {
-                price = Double.parseDouble(priceStr);
+                price = Integer.parseInt(priceStr);
             } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Price must be a valid number", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Price must be a number", Toast.LENGTH_SHORT).show();
                 return;
             }
         }

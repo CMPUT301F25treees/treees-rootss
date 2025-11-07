@@ -24,13 +24,27 @@ import java.util.List;
  * This class deals with scanning a QR code and identifying which event to navigate to.
  */
 public class UScanFrag extends Fragment {
+    /** The barcode scanner view component */
     private DecoratedBarcodeView barcodeView;
+    /** Permission request code for camera access */
     private static final int CAMERA_REQUEST_CODE = 101;
 
+    /**
+     * Default public constructor for the fragment.
+     * Inflates {@code R.layout.fragment_u_scan} as the associated view.
+     */
     public UScanFrag() {
         super(R.layout.fragment_u_scan);
     }
 
+    /**
+     * Called immediately after the view hierarchy associated with this fragment has been created.
+     * <p>
+     * Sets up the continuous barcode scanner and defines its callback behavior.
+     *
+     * @param view               the view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved state, if any
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

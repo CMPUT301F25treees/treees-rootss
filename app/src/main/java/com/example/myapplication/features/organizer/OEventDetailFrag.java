@@ -115,6 +115,16 @@ public class OEventDetailFrag extends Fragment {
         updateWaitingListCount(event);
         loadOrganizerName(event);
         loadEventImage(event);
+
+        // QR Image View
+        ImageView qrImageUrl = requireView().findViewById(R.id.qrCodeImage);
+        String qrUrl = event.getQrData();
+
+        if (qrUrl != null && !qrUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(qrUrl)
+                    .into(qrImageUrl);
+        }
     }
 
     /**

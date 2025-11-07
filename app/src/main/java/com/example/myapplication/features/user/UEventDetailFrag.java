@@ -143,10 +143,21 @@ public class UEventDetailFrag extends Fragment {
         ImageView imageView = requireView().findViewById(R.id.eventImage);
         String imageUrl = event.getImageUrl();
 
+        // QR Image View
+        ImageView qrImageUrl = requireView().findViewById(R.id.qrCodeImage);
+        String qrUrl = event.getQrData();
+
+
         if(imageUrl != null && !imageUrl.isEmpty()){
             Glide.with(this)
                     .load(imageUrl)
                     .into(imageView);
+        }
+
+        if (qrUrl != null && !qrUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(qrUrl)
+                    .into(qrImageUrl);
         }
     }
 
