@@ -26,7 +26,7 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
     private final List<UserEvent> original = new ArrayList<>();
     private final List<UserEvent> visible  = new ArrayList<>();
 
-    public interface OnEventClickListener {   // (you likely made this public already)
+    public interface OnEventClickListener {
         void onEventClick(UserEvent event);
     }
 
@@ -61,7 +61,6 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         } else {
             String lower = query.toLowerCase(Locale.getDefault());
             for (UserEvent event : original) {
-                // ✅ null-safe lookups
                 String name  = safeLower(event.getName());
                 String loc   = safeLower(event.getLocation());
                 String instr = safeLower(event.getInstructor());
@@ -74,7 +73,6 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         notifyDataSetChanged();
     }
 
-    // ✅ helper to avoid NPEs in filter
     private static String safeLower(String s) {
         return s == null ? "" : s.toLowerCase(Locale.getDefault());
     }
@@ -100,7 +98,6 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
 
         holder.name.setText(event.getName());
         holder.price.setText(String.valueOf(event.getPrice()));
-        // ✅ null-safe binds for UI labels
         holder.location.setText(event.getLocation() == null ? "" : event.getLocation());
 
         String instr = event.getInstructor();
@@ -110,7 +107,6 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         holder.timeRemaining.setText(formatTimeRemaining(event.getEndTimeMillis()));
         bindBannerImage(event, holder);
 
-        // keep your click behavior (robust to dataset changes)
         holder.itemView.setOnClickListener(x -> {
             if (listener != null) {
                 int pos = holder.getBindingAdapterPosition();
