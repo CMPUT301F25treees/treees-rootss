@@ -17,36 +17,83 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * RecyclerView adapter for the admin profiles list (User/Organizer).
+ * Supports text filtering and exposes two callbacks: open-detail and inline organizer demotion.
+ */
 public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.VH> {
 
-    // Row model used by the adapter
+    /**
+     * Lightweight row model mapped from /users (id, name, email, role, avatarUrl).
+     */
     public static class UserRow {
         public String id;
         public String name;
         public String email;
-        public String role;       // "User" | "Organizer" | "Admin"
-        public String avatarUrl;  // optional
+        public String role;
+        public String avatarUrl;
     }
 
-    // Callbacks
-    public interface OnUserClick   { void onUser(UserRow u); }
-    public interface OnRemoveClick { void onRemove(UserRow u); }
+    /**
+     * Callback invoked when a user row is tapped to open detail.
+     */
+    public interface OnUserClick {
+        /**
+         * @param u the tapped user row
+         */
+        void onUser(UserRow u);
+    }
+
+    /**
+     * Callback invoked when the inline remove/demote control is tapped on an organizer row.
+     */
+    public interface OnRemoveClick {
+        /**
+         * @param u the targeted user row to demote
+         */
+        void onRemove(UserRow u);
+    }
 
     private final List<UserRow> original = new ArrayList<>();
-    private final List<UserRow> visible  = new ArrayList<>();
+    private final List<UserRow> visible = new ArrayList<>();
     private OnUserClick onClick;
     private OnRemoveClick onRemove;
 
-    public void setOnUserClick(OnUserClick cb)   { this.onClick  = cb; }
-    public void setOnRemoveClick(OnRemoveClick cb){ this.onRemove = cb; }
+    /**
+     * Registers a callback for user row taps.
+     * @param cb the callback to receive tapped user rows
+     */
+    public void setOnUserClick(OnUserClick cb) {
+        this.onClick = cb;
+    }
 
-    public void submit(List<UserRow> rows){
-        original.clear(); visible.clear();
-        if (rows != null){ original.addAll(rows); visible.addAll(rows); }
+    /**
+     * Registers a callback for inline organizer demotion (red “X”).
+     * @param cb the callback to receive demotion requests
+     */
+    public void setOnRemoveClick(OnRemoveClick cb) {
+        this.onRemove = cb;
+    }
+
+    /**
+     * Replaces the adapter dataset and refreshes the list.
+     * @param rows new list of users to display (null or empty clears the list)
+     */
+    public void submit(List<UserRow> rows) {
+        original.clear();
+        visible.clear();
+        if (rows != null) {
+            original.addAll(rows);
+            visible.addAll(rows);
+        }
         notifyDataSetChanged();
     }
 
-    public void filter(String q){
+    /**
+     * Filters visible rows by name, email, or role in a case-insensitive, null-safe manner.
+     * @param q query text; empty or null shows all rows
+     */
+    public void filter(String q) {
         visible.clear();
         if (TextUtils.isEmpty(q)) {
             visible.addAll(original);
@@ -63,17 +110,34 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.VH> 
         notifyDataSetChanged();
     }
 
-    private static String safeLower(String s){
+    /**
+     * Null-safe lowercase helper for filtering.
+     * @param s source string (may be null)
+     * @return lowercased string or empty string if null
+     */
+    private static String safeLower(String s) {
         return s == null ? "" : s.toLowerCase(Locale.getDefault());
     }
 
-    @NonNull @Override
+    /**
+     * Creates a new ViewHolder for a list item.
+     * @param parent parent view group
+     * @param viewType unused view type
+     * @return a new {@link VH}
+     */
+    @NonNull
+    @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View row = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_admin_user, parent, false);
         return new VH(row);
     }
 
+    /**
+     * Binds a list item to the given ViewHolder.
+     * @param h       target view holder
+     * @param position adapter position being bound
+     */
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
         UserRow u = visible.get(position);
@@ -88,7 +152,6 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.VH> 
             h.avatar.setImageResource(R.mipmap.ic_launcher_round);
         }
 
-        // Open profile
         h.itemView.setOnClickListener(v -> {
             int p = h.getBindingAdapterPosition();
             if (onClick != null && p != RecyclerView.NO_POSITION && p < visible.size()) {
@@ -96,7 +159,6 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.VH> 
             }
         });
 
-        // Show small red "X" only for organizers
         boolean isOrganizer = "organizer".equalsIgnoreCase(u.role);
         h.btnRemove.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
         h.btnRemove.setOnClickListener(v -> {
@@ -107,23 +169,46 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.VH> 
         });
     }
 
-    @Override public int getItemCount() { return visible.size(); }
+    /**
+     * Returns the number of visible rows (after filtering).
+     * @return item count
+     */
+    @Override
+    public int getItemCount() {
+        return visible.size();
+    }
 
+    /**
+     * ViewHolder for a profile row (avatar, metadata, and optional inline remove control).
+     */
     static class VH extends RecyclerView.ViewHolder {
-        ImageView avatar;
-        TextView name, email, role, btnRemove;
+        final ImageView avatar;
+        final TextView name;
+        final TextView email;
+        final TextView role;
+        final TextView btnRemove;
+
+        /**
+         * Constructs a ViewHolder for the given item view.
+         * @param itemView row root view
+         */
         VH(@NonNull View itemView) {
             super(itemView);
             avatar    = itemView.findViewById(R.id.ivAvatar);
             name      = itemView.findViewById(R.id.tvName);
             email     = itemView.findViewById(R.id.tvEmail);
             role      = itemView.findViewById(R.id.tvRole);
-            btnRemove = itemView.findViewById(R.id.btnRemove); // the small "X"
+            btnRemove = itemView.findViewById(R.id.btnRemove);
         }
     }
 
-    private static String cap(String s){
+    /**
+     * Capitalizes the first character of a non-empty string.
+     * @param s input string (may be null or empty)
+     * @return capitalized string or empty string if input is null/empty
+     */
+    private static String cap(String s) {
         if (TextUtils.isEmpty(s)) return "";
-        return s.substring(0,1).toUpperCase(Locale.getDefault()) + s.substring(1);
+        return s.substring(0, 1).toUpperCase(Locale.getDefault()) + s.substring(1);
     }
 }
