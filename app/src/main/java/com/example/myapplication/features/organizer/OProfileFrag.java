@@ -11,9 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
@@ -120,6 +120,9 @@ public class OProfileFrag extends Fragment {
         return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
     }
 
+    /**
+     * Prompts the organizer to confirm that the profile should be permanently deleted.
+     */
     private void confirmDeleteProfile() {
         if (isDeleting) {
             return;
@@ -132,6 +135,9 @@ public class OProfileFrag extends Fragment {
                 .show();
     }
 
+    /**
+     * Starts event cleanup and eventually removes the organizer’s auth account.
+     */
     private void performDeleteProfile() {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) {
@@ -140,21 +146,41 @@ public class OProfileFrag extends Fragment {
         }
         setDeleting(true);
         String uid = firebaseUser.getUid();
-        deleteUserEvents(uid, () -> deleteUserDocument(uid, () -> deleteAuthUser(firebaseUser), this::handleDeleteFailure), this::handleDeleteFailure);
+        deleteUserEvents(uid,
+                () -> deleteUserDocument(uid, () -> deleteAuthUser(firebaseUser), this::handleDeleteFailure),
+                this::handleDeleteFailure);
     }
 
+    /**
+     * Deletes every event document owned by the supplied UID before removing the organizer.
+     */
     private void deleteUserEvents(String uid, Runnable onComplete, OnFailureListener onFailure) {
-        deleteEventsByField("organizerID", uid, () -> deleteEventsByField("organizerId", uid, onComplete, onFailure), onFailure);
+        deleteEventsByField("organizerID", uid,
+                () -> deleteEventsByField("organizerId", uid, onComplete, onFailure),
+                onFailure);
     }
 
+    /**
+     * Queries for event documents using the provided organizer field and removes them.
+     */
     private void deleteEventsByField(String fieldName, String uid, Runnable onComplete, OnFailureListener onFailure) {
         firestore.collection("events")
                 .whereEqualTo(fieldName, uid)
                 .get()
-                .addOnSuccessListener(querySnapshot -> handleEventDeletionResult(querySnapshot, onComplete, onFailure))
+                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * Deletes the snapshot results and advances once all deletes complete.
+     */
+                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
+                .addOnFailureListener(onFailure);
+    }
+
+    /**
+     * Deletes the snapshot results and advances once all deletes complete.
+     */
     private void handleEventDeletionResult(QuerySnapshot snapshot, Runnable onComplete, OnFailureListener onFailure) {
         if (snapshot == null || snapshot.isEmpty()) {
             onComplete.run();
@@ -171,6 +197,9 @@ public class OProfileFrag extends Fragment {
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * Deletes the Firestore user record for the organizer.
+     */
     private void deleteUserDocument(String uid, Runnable onComplete, OnFailureListener onFailure) {
         firestore.collection("users")
                 .document(uid)
@@ -179,6 +208,9 @@ public class OProfileFrag extends Fragment {
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * Removes the FirebaseAuth account, signs out, and routes back to the welcome screen.
+     */
     private void deleteAuthUser(FirebaseUser firebaseUser) {
         firebaseUser.delete()
                 .addOnSuccessListener(aVoid -> {
@@ -194,6 +226,9 @@ public class OProfileFrag extends Fragment {
                 .addOnFailureListener(this::handleDeleteFailure);
     }
 
+    /**
+     * Re-enables the delete CTA and surfaces a toast when a step fails.
+     */
     private void handleDeleteFailure(Exception e) {
         if (!isAdded()) {
             return;
@@ -202,6 +237,9 @@ public class OProfileFrag extends Fragment {
         showToast(getString(R.string.delete_profile_failed, e != null ? e.getMessage() : ""));
     }
 
+    /**
+     * Prevents duplicate delete requests while the workflow is running.
+     */
     private void setDeleting(boolean deleting) {
         isDeleting = deleting;
         if (deleteProfileCard != null) {
@@ -210,6 +248,9 @@ public class OProfileFrag extends Fragment {
         }
     }
 
+    /**
+     * Toast helper that only fires when the fragment is attached.
+     */
     private void showToast(String message) {
         if (!isAdded()) {
             return;
@@ -217,6 +258,9 @@ public class OProfileFrag extends Fragment {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Clears the back stack and navigates to the welcome screen after removal.
+     */
     private void navigateToWelcomeScreen() {
         if (!isAdded()) {
             return;

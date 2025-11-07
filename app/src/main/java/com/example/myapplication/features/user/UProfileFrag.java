@@ -9,9 +9,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.R;
 import com.example.myapplication.MainActivity;
@@ -73,7 +73,6 @@ public class UProfileFrag extends Fragment {
             menu.show();
         });
 
-        // Open Notifications Fragment
         cardNotifications.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)
                     .navigate(R.id.navigation_user_notifications);
@@ -121,6 +120,9 @@ public class UProfileFrag extends Fragment {
         return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
     }
 
+    /**
+     * Prompts the user to confirm permanent profile deletion.
+     */
     private void confirmDeleteProfile() {
         if (isDeleting) {
             return;
@@ -133,6 +135,9 @@ public class UProfileFrag extends Fragment {
                 .show();
     }
 
+    /**
+     * Starts the cascade that removes events, Firestore user data, and the auth user.
+     */
     private void performDeleteProfile() {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) {
@@ -141,21 +146,41 @@ public class UProfileFrag extends Fragment {
         }
         setDeleting(true);
         String uid = firebaseUser.getUid();
-        deleteUserEvents(uid, () -> deleteUserDocument(uid, () -> deleteAuthUser(firebaseUser), this::handleDeleteFailure), this::handleDeleteFailure);
+        deleteUserEvents(uid,
+                () -> deleteUserDocument(uid, () -> deleteAuthUser(firebaseUser), this::handleDeleteFailure),
+                this::handleDeleteFailure);
     }
 
+    /**
+     * Deletes every event document owned by the supplied UID before removing the user.
+     */
     private void deleteUserEvents(String uid, Runnable onComplete, OnFailureListener onFailure) {
-        deleteEventsByField("organizerID", uid, () -> deleteEventsByField("organizerId", uid, onComplete, onFailure), onFailure);
+        deleteEventsByField("organizerID", uid,
+                () -> deleteEventsByField("organizerId", uid, onComplete, onFailure),
+                onFailure);
     }
 
+    /**
+     * Queries by the provided organizer field (legacy naming support) and deletes matching docs.
+     */
     private void deleteEventsByField(String fieldName, String uid, Runnable onComplete, OnFailureListener onFailure) {
         firestore.collection("events")
                 .whereEqualTo(fieldName, uid)
                 .get()
-                .addOnSuccessListener(querySnapshot -> handleEventDeletionResult(querySnapshot, onComplete, onFailure))
+                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * Handles batch deletion completion for event snapshots, then advances the workflow.
+     */
+                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
+                .addOnFailureListener(onFailure);
+    }
+
+    /**
+     * Handles batch deletion completion for event snapshots, then advances the workflow.
+     */
     private void handleEventDeletionResult(QuerySnapshot snapshot, Runnable onComplete, OnFailureListener onFailure) {
         if (snapshot == null || snapshot.isEmpty()) {
             onComplete.run();
@@ -172,6 +197,9 @@ public class UProfileFrag extends Fragment {
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * Deletes the Firestore user document and signals when the next step can execute.
+     */
     private void deleteUserDocument(String uid, Runnable onComplete, OnFailureListener onFailure) {
         firestore.collection("users")
                 .document(uid)
@@ -180,6 +208,9 @@ public class UProfileFrag extends Fragment {
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * Deletes the FirebaseAuth user, signs out locally, and returns to the welcome screen.
+     */
     private void deleteAuthUser(FirebaseUser firebaseUser) {
         firebaseUser.delete()
                 .addOnSuccessListener(aVoid -> {
@@ -195,6 +226,9 @@ public class UProfileFrag extends Fragment {
                 .addOnFailureListener(this::handleDeleteFailure);
     }
 
+    /**
+     * Centralized error handler that re-enables UI and surfaces the message.
+     */
     private void handleDeleteFailure(Exception e) {
         if (!isAdded()) {
             return;
@@ -203,6 +237,9 @@ public class UProfileFrag extends Fragment {
         showToast(getString(R.string.delete_profile_failed, e != null ? e.getMessage() : ""));
     }
 
+    /**
+     * Toggles the delete card enabled state to prevent duplicate submissions.
+     */
     private void setDeleting(boolean deleting) {
         isDeleting = deleting;
         if (deleteProfileCard != null) {
@@ -211,6 +248,9 @@ public class UProfileFrag extends Fragment {
         }
     }
 
+    /**
+     * Safe toast helper that no-ops when the fragment is detached.
+     */
     private void showToast(String message) {
         if (!isAdded()) {
             return;
@@ -218,6 +258,9 @@ public class UProfileFrag extends Fragment {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Clears the back stack and navigates to the welcome screen after account removal.
+     */
     private void navigateToWelcomeScreen() {
         if (!isAdded()) {
             return;

@@ -69,12 +69,18 @@ public class OEditEventFrag extends Fragment {
     private final FirebaseEventRepository firebaseEventRepository = new FirebaseEventRepository();
     private ImageRepository imageRepository;
 
+    /**
+     * Inflates the organizer edit-event layout.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_o_edit, container, false);
     }
 
+    /**
+     * Wires view references, loads the target event, and prepares all listeners.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -95,6 +101,9 @@ public class OEditEventFrag extends Fragment {
         loadEvent();
     }
 
+    /**
+     * Caches view references for all edit inputs and buttons.
+     */
     private void bindViews(View view) {
         titleInput = view.findViewById(R.id.etTitle);
         addressInput = view.findViewById(R.id.etAddress);
@@ -114,6 +123,9 @@ public class OEditEventFrag extends Fragment {
         backButton = view.findViewById(R.id.btnBack);
     }
 
+    /**
+     * Configures click listeners for date pickers, poster selector, navigation, and update flow.
+     */
     private void setupInteractions() {
         startDateButton.setOnClickListener(v -> pickDate(millis -> {
             startDateMillis = millis;
@@ -145,6 +157,9 @@ public class OEditEventFrag extends Fragment {
         void onDateChosen(long millis);
     }
 
+    /**
+     * Launches a date picker and returns the chosen date in epoch millis to the supplied callback.
+     */
     private void pickDate(DateCallback callback) {
         final Calendar calendar = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(
@@ -160,6 +175,9 @@ public class OEditEventFrag extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Handles the result from the image picker and caches the selected poster URI.
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -171,6 +189,9 @@ public class OEditEventFrag extends Fragment {
         }
     }
 
+    /**
+     * Fetches the latest copy of the event from Firestore before letting the user edit it.
+     */
     private void loadEvent() {
         firebaseEventRepository.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
             @Override
@@ -198,6 +219,9 @@ public class OEditEventFrag extends Fragment {
         });
     }
 
+    /**
+     * Populates the edit form with the current event metadata.
+     */
     private void populateForm(UserEvent event) {
         titleInput.setText(event.getName());
         addressInput.setText(event.getLocation());
@@ -244,6 +268,9 @@ public class OEditEventFrag extends Fragment {
         geoSwitch.setChecked(event.isGeoRequired());
     }
 
+    /**
+     * Validates input, uploads a new poster if needed, and triggers persistence to Firestore.
+     */
     private void onUpdateClicked() {
         if (currentEvent == null) {
             Toast.makeText(requireContext(), "Event not loaded", Toast.LENGTH_SHORT).show();
@@ -327,6 +354,9 @@ public class OEditEventFrag extends Fragment {
         }
     }
 
+    /**
+     * Persists the in-memory event back to Firestore and navigates away on success.
+     */
     private void persistChanges() {
         eventRepository.updateEvent(eventId, currentEvent, aVoid -> {
             if (!isAdded()) {
@@ -342,6 +372,9 @@ public class OEditEventFrag extends Fragment {
         });
     }
 
+    /**
+     * Utility helper that safely returns trimmed text from an input field.
+     */
     private String getTrimmed(TextInputEditText input) {
         return input != null && input.getText() != null ? input.getText().toString().trim() : "";
     }
