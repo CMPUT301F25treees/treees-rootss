@@ -8,60 +8,58 @@
     android:padding="16dp">
 
     <LinearLayout
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Remove Options"
-        android:textStyle="bold"
-        android:textSize="22sp"
-        android:textColor="@android:color/white"/>
-
-    <ImageView
-        android:id="@+id/preview"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_marginTop="12dp"
-        android:scaleType="centerCrop"
-        android:background="@drawable/bg_time_chip"/>
+        android:layout_height="wrap_content">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRemoveImage"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Remove Previewed Image"
-        android:textAllCaps="false"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="16dp"
-        app:cornerRadius="24dp"
-        app:backgroundTint="@color/dodo_maroon"/>
+        <TextView
+            android:id="@+id/title"
+            android:text="Remove Options"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:textColor="@android:color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRemoveEvent"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Remove Event"
-        android:textAllCaps="false"
-        android:enabled="false"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="12dp"
-        app:cornerRadius="24dp"
-        app:backgroundTint="@color/dodo_maroon"/>
+        <ImageView
+            android:id="@+id/preview"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="12dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_time_chip"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRemoveOrganizer"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Remove Organizer"
-        android:textAllCaps="false"
-        android:enabled="false"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="12dp"
-        app:cornerRadius="24dp"
-        app:backgroundTint="@color/dodo_maroon"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRemoveImage"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Remove Previewed Image"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            app:cornerRadius="24dp"
+            app:backgroundTint="@color/dodo_maroon"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRemoveEvent"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Remove Event"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="12dp"
+            app:cornerRadius="24dp"
+            app:backgroundTint="@color/dodo_maroon"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRemoveOrganizer"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Remove Organizer"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="12dp"
+            app:cornerRadius="24dp"
+            app:backgroundTint="@color/dodo_maroon"/>
     </LinearLayout>
 </ScrollView>
