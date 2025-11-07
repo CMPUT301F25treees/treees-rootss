@@ -81,6 +81,14 @@ public class FirebaseEventRepository implements EventRepository {
         void onError(Exception e);
     }
 
+    /**
+     * Gets all events that are stored in the "events" collection on Firestore.
+     *
+     * Each document is converted into a UserEvent object and is returned in a list
+     * through the callback.
+     *
+     * @param callback recieves the list of events or receives an error.
+     */
     public void getAllEvents(EventListCallback callback){
         db.collection("events")
                 .get()
@@ -101,6 +109,15 @@ public class FirebaseEventRepository implements EventRepository {
         void onError(Exception e);
     }
 
+    /**
+     * This method gets only one event by the event id, which matches the specified events documnet
+     * id in the "events" collection on Firestore.
+     *
+     * documents is converted into a UserEvent object and returned through the callback.
+     *
+     * @param eventId the eventId is a Firestore document ID of the specified event
+     * @param callback receives an event or an error
+     */
     public void fetchEventById(String eventId, SingleEventCallback callback) {
         db.collection("events")
                 .document(eventId)
@@ -119,6 +136,16 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    /**
+     * Creates a new event in the Firestore "events" collection.
+     *
+     * This method is incharge of performing multiple operations.
+     *
+     * @param context application context
+     * @param event UserEvent object that is to be created on Firestore
+     * @param onSuccess callback triggered when successful
+     * @param onFailure callback triggered when uncsuccessful
+     */
     @Override
     public void createEvent(Context context, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
@@ -183,7 +210,16 @@ public class FirebaseEventRepository implements EventRepository {
 
     }
 
-
+    /**
+     * This method Updated an existing event in firestore.
+     *
+     * Other data is ovverwritten by the newly provided UserEvent object.
+     *
+     * @param eventId Firestore ID of the event
+     * @param event event with updated data
+     * @param onSuccess callback triggered when successful
+     * @param onFailure callback triggered when uncsuccessful
+     */
     @Override
     public void updateEvent(String eventId, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
         event.setId(eventId); // Ensure the event has the correct ID
@@ -195,6 +231,18 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * This method sends a notification to all users who have won the lottery for a specified event.
+     *
+     * A document gets created in the "notifications" collection containing event details, message type,
+     * and the list of userIds that won.
+     *
+     * @param eventId Firestore ID of the event
+     * @param eventName the name of the event
+     * @param winnerIds list of users Ids who won
+     * @param onSuccess callback triggered when notificaiton is successfully added
+     * @param onFailure callback triggered on Firestore failures
+     */
     public void sendLotteryWinNotifications(String eventId, String eventName, List<String> winnerIds,
                                             OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
@@ -213,6 +261,18 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * This method sends a notification to all users who have lost the lottery for a specified event.
+     *
+     * A document gets created in the "notifications" collection containing event details, message type,
+     * and the list of userIds that lost.
+     *
+     * @param eventId Firestore id of the event
+     * @param eventName the name of the event
+     * @param loserIds list of users Ids who lost
+     * @param onSuccess callback triggered when successful
+     * @param onFailure callback triggered when unsuccessful
+     */
     public void sendLotteryLostNotifications(String eventId, String eventName, List<String> loserIds,
                                              OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
@@ -236,6 +296,20 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * This method runs the randomized lottery among the users in the events waitlist.
+     *
+     * Up to {numToSelect} users get selected as winners, which then leads to both
+     * winners and losers getting notified. As well as updates to the "notificationList" collections
+     * to record the invited participants.
+     *
+     * @param eventId Firestore Id of the event
+     * @param eventName the name of teh event
+     * @param waitlist list of user ids in the waiting list
+     * @param numToSelect number of users that will be randomly selected
+     * @param onSuccess callback triggered when successful
+     * @param onFailure callback triggered when unsuccessful
+     */
     public void runLottery(String eventId, String eventName, List<String> waitlist, int numToSelect,
                            OnSuccessListener<Integer> onSuccess, OnFailureListener onFailure) {
 

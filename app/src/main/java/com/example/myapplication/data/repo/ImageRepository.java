@@ -15,7 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-
+/**
+ * This class holds methods that upload images to Cloudinary storage.
+ */
 public class ImageRepository {
 
     public interface UploadCallback{
@@ -23,6 +25,16 @@ public class ImageRepository {
         void onError(String e);
     }
 
+    /**
+     * This method is in charge of uploading images to Cloudinary.
+     *
+     * The image that gets added by the user is saved to Cloudinary storage, on success
+     * the callback returns a secure URL which in another file gets saved to the specified events
+     * imageUrl field.
+     *
+     * @param imageUri The image Uri that the user uploads
+     * @param callback callback on success returns the securUrl of the image, on failure returns an error.
+     */
     public void uploadImage( Uri imageUri, UploadCallback callback){
         MediaManager.get().upload(imageUri)
                 .callback(new com.cloudinary.android.callback.UploadCallback(){

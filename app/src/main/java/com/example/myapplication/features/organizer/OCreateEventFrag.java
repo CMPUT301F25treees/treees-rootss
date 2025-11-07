@@ -38,6 +38,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * This class is for users to be able to create new events when they are in their
+ * organizer state. Event details are collected and validated such as: Title, Address,
+ * Description, Capacity, Price, start data, end date, selection data, and image.
+ * After that the image gets uploaded and the new event is created and saved to Firestore.
+ */
 public class OCreateEventFrag extends Fragment {
 
     private static final int REQ_POSTER = 1001;
@@ -140,6 +146,11 @@ public class OCreateEventFrag extends Fragment {
         void onDateChosen(long millis);
     }
 
+    /**
+     * This method opens a date picker dialog and returns the selected date through a callback.
+     *
+     * @param callback Receives the selected date.
+     */
     private void pickDate(DateCallback callback) {
         final Calendar calendar = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(
@@ -155,12 +166,27 @@ public class OCreateEventFrag extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Launches the image picker so the user can select an image to upload.
+     */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         startActivityForResult(Intent.createChooser(intent, "Select poster"), REQ_POSTER);
     }
 
+    /**
+     * This method handles the results from the image picker.
+     *
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param data An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -170,6 +196,14 @@ public class OCreateEventFrag extends Fragment {
         }
     }
 
+    /**
+     * This method collects all teh user inputs and validates them. After that a new
+     * event object is created. Before saving the object to Firestore, if there is an
+     * image it gets uploaded. Then the event is saved with the imageUrl that gets
+     * returned after upload.
+     *
+     * ImageRepository is used to upload the image.
+     */
     private void onCreateClicked() {
         Log.d("OCreateEventFrag", "onCreateClicked Called");
         String title = titleInput.getText().toString().trim();
@@ -249,6 +283,12 @@ public class OCreateEventFrag extends Fragment {
     }
 
 
+    /**
+     * This method uses EventRepository to save the event to Firestore. Depending
+     * whether saving is successful or not, a message gets displayed.
+     *
+     * @param event event the event object to be saved.
+     */
     private void saveEvent(UserEvent event) {
         ServiceLocator.getEventRepository().createEvent(
                 requireContext(),

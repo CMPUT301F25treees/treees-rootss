@@ -8,6 +8,10 @@ import com.google.firebase.FirebaseApp;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This is the base Application class.
+ * Responsible for initiating Firebase and Cloudinary services.
+ */
 public class App extends Application {
     @Override
     public void onCreate() {
@@ -16,6 +20,9 @@ public class App extends Application {
         initCloudinary();
     }
 
+    /**
+     * This method initializes the cloudinary SDK.
+     */
     private void initCloudinary(){
 
         Map<String, Object> config = new HashMap<>();

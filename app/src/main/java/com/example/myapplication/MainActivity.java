@@ -11,6 +11,12 @@ import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+/**
+ * This class is the main entry point of the application
+ *
+ * This class is responsible for managing navigation across all fragments
+ * of the application. The bottomnavigation is updated based on the user role.
+ */
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView navView;
     private NavController navController;
@@ -41,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * This method updates the bottom navigation menu to match the users current role
+     */
     private void updateBottomNavMenu() {
         User currentUser = UserSession.getInstance().getCurrentUser();
         String role = currentUser != null ? currentUser.getRole() : null;
@@ -57,6 +66,12 @@ public class MainActivity extends AppCompatActivity {
         currentMenuResId = desiredMenu;
     }
 
+    /**
+     * This method determines which navigation menu should be used
+     *
+     * @param role the user role
+     * @return the id of the determined bottom nav
+     */
     private int resolveMenuForRole(String role) {
         if (role == null) {
             return R.menu.bottom_nav_user;
@@ -70,10 +85,17 @@ public class MainActivity extends AppCompatActivity {
         return R.menu.bottom_nav_user;
     }
 
+    /**
+     * Refreshes the navigation menu
+     */
     public void refreshNavigationForRole() {
         updateBottomNavMenu();
     }
 
+    /**
+     * Navigates to the "destination" difined by the nav menu
+     * @param destinationId
+     */
     public void navigateToBottomDestination(@IdRes int destinationId) {
         navView.setSelectedItemId(destinationId);
     }

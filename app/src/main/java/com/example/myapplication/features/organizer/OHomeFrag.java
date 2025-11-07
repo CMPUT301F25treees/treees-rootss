@@ -25,6 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This calss is for displaying the organizer home frag. The events are fetched
+ * and then filtered to only show ones that the current user is an oraganizer for.
+ *
+ * Also has navigation to the Organizer Profile View and Create Event View.
+ */
 public class OHomeFrag extends Fragment {
 
     private UserEventAdapter adapter;
