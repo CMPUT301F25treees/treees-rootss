@@ -41,12 +41,10 @@ import java.util.Calendar;
 import java.util.Locale;
 
 /**
- * {@code OCreateEventFrag} is a Fragment that allows organizers to create and upload
- * new events into the Firebase Firestore database.
- * <p>
- * It provides input fields for event details (title, address, description, capacity, price, etc.),
- * date selection pickers, poster image upload, and geolocation toggle.
- * Once validated, the event is uploaded via {@link com.example.myapplication.data.repo.EventRepository}.
+ * This class is for users to be able to create new events when they are in their
+ * organizer state. Event details are collected and validated such as: Title, Address,
+ * Description, Capacity, Price, start data, end date, selection data, and image.
+ * After that the image gets uploaded and the new event is created and saved to Firestore.
  */
 public class OCreateEventFrag extends Fragment {
 
@@ -152,9 +150,9 @@ public class OCreateEventFrag extends Fragment {
     }
 
     /**
-     * Opens a date picker dialog and passes the selected date to a callback.
+     * This method opens a date picker dialog and returns the selected date through a callback.
      *
-     * @param callback callback to receive the chosen date in milliseconds
+     * @param callback Receives the selected date.
      */
     private void pickDate(DateCallback callback) {
         final Calendar calendar = Calendar.getInstance();
@@ -172,7 +170,7 @@ public class OCreateEventFrag extends Fragment {
     }
 
     /**
-     * Opens an intent for the user to select an image (poster) from their device.
+     * Launches the image picker so the user can select an image to upload.
      */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -181,11 +179,16 @@ public class OCreateEventFrag extends Fragment {
     }
 
     /**
-     * Handles the result from image picker.
+     * This method handles the results from the image picker.
      *
-     * @param requestCode request code from {@link #startActivityForResult(Intent, int)}
-     * @param resultCode  activity result status
-     * @param data        returned intent containing the image URI
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param data An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -197,9 +200,12 @@ public class OCreateEventFrag extends Fragment {
     }
 
     /**
-     * Validates user input, uploads poster (if any), and saves the event to Firebase.
-     * <p>
-     * Called when the organizer taps the "Create Event" button.
+     * This method collects all teh user inputs and validates them. After that a new
+     * event object is created. Before saving the object to Firestore, if there is an
+     * image it gets uploaded. Then the event is saved with the imageUrl that gets
+     * returned after upload.
+     *
+     * ImageRepository is used to upload the image.
      */
     private void onCreateClicked() {
         Log.d("OCreateEventFrag", "onCreateClicked Called");
@@ -281,9 +287,10 @@ public class OCreateEventFrag extends Fragment {
 
 
     /**
-     * Uploads the event data to Firestore using {@link ServiceLocator#getEventRepository()}.
+     * This method uses EventRepository to save the event to Firestore. Depending
+     * whether saving is successful or not, a message gets displayed.
      *
-     * @param event the populated {@link UserEvent} object
+     * @param event event the event object to be saved.
      */
     private void saveEvent(UserEvent event) {
         ServiceLocator.getEventRepository().createEvent(

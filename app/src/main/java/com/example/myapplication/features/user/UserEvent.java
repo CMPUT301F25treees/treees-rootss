@@ -4,6 +4,10 @@ import androidx.annotation.ColorInt;
 
 import java.util.List;
 
+/**
+ * This class represents the UserEvents that get retrieved from Firestore
+ * that users can join and create.
+ */
 public class UserEvent {
     private String id;
     private String organizerID;

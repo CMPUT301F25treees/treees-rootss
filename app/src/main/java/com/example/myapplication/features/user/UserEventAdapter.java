@@ -15,6 +15,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class handles displaying the events properly in the view on the homepage
+ *
+ * Events are formatted and provide navigation functionality to a specified events
+ * detail view.
+ */
 public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.EventViewHolder> {
 
     private final List<UserEvent> original = new ArrayList<>();
@@ -30,6 +36,11 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         this.listener = listener;
     }
 
+    /**
+     * Submits the new list of events to the adapter
+     *
+     * @param events list of UserEvent objects
+     */
     public void submit(List<UserEvent> events) {
         original.clear();
         visible.clear();
@@ -76,6 +87,13 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         return new EventViewHolder(view);
     }
 
+    /**
+     * Binds the objects to teh UI Elements.
+     *
+     * @param holder   The ViewHolder which should be updated to represent the contents of the
+     *                 item at the given position in the data set.
+     * @param position The position of the item within the adapter's data set.
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         UserEvent event = visible.get(position);
@@ -103,6 +121,9 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         });
     }
 
+    /**
+     * @return the number of visible events.
+     */
     @Override
     public int getItemCount() {
         return visible.size();

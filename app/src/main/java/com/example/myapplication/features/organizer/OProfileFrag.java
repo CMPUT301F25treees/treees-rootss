@@ -34,6 +34,12 @@ import java.util.Locale;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is for the organizers profile screen.
+ *
+ * On this screen users can view and send notifications, edit their info (still to be
+ * implemented), switch between User and Organizer, and delete their profile.
+ */
 public class OProfileFrag extends Fragment {
     private FirebaseFirestore firestore;
     private View deleteProfileCard;
@@ -166,10 +172,8 @@ public class OProfileFrag extends Fragment {
     private void deleteEventsByField(String fieldName, String uid, Runnable onComplete, OnFailureListener onFailure) {
         firestore.collection("events")
                 .whereEqualTo(fieldName, uid)
-                .get()
-                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
-                .addOnFailureListener(onFailure);
-    }
+                .get();
+}
 
 
     /**

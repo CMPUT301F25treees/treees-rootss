@@ -21,15 +21,7 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 import java.util.List;
 
 /**
- * {@code UScanFrag} handles QR code scanning functionality for users.
- * <p>
- * This fragment uses the ZXing {@link DecoratedBarcodeView} to scan QR codes continuously
- * and automatically navigate to the corresponding event detail page upon successful scan.
- * <p>
- * The scanned QR code should contain an {@code eventId} that is used to load
- * the event details in {@link com.example.myapplication.features.user.UEventDetailFrag}.
- * <p>
- * It also manages camera permission requests at runtime, ensuring smooth camera access.
+ * This class deals with scanning a QR code and identifying which event to navigate to.
  */
 public class UScanFrag extends Fragment {
     /** The barcode scanner view component */
@@ -81,10 +73,7 @@ public class UScanFrag extends Fragment {
     }
 
     /**
-     * Called when the fragment becomes visible.
-     * <p>
-     * Checks and requests camera permission if necessary.
-     * Resumes barcode scanning once permission is granted.
+     * When the fragment becomes visible this method will resume the barcode scanner
      */
     @Override
     public void onResume() {
@@ -99,9 +88,7 @@ public class UScanFrag extends Fragment {
     }
 
     /**
-     * Called when the fragment is no longer interacting with the user.
-     * <p>
-     * Pauses the camera to conserve resources.
+     * When fragment is not beign shown to teh user the barcode scanner is paused.
      */
     @Override
     public void onPause() {
@@ -110,11 +97,14 @@ public class UScanFrag extends Fragment {
     }
 
     /**
-     * Handles the result of the runtime camera permission request.
+     * This method handles the camera permission request.
      *
-     * @param requestCode  the request code passed in {@link #requestPermissions(String[], int)}
-     * @param permissions  the requested permissions
-     * @param grantResults the corresponding grant results
+     * @param requestCode The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
+     *
      */
     @Override
     public void onRequestPermissionsResult(int requestCode,

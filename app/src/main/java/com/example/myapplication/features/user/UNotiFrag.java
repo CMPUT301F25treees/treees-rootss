@@ -19,6 +19,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+/**
+ * This class displays the list of notifications for the logged in user.
+ *
+ * Will retrieve all notifications to the logged in user.
+ */
 public class UNotiFrag extends Fragment {
 
     private RecyclerView recyclerView;

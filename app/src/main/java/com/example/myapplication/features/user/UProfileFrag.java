@@ -32,6 +32,14 @@ import java.util.Locale;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class shows the User Profile screen
+ *
+ * From this screen the user can edit their info (To be implemented), view the waiting lists
+ * that they are a part of (to be implemented), see their past events (to be implemented), view
+ * navigate to view notifications they have recieved, delete their progile, and change from user mode
+ * to organizer mode.
+ */
 public class UProfileFrag extends Fragment {
 
     private FirebaseFirestore firestore;

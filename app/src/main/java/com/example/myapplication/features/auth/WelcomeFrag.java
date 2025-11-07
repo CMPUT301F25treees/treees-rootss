@@ -11,6 +11,11 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.myapplication.R;
 import com.google.android.material.button.MaterialButton;
 
+/**
+ * This class is the entry point of our App flow. The user is shown two options:
+ * Login or Register. The user gets navigated to their respective screens based on
+ * their choice.
+ */
 public class WelcomeFrag extends Fragment {
     public WelcomeFrag() {}
 

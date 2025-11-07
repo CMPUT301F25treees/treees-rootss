@@ -25,6 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class shows the user home screen.
+ *
+ * From teh home screen the user can click on an event in the lsit of events to
+ * got the detailed view of that sepecified event, go to the scan view, user profile
+ * view, or search and filter the events.
+ */
 public class UHomeFrag extends Fragment {
 
     private UserEventAdapter adapter;
@@ -95,13 +102,7 @@ public class UHomeFrag extends Fragment {
             @Override
             public void onEventsFetched(List<UserEvent> events){
                 if(events != null && !events.isEmpty()) {
-                    List<UserEvent> filteredEvents = new ArrayList<>();
-                    for(UserEvent event :events){
-                        if(!event.getOrganizerID().equals(currentUserId)){
-                            filteredEvents.add(event);
-                        }
-                    }
-                    adapter.submit(filteredEvents);
+                    adapter.submit(filterEventsForDisplay(events, currentUserId));
                 } else{
                     Toast.makeText(requireContext(), "No events found", Toast.LENGTH_SHORT).show();
                 }
@@ -127,6 +128,26 @@ public class UHomeFrag extends Fragment {
             return true;
         });
         menu.show();
+    }
+
+    /**
+     * Returns a new list that excludes events owned by the provided user ID.
+     */
+    static List<UserEvent> filterEventsForDisplay(List<UserEvent> events, String currentUserId) {
+        List<UserEvent> filtered = new ArrayList<>();
+        if (events == null || currentUserId == null) {
+            return filtered;
+        }
+        for (UserEvent event : events) {
+            if (event == null) {
+                continue;
+            }
+            String organizerId = event.getOrganizerID();
+            if (organizerId == null || !organizerId.equals(currentUserId)) {
+                filtered.add(event);
+            }
+        }
+        return filtered;
     }
 
 
