@@ -28,6 +28,8 @@ public class UEventDetailFrag extends Fragment {
 
     private TextView title, organizer, location, price, endTime, descr, waitingList;
 
+
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
         return  inflater.inflate(R.layout.fragment_u_event_detail, container, false);
@@ -56,7 +58,10 @@ public class UEventDetailFrag extends Fragment {
         MaterialButton joinWaitlistButton = view.findViewById(R.id.joinWaitlist);
         joinWaitlistButton.setOnClickListener(x -> {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            assert user != null;
+            if (user == null) {
+                Toast.makeText(getContext(), "Please log in first!", Toast.LENGTH_SHORT).show();
+                return;
+            }
             String uid = user.getUid();
 
             FirebaseEventRepository repo = new FirebaseEventRepository();
