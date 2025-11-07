@@ -142,9 +142,6 @@ public class Event {
         this.waitlist = waitlist;
     }
 
-    public Event(){
-
-    }
     public Event(String title, String address, String descr, int capacity,
                  long startDateMillis, long endDateMillis, long selectionDateMillis,
                  int entrantsToDraw, boolean geoRequired, String posterUrl, String organizerId, String qrData, List<String> waitlist) {

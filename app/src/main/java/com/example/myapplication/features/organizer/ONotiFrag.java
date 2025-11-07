@@ -25,6 +25,10 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is responsible for managing organizer notifications and
+ * certain event actions.
+ */
 public class ONotiFrag extends Fragment {
 
     private MaterialButton btnEvent, btnResendInvites, btnCustomNoti;
@@ -74,6 +78,9 @@ public class ONotiFrag extends Fragment {
         preloadOrganizerName();
     }
 
+    /**
+     * Opens a picker with a list of the Users events which they can select.
+     */
     private void openEventPicker(){
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
@@ -133,6 +140,12 @@ public class ONotiFrag extends Fragment {
         });
     }
     private enum Audience { INVITED, WAITING, ALL, CANCELLED }
+
+    /**
+     * This method prompts the user to provide a message and then select who
+     * the target audience is.
+     * @param eventId the event id of the Firestore Id of the specified event
+     */
     private void promptAndSendCustomPush(String eventId) {
         final android.widget.EditText input = new android.widget.EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -159,6 +172,15 @@ public class ONotiFrag extends Fragment {
                 .show();
     }
 
+    /**
+     * This method sends the custom message that the user created.
+     *
+     * A new document in the "notifications" collection is created
+     *
+     * @param eventId event ID the notification is for
+     * @param message the content of the message
+     * @param audience the chosen group for the notification
+     */
     private void sendCustomPush(String eventId, String message, Audience audience) {
         final String eventName = selectedEventName;
 
@@ -204,10 +226,20 @@ public class ONotiFrag extends Fragment {
                 .addOnFailureListener(e -> toast("Error: " + e.getMessage()));
     }
 
+    /**
+     * This method displays a toast message.
+     *
+     * @param msg the contents of that message
+     */
     private void toast(String msg) {
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * This method safely casts an object to a list
+     * @param obj the object is expectd to be an List<Strings>
+     * @return a list of strings or an empty list
+     */
     private List<String> castStringList(Object obj) {
         if (obj instanceof List<?>){
             List<String> out = new ArrayList<>();
@@ -217,6 +249,9 @@ public class ONotiFrag extends Fragment {
         return new ArrayList<>();
     }
 
+    /**
+     * This method preloads teh organizer's name from the "users" collection on Firestore.
+     */
     private void preloadOrganizerName() {
         var user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
@@ -250,6 +285,13 @@ public class ONotiFrag extends Fragment {
                 });
     }
 
+    /**
+     * This method runs the lottery for a specified event.
+     *
+     * Randomly will draw a given number of users from the waitlist. A confirmation is
+     * required before draw is made.
+     * @param eventId the event ID the draw is happening for
+     */
     private void runLotteryForEvent(String eventId) {
         repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
             @Override

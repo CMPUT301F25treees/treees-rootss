@@ -14,6 +14,9 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+/**
+ * This class is an adapter that helps display the notifications.
+ */
 public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapter.UNotiViewHolder> {
 
     public interface OnOptionClickListener {
@@ -32,6 +35,13 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
         this.listener = listener;
     }
 
+    /**
+     * Binds teh UNotiItem to the UI Elements
+     *
+     * @param holder ViewHolder that holds the notification layout
+     * @param position the position of teh item in the adapter
+     * @param model the model object containing the data that should be used to populate the view.
+     */
     @Override
     protected void onBindViewHolder(@NonNull UNotiViewHolder holder, int position, @NonNull UNotiItem model) {
         holder.fromText.setText(model.getFrom());
@@ -53,6 +63,9 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
         return new UNotiViewHolder(view);
     }
 
+    /**
+     * This class represents a single notification item that gets shown in the view
+     */
     static class UNotiViewHolder extends RecyclerView.ViewHolder {
         final TextView fromText, messageText, eventText;
         final MaterialButton optionButton;

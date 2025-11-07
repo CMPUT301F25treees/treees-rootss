@@ -15,12 +15,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class handles displaying the events properly in the view on the homepage
+ *
+ * Events are formatted and provide navigation functionality to a specified events
+ * detail view.
+ */
 public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.EventViewHolder> {
 
     private final List<UserEvent> original = new ArrayList<>();
-    private final List<UserEvent> visible = new ArrayList<>();
+    private final List<UserEvent> visible  = new ArrayList<>();
 
-    public interface OnEventClickListener {
+    public interface OnEventClickListener {   // (you likely made this public already)
         void onEventClick(UserEvent event);
     }
 
@@ -31,7 +37,9 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
     }
 
     /**
-     * Replaces the current dataset with the provided events and refreshes the grid.
+     * Submits the new list of events to the adapter
+     *
+     * @param events list of UserEvent objects
      */
     public void submit(List<UserEvent> events) {
         original.clear();
@@ -53,14 +61,22 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         } else {
             String lower = query.toLowerCase(Locale.getDefault());
             for (UserEvent event : original) {
-                if (event.getName().toLowerCase(Locale.getDefault()).contains(lower)
-                        || event.getLocation().toLowerCase(Locale.getDefault()).contains(lower)
-                        || event.getInstructor().toLowerCase(Locale.getDefault()).contains(lower)) {
+                // ✅ null-safe lookups
+                String name  = safeLower(event.getName());
+                String loc   = safeLower(event.getLocation());
+                String instr = safeLower(event.getInstructor());
+
+                if (name.contains(lower) || loc.contains(lower) || instr.contains(lower)) {
                     visible.add(event);
                 }
             }
         }
         notifyDataSetChanged();
+    }
+
+    // ✅ helper to avoid NPEs in filter
+    private static String safeLower(String s) {
+        return s == null ? "" : s.toLowerCase(Locale.getDefault());
     }
 
     @NonNull
@@ -71,29 +87,43 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         return new EventViewHolder(view);
     }
 
+    /**
+     * Binds the objects to teh UI Elements.
+     *
+     * @param holder   The ViewHolder which should be updated to represent the contents of the
+     *                 item at the given position in the data set.
+     * @param position The position of the item within the adapter's data set.
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         UserEvent event = visible.get(position);
+
         holder.name.setText(event.getName());
-        String priceText = event.getPriceDisplay();
-        if (TextUtils.isEmpty(priceText)) {
-            holder.price.setVisibility(View.GONE);
-        } else {
-            holder.price.setVisibility(View.VISIBLE);
-            holder.price.setText(priceText);
-        }
-        holder.location.setText(event.getLocation());
-        holder.instructor.setText(String.format(Locale.getDefault(), "With %s", event.getInstructor()));
+        holder.price.setText(String.valueOf(event.getPrice()));
+        // ✅ null-safe binds for UI labels
+        holder.location.setText(event.getLocation() == null ? "" : event.getLocation());
+
+        String instr = event.getInstructor();
+        holder.instructor.setText(TextUtils.isEmpty(instr)
+                ? "" : String.format(Locale.getDefault(), "With %s", instr));
+
         holder.timeRemaining.setText(formatTimeRemaining(event.getEndTimeMillis()));
         bindBannerImage(event, holder);
 
+        // keep your click behavior (robust to dataset changes)
         holder.itemView.setOnClickListener(x -> {
-            if(listener != null) {
-                listener.onEventClick(event);
+            if (listener != null) {
+                int pos = holder.getBindingAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION && pos < visible.size()) {
+                    listener.onEventClick(visible.get(pos));
+                }
             }
         });
     }
 
+    /**
+     * @return the number of visible events.
+     */
     @Override
     public int getItemCount() {
         return visible.size();
@@ -126,9 +156,7 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
     private String formatTimeRemaining(long endTimeMillis) {
         long now = System.currentTimeMillis();
         long diff = endTimeMillis - now;
-        if (diff <= 0) {
-            return "Ended";
-        }
+        if (diff <= 0) return "Ended";
 
         long days = TimeUnit.MILLISECONDS.toDays(diff);
         diff -= TimeUnit.DAYS.toMillis(days);
@@ -136,12 +164,8 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         diff -= TimeUnit.HOURS.toMillis(hours);
         long minutes = TimeUnit.MILLISECONDS.toMinutes(diff);
 
-        if (days > 0) {
-            return String.format(Locale.getDefault(), "%dd %dh left", days, hours);
-        }
-        if (hours > 0) {
-            return String.format(Locale.getDefault(), "%dh %dm left", hours, minutes);
-        }
+        if (days > 0)   return String.format(Locale.getDefault(), "%dd %dh left", days, hours);
+        if (hours > 0)  return String.format(Locale.getDefault(), "%dh %dm left", hours, minutes);
         return String.format(Locale.getDefault(), "%dm left", Math.max(minutes, 1));
     }
 

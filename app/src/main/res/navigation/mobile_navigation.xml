@@ -52,6 +52,7 @@
 
     </fragment>
 
+
     <fragment
         android:id="@+id/navigation_user_event_detail"
         android:name="com.example.myapplication.features.user.UEventDetailFrag"
@@ -112,7 +113,27 @@
     <fragment
         android:id="@+id/navigation_organizer_create"
         android:name="com.example.myapplication.features.organizer.OCreateEventFrag"
-        tools:layout="@layout/fragment_o_create_event" />
+        tools:layout="@layout/fragment_o_create_event">
+
+        <action
+        android:id="@+id/action_OCreateEventFrag_to_OEventDetailFrag"
+        app:destination="@id/navigation_organizer_event_detail" />
+    </fragment>
+
+    <!-- Admin Stuff -->
+    <fragment
+        android:id="@+id/navigation_admin_event_detail"
+        android:name="com.example.myapplication.features.admin.AEventDetailFrag"
+        tools:layout="@layout/fragment_a_event_detail">
+        <argument android:name="eventId" app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_admin_remove_options"
+        android:name="com.example.myapplication.features.admin.ARemoveFrag"
+        tools:layout="@layout/fragment_a_remove" >
+        <argument android:name="eventId" app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_organizer_event_detail"
@@ -133,6 +154,25 @@
         <argument
             android:name="eventId"
             app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_organizer_waitlist"
+        android:name="com.example.myapplication.features.organizer.OEventListFrag"
+        tools:layout="@layout/fragment_o_event_waitlist" />
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+
+    <fragment
+        android:id="@+id/navigation_admin_user_detail"
+        android:name="com.example.myapplication.features.admin.AUserDetailFrag"
+        tools:layout="@layout/fragment_a_user_detail">
+        <argument android:name="uid" app:argType="string" />
+        <argument android:name="name" app:argType="string" />
+        <argument android:name="email" app:argType="string" />
+        <argument android:name="role" app:argType="string" />
+        <argument android:name="avatarUrl" app:argType="string" />
     </fragment>
 
 </navigation>

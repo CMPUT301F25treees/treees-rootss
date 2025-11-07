@@ -4,6 +4,9 @@ import com.google.firebase.Timestamp;
 
 import java.util.List;
 
+/**
+ * This class represents a single user notification that is retrieved from the Firestore
+ */
 public class UNotiItem {
     private String from;
     private String message;

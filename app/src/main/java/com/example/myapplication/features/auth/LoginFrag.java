@@ -19,6 +19,13 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * This class handles user authentication using Firebase Auth.
+ *
+ * User credentials are first validated and then signed in. On successful sign in
+ * the users role will be returned which will help dictate which screen the user gets
+ * navigated to.
+ */
 public class LoginFrag extends Fragment {
 
     private FirebaseAuth auth;
@@ -49,8 +56,20 @@ public class LoginFrag extends Fragment {
         btnLogin.setOnClickListener(x -> signIn());
     }
 
+    /**
+     * This method displays teh loading circle, as authentication is happening.
+     *
+     * @param on if True circle is shown, if False circle is hidden.
+     */
     private void setLoading(boolean on){ progress.setVisibility(on?View.VISIBLE:View.GONE); }
 
+    /**
+     * This method is what handles all the sign-in functionality.
+     *
+     * The user inputs get validated and then login is attempted. If successful
+     * the users role is returned from Firestore and they get navigated to their
+     * respective screen.
+     */
     private void signIn() {
         String email = text(etEmail), pass = text(etPassword);
 
@@ -110,7 +129,19 @@ public class LoginFrag extends Fragment {
         });
     }
 
+    /**
+     * A helper method that gets the trimmed text from user input.
+     *
+     * @param e the input field
+     * @return trimmed text or an empty string when null
+     */
     private static String text(TextInputEditText e){ return e.getText()==null ? "" : e.getText().toString().trim(); }
+
+    /**
+     * Displays toast message.
+     *
+     * @param m message that gets displayed.
+     */
     private void toast(String m){ Toast.makeText(requireContext(), m, Toast.LENGTH_SHORT).show(); }
 
     private boolean tryDummyUserLogin(String email, String pass) {
