@@ -2,6 +2,7 @@ package com.example.myapplication.features.user;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,7 +109,12 @@ public class UEventDetailFrag extends Fragment {
         title.setText(event.getName());
         organizer.setText("Organizer: " + event.getInstructor());
         location.setText(event.getLocation());
-        price.setText("Price: $" + event.getPrice());
+        String priceText = event.getPriceDisplay();
+        if (TextUtils.isEmpty(priceText)) {
+            price.setText(getString(R.string.event_price_unavailable));
+        } else {
+            price.setText(getString(R.string.event_price_label, priceText));
+        }
         descr.setText(event.getDescr());
         endTime.setText("Days Left: " + Math.max(daysLeft, 0));
         waitingList.setText("Currently in Waitinglist: " +

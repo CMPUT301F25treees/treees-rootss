@@ -31,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
             boolean hide = d.getId() == R.id.navigation_welcome
                     || d.getId() == R.id.navigation_login
                     || d.getId() == R.id.navigation_register
-                    || d.getId() == R.id.navigation_user_event_detail;
+                    || d.getId() == R.id.navigation_user_event_detail
+                    || d.getId() == R.id.navigation_organizer_event_detail
+                    || d.getId() == R.id.navigation_organizer_event_edit;
             navView.setVisibility(hide ? View.GONE : View.VISIBLE);
             if (!hide) {
                 updateBottomNavMenu();

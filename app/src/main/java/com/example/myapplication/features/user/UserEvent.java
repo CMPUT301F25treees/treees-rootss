@@ -10,7 +10,7 @@ public class UserEvent {
     private  String name;
     private  String location;
     private  String instructor;
-    private  int price;
+    private  Double price;  // Changed from int to Double
     private  String descr;
     private  long endTimeMillis;
     private  List<String> waitlist;
@@ -29,7 +29,7 @@ public class UserEvent {
     public UserEvent() {}
 
     UserEvent(String id, String organizerID, String name, String location, String instructor,
-              int price, String descr, long endTimeMillis, @ColorInt int bannerColor, List<String> waitlist) {
+              Double price, String descr, long endTimeMillis, @ColorInt int bannerColor, List<String> waitlist) {
         this.id = id;
         this.organizerID = organizerID;
         this.name = name;
@@ -46,7 +46,7 @@ public class UserEvent {
     public String getName() { return name; }
     public String getLocation() { return location; }
     public String getInstructor() { return instructor; }
-    public int getPrice() { return price; }
+    public Double getPrice() { return price; }
     public String getDescr(){ return descr; }
     public List<String> getWaitlist() { return waitlist; }
     public long getEndTimeMillis() { return endTimeMillis; }
@@ -56,7 +56,7 @@ public class UserEvent {
     public void setName(String name) { this.name = name; }
     public void setLocation(String location) { this.location = location; }
     public void setInstructor(String instructor) { this.instructor = instructor; }
-    public void setPrice(int price) { this.price = price; }
+    public void setPrice(Double price) { this.price = price; }
     public void setDescr(String descr) { this.descr = descr; }
     public void setEndTimeMillis(long endTimeMillis) { this.endTimeMillis = endTimeMillis; }
     public void setWaitlist(List<String> waitlist) { this.waitlist = waitlist; }
@@ -120,5 +120,16 @@ public class UserEvent {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    /**
+     * Returns a formatted price display string.
+     * @return Formatted price string (e.g., "$10.00") or "Free" if price is 0 or null
+     */
+    public String getPriceDisplay() {
+        if (price == null || price == 0.0) {
+            return "Free";
+        }
+        return String.format("$%.2f", price);
     }
 }

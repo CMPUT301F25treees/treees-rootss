@@ -2,9 +2,13 @@
 <resources>
     <string name="event_title_text">Event Title</string>
     <string name="waitinglist_text">Currently in Waitinglist:</string>
-    <string name="organizer_text">Organizer:</string>
+    <string name="organizer_text">Organizer</string>
+    <string name="organizer_name_format">Organizer %1$s</string>
     <string name="location_text">Location</string>
-    <string name="price_text">$15.00</string>
-    <string name="endtime_text">Days Left:</string>
+    <string name="price_text">$0.00</string>
+    <string name="price_unavailable">N/A</string>
+    <string name="start_date_value">Starting Date: %1$s</string>
+    <string name="start_date_placeholder">Starting Date: TBD</string>
     <string name="descr_text">Description will go here</string>
+    <string name="endtime_text">Days Left:</string>
 </resources>

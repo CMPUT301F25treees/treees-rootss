@@ -93,7 +93,12 @@ public class RegisterFrag extends Fragment {
             Toast.makeText(requireContext(), "Email is Required", Toast.LENGTH_SHORT).show();
         } else if (password.isEmpty()) {
             Toast.makeText(requireContext(), "Password is Required", Toast.LENGTH_SHORT).show();
+        } else if (password.length() < 6) {
+            Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
         } else {
+            // Show progress indication
+            Toast.makeText(requireContext(), "Registering... Please wait", Toast.LENGTH_SHORT).show();
+
             auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
@@ -116,10 +121,35 @@ public class RegisterFrag extends Fragment {
                                         NavHostFragment.findNavController(this).navigate(R.id.navigation_login);
                                     })
                                     .addOnFailureListener( e -> {
-                                        Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(requireContext(), "Error saving user data: " + e.getMessage(), Toast.LENGTH_LONG).show();
                                      });
                         } else {
-                            Toast.makeText(requireContext(), "Sorry, we are unable to register you at the moment", Toast.LENGTH_SHORT).show();
+                            String errorMessage = task.getException() != null ?
+                                task.getException().getMessage() : "Unknown error";
+
+                            // Provide specific guidance for network errors
+                            if (errorMessage.contains("network error") || errorMessage.contains("timeout") ||
+                                errorMessage.contains("unreachable")) {
+                                Toast.makeText(requireContext(),
+                                    "Network error: Please check your internet connection and try again. If using VPN, try disabling it.",
+                                    Toast.LENGTH_LONG).show();
+                            } else if (errorMessage.contains("email address is already in use")) {
+                                Toast.makeText(requireContext(),
+                                    "This email is already registered. Try logging in instead.",
+                                    Toast.LENGTH_LONG).show();
+                            } else if (errorMessage.contains("weak-password")) {
+                                Toast.makeText(requireContext(),
+                                    "Password is too weak. Use at least 6 characters.",
+                                    Toast.LENGTH_LONG).show();
+                            } else if (errorMessage.contains("invalid-email")) {
+                                Toast.makeText(requireContext(),
+                                    "Invalid email format. Please check your email address.",
+                                    Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(requireContext(),
+                                    "Registration failed: " + errorMessage,
+                                    Toast.LENGTH_LONG).show();
+                            }
                         }
                     });
         }

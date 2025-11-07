@@ -197,12 +197,12 @@ public class OCreateEventFrag extends Fragment {
             }
         }
 
-        int price = 0;
+        double price = 0.0;
         if (!priceStr.isEmpty()) {
             try {
-                price = Integer.parseInt(priceStr);
+                price = Double.parseDouble(priceStr);
             } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Price must be a number", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Price must be a valid number", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
