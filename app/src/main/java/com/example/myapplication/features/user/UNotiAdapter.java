@@ -23,16 +23,29 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
         void onOptionClick(DocumentSnapshot snapshot);
     }
 
-    private final OnOptionClickListener listener;
+    public interface OnLotteryActionListener {
+        void onAccept(DocumentSnapshot snapshot, UNotiItem item);
+        void onDecline(DocumentSnapshot snapshot, UNotiItem item);
+    }
+
+    private final OnOptionClickListener optionListener;
+    private final OnLotteryActionListener lotteryListener;
 
     public UNotiAdapter(@NonNull FirestoreRecyclerOptions<UNotiItem> options) {
-        this(options, snapshot -> { /* no-op */ });
+        this(options, snapshot -> {}, null);
     }
 
     public UNotiAdapter(@NonNull FirestoreRecyclerOptions<UNotiItem> options,
-                        @NonNull OnOptionClickListener listener) {
+                        @NonNull OnOptionClickListener optionListener) {
+        this(options, optionListener, null);
+    }
+
+    public UNotiAdapter(@NonNull FirestoreRecyclerOptions<UNotiItem> options,
+                        @NonNull OnOptionClickListener optionListener,
+                        OnLotteryActionListener lotteryListener) {
         super(options);
-        this.listener = listener;
+        this.optionListener = optionListener;
+        this.lotteryListener = lotteryListener;
     }
 
     /**
@@ -48,11 +61,49 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
         holder.messageText.setText(model.getMessage());
         holder.eventText.setText(model.getEvent());
 
-        holder.optionButton.setOnClickListener(v -> {
-            int pos = holder.getBindingAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION) return; // view not bound anymore
-            listener.onOptionClick(getSnapshots().getSnapshot(pos));
-        });
+        // Handle lottery win notifications with accept/decline buttons
+        if (model.isLotteryWin() && model.isPending()) {
+            holder.optionButton.setVisibility(View.GONE);
+            holder.acceptButton.setVisibility(View.VISIBLE);
+            holder.declineButton.setVisibility(View.VISIBLE);
+
+            holder.acceptButton.setOnClickListener(v -> {
+                int pos = holder.getBindingAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION && lotteryListener != null) {
+                    lotteryListener.onAccept(getSnapshots().getSnapshot(pos), model);
+                }
+            });
+
+            holder.declineButton.setOnClickListener(v -> {
+                int pos = holder.getBindingAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION && lotteryListener != null) {
+                    lotteryListener.onDecline(getSnapshots().getSnapshot(pos), model);
+                }
+            });
+        }
+        // Show status for already responded lottery wins
+        else if (model.isLotteryWin() && (model.isAccepted() || model.isDeclined())) {
+            holder.optionButton.setVisibility(View.VISIBLE);
+            holder.acceptButton.setVisibility(View.GONE);
+            holder.declineButton.setVisibility(View.GONE);
+
+            String statusText = model.isAccepted() ? "✓ Accepted" : "✗ Declined";
+            holder.optionButton.setText(statusText);
+            holder.optionButton.setEnabled(false);
+        }
+        // Regular notifications or lottery lose
+        else {
+            holder.optionButton.setVisibility(View.VISIBLE);
+            holder.acceptButton.setVisibility(View.GONE);
+            holder.declineButton.setVisibility(View.GONE);
+
+            holder.optionButton.setOnClickListener(v -> {
+                int pos = holder.getBindingAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) {
+                    optionListener.onOptionClick(getSnapshots().getSnapshot(pos));
+                }
+            });
+        }
     }
 
     @NonNull
@@ -68,7 +119,7 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
      */
     static class UNotiViewHolder extends RecyclerView.ViewHolder {
         final TextView fromText, messageText, eventText;
-        final MaterialButton optionButton;
+        final MaterialButton optionButton, acceptButton, declineButton;
 
         UNotiViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -76,6 +127,8 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
             messageText = itemView.findViewById(R.id.message_text);
             eventText = itemView.findViewById(R.id.event_text);
             optionButton = itemView.findViewById(R.id.option_button);
+            acceptButton = itemView.findViewById(R.id.accept_button);
+            declineButton = itemView.findViewById(R.id.decline_button);
         }
     }
 }

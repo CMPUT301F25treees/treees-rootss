@@ -13,6 +13,7 @@ public class UNotiItem {
     private String event;
     private String eventId;
     private String type;
+    private String status;  // "pending", "accepted", "declined"
     private Timestamp dateMade;
     private List<String> uID;
     public UNotiItem() {}
@@ -37,8 +38,13 @@ public class UNotiItem {
 
     public String getEventId() { return eventId; }
     public String getType() { return type; }
-
+    public String getStatus() { return status; }
     public Timestamp getDateMade() { return dateMade; }
     public List<String> getUID() { return uID; }
+
+    public boolean isPending() { return "pending".equals(status); }
+    public boolean isAccepted() { return "accepted".equals(status); }
+    public boolean isDeclined() { return "declined".equals(status); }
+    public boolean isLotteryWin() { return "lottery_win".equals(type); }
 
 }
