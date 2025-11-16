@@ -26,6 +26,7 @@ public class UserEvent {
     private String posterUrl;
     private String qrData;
     private String imageUrl;
+    private String theme;
 
     /**
      * This method is required for Firestore to construct the object
@@ -124,6 +125,14 @@ public class UserEvent {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
     }
 
     /**
