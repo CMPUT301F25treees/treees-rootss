@@ -66,7 +66,16 @@
         <action
             android:id="@+id/action_user_profile_to_user_notifications"
             app:destination="@id/navigation_user_notifications" />
+
+        <action
+            android:id="@+id/action_user_profile_to_user_edit_profile"
+            app:destination="@id/navigation_user_edit_profile" />
     </fragment>
+
+    <fragment
+        android:id="@+id/navigation_user_edit_profile"
+        android:name="com.example.myapplication.features.user.UEditProfileFrag"
+        tools:layout="@layout/fragment_u_edit_profile" />
 
     <fragment
         android:id="@+id/navigation_admin_profile"
