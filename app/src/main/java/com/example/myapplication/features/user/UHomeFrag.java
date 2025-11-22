@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -20,10 +21,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This class shows the user home screen.
@@ -38,6 +43,10 @@ public class UHomeFrag extends Fragment {
     private EditText searchInput;
     private final List<UserEvent> allEvents = new ArrayList<>();
     private final List<String> selectedInterests = new ArrayList<>();
+    private Long availabilityStartMillis;
+    private Long availabilityEndMillis;
+    private final SimpleDateFormat availabilityDateFormat =
+            new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
 
     public UHomeFrag() {
         super(R.layout.fragment_u_home);
@@ -130,15 +139,19 @@ public class UHomeFrag extends Fragment {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
         menu.getMenu().add(getString(R.string.filter_interests_option));
         menu.getMenu().add(getString(R.string.filter_availability_option));
+        if (availabilityStartMillis != null && availabilityEndMillis != null) {
+            menu.getMenu().add(getString(R.string.filter_availability_clear_option));
+        }
         menu.setOnMenuItemClickListener(item -> {
             CharSequence title = item.getTitle();
             if (TextUtils.equals(title, getString(R.string.filter_interests_option))) {
                 showInterestsDialog();
                 return true;
             } else if (TextUtils.equals(title, getString(R.string.filter_availability_option))) {
-                Toast.makeText(requireContext(),
-                        getString(R.string.filter_availability_placeholder),
-                        Toast.LENGTH_SHORT).show();
+                showAvailabilityPicker();
+                return true;
+            } else if (TextUtils.equals(title, getString(R.string.filter_availability_clear_option))) {
+                clearAvailabilityFilter();
                 return true;
             }
             return false;
@@ -192,8 +205,81 @@ public class UHomeFrag extends Fragment {
                 .show();
     }
 
+    private void showAvailabilityPicker() {
+        MaterialDatePicker.Builder<Pair<Long, Long>> builder =
+                MaterialDatePicker.Builder.dateRangePicker()
+                        .setTitleText(R.string.filter_availability_title);
+        Pair<Long, Long> selection = getAvailabilitySelection();
+        if (selection != null) {
+            builder.setSelection(selection);
+        }
+
+        MaterialDatePicker<Pair<Long, Long>> picker = builder.build();
+        picker.addOnPositiveButtonClickListener(result -> {
+            if (result == null || result.first == null || result.second == null) {
+                return;
+            }
+            availabilityStartMillis = result.first;
+            availabilityEndMillis = result.second;
+            applyCurrentFilters();
+            Toast.makeText(requireContext(),
+                    getString(R.string.filter_availability_applied,
+                            formatAvailabilityDate(availabilityStartMillis),
+                            formatAvailabilityDate(availabilityEndMillis)),
+                    Toast.LENGTH_SHORT).show();
+        });
+        picker.show(getParentFragmentManager(), "availability_range_picker");
+    }
+
+    @Nullable
+    private Pair<Long, Long> getAvailabilitySelection() {
+        if (availabilityStartMillis == null || availabilityEndMillis == null) {
+            return null;
+        }
+        return new Pair<>(availabilityStartMillis, availabilityEndMillis);
+    }
+
+    private void clearAvailabilityFilter() {
+        if (availabilityStartMillis == null && availabilityEndMillis == null) {
+            return;
+        }
+        availabilityStartMillis = null;
+        availabilityEndMillis = null;
+        applyCurrentFilters();
+        Toast.makeText(requireContext(),
+                R.string.filter_availability_cleared_toast,
+                Toast.LENGTH_SHORT).show();
+    }
+
     private String summarizeInterests() {
         return TextUtils.join(", ", selectedInterests);
+    }
+
+    private String formatAvailabilityDate(Long millis) {
+        if (millis == null) {
+            return "";
+        }
+        return availabilityDateFormat.format(millis);
+    }
+
+    private long startOfDay(long timeMillis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timeMillis);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
+
+    private long endOfDay(long timeMillis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timeMillis);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        return calendar.getTimeInMillis();
     }
 
     private void applyCurrentFilters() {
@@ -204,6 +290,11 @@ public class UHomeFrag extends Fragment {
         List<UserEvent> working = new ArrayList<>(allEvents);
         if (!selectedInterests.isEmpty()) {
             working = filterEventsByInterests(working, selectedInterests);
+        }
+        if (availabilityStartMillis != null && availabilityEndMillis != null) {
+            long filterStart = startOfDay(availabilityStartMillis);
+            long filterEnd = endOfDay(availabilityEndMillis);
+            working = filterEventsByAvailability(working, filterStart, filterEnd);
         }
 
         adapter.submit(working);
@@ -245,16 +336,22 @@ public class UHomeFrag extends Fragment {
 
     static List<UserEvent> filterEventsByAvailability(List<UserEvent> events, long startTime, long endTime) {
         List<UserEvent> filtered = new ArrayList<>();
-        if (events == null) {
+        if (events == null || events.isEmpty()) {
             return filtered;
         }
+        long normalizedStart = Math.min(startTime, endTime);
+        long normalizedEnd = Math.max(startTime, endTime);
         for (UserEvent event : events) {
             if (event == null) {
                 continue;
             }
             long eventStart = event.getStartTimeMillis();
             long eventEnd = event.getEndTimeMillis();
-            if (eventStart >= startTime && eventEnd <= endTime) {
+            if (eventStart == 0 && eventEnd == 0) {
+                continue;
+            }
+            long actualEnd = eventEnd > 0 ? eventEnd : eventStart;
+            if (actualEnd >= normalizedStart && eventStart <= normalizedEnd) {
                 filtered.add(event);
             }
         }

@@ -30,7 +30,10 @@
     <string name="delete_profile_auth_missing">No signed-in user found.</string>
     <string name="filter_interests_option">Interests</string>
     <string name="filter_availability_option">Availability</string>
-    <string name="filter_availability_placeholder">Availability filter coming soon</string>
+    <string name="filter_availability_title">Select your availability</string>
+    <string name="filter_availability_applied">Showing events between %1$s and %2$s</string>
+    <string name="filter_availability_cleared_toast">Availability filters cleared</string>
+    <string name="filter_availability_clear_option">Clear availability</string>
     <string name="filter_interests_title">Select your interests</string>
     <string name="filter_interests_apply">Apply</string>
     <string name="filter_interests_clear">Clear</string>
