@@ -40,4 +40,14 @@
     <string name="filter_interests_showing_all">Showing all events</string>
     <string name="filter_interests_applied">Filtering by %1$s</string>
     <string name="filter_interests_cleared_toast">Interest filters cleared</string>
+    <string name="edit_profile_title_text">Edit Profile</string>
+    <string name="edit_profile_save_button">Save Changes</string>
+    <string name="edit_profile_back_button">Back</string>
+    <string name="edit_profile_first_name_required">First name is required.</string>
+    <string name="edit_profile_email_required">Email is required.</string>
+    <string name="edit_profile_email_invalid">Enter a valid email address.</string>
+    <string name="edit_profile_save_success">Profile updated successfully.</string>
+    <string name="edit_profile_save_failed">Failed to update profile. %1$s</string>
+    <string name="edit_profile_load_failed">Unable to load profile information.</string>
+    <string name="edit_profile_auth_missing">You must be signed in to update your profile.</string>
 </resources>
