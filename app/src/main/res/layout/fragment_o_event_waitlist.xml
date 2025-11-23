@@ -16,36 +16,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/tvCurrently"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Selected List:"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEvent"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/profile_role_button_height"
-            android:layout_marginStart="12dp"
-            android:gravity="center"
-            android:insetLeft="0dp"
-            android:insetTop="0dp"
-            android:insetRight="0dp"
-            android:insetBottom="0dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:text="Please Select One"
-            android:textAllCaps="false"
-            android:textColor="@android:color/black"
-            android:textSize="16sp"
-            app:backgroundTint="@color/profile_card_gray"
-            app:cornerRadius="24dp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -103,8 +73,47 @@
         android:id="@+id/bckButton"
         android:layout_width="52dp"
         android:layout_height="45dp"
+        android:layout_marginTop="24dp"
         android:text="ᐊ"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEvent"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/profile_role_button_height"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        android:insetLeft="0dp"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:text="Please Select One"
+        android:textAllCaps="false"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        app:backgroundTint="@color/profile_card_gray"
+        app:cornerRadius="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvCurrently"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="Selected List:"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/btnEvent"
+        app:layout_constraintStart_toEndOf="@+id/bckButton"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
