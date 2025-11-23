@@ -19,6 +19,7 @@ public class Event {
     private String posterUrl;
     private String organizerId;
     private String qrData;
+    private String theme;
 
     private List<String> waitlist;
 
@@ -134,6 +135,14 @@ public class Event {
         this.organizerId = organizerId;
     }
 
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
+
     public List<String> getWaitlist() {
         return waitlist;
     }
@@ -144,7 +153,8 @@ public class Event {
 
     public Event(String title, String address, String descr, int capacity,
                  long startDateMillis, long endDateMillis, long selectionDateMillis,
-                 int entrantsToDraw, boolean geoRequired, String posterUrl, String organizerId, String qrData, List<String> waitlist) {
+                 int entrantsToDraw, boolean geoRequired, String posterUrl, String organizerId,
+                 String qrData, List<String> waitlist, String theme) {
         this.title = title;
         this.address = address;
         this.descr = descr;
@@ -158,6 +168,7 @@ public class Event {
         this.organizerId = organizerId;
         this.qrData = qrData;
         this.waitlist = waitlist;
+        this.theme = theme;
     }
 
 }

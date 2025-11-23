@@ -7,6 +7,8 @@
     <string name="event_address_hint_text">Please input event location</string>
     <string name="event_desc_title_text">Description *</string>
     <string name="event_desc_hint_text">Please input event description</string>
+    <string name="event_theme_title_text">Theme *</string>
+    <string name="event_theme_hint_text">Select the overall theme</string>
     <string name="event_capacity_title_text">Capacity</string>
     <string name="event_capacity_hint_text">Please input event capacity</string>
     <string name="event_price_title_text">Price *</string>

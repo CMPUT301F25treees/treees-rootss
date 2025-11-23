@@ -10,10 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,17 +21,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.R;
 import com.example.myapplication.core.ServiceLocator;
 import com.example.myapplication.core.UserSession;
-import com.example.myapplication.data.model.Event;
-import com.example.myapplication.data.repo.EventRepository;
 import com.example.myapplication.data.repo.ImageRepository;
-import com.example.myapplication.features.user.UScanFrag;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
@@ -58,6 +55,7 @@ public class OCreateEventFrag extends Fragment {
     private EditText capacityInput;
     private EditText entrantsDrawnInput;
     private EditText priceInput;
+    private MaterialAutoCompleteTextView themeInput;
 
     // Dates
     private TextView startDateLabel;
@@ -70,6 +68,7 @@ public class OCreateEventFrag extends Fragment {
     private ImageButton insertPosterButton;
     private Switch geoSwitch;
     private MaterialButton createButton;
+    private String selectedTheme = "";
 
     private long startDateMillis = 0;
     private long endDateMillis = 0;
@@ -99,6 +98,17 @@ public class OCreateEventFrag extends Fragment {
         capacityInput = view.findViewById(R.id.event_cap_input);
         priceInput = view.findViewById(R.id.event_price_input);
         entrantsDrawnInput = view.findViewById(R.id.entrants_drawn_input);
+        themeInput = view.findViewById(R.id.event_theme_input);
+
+        ArrayAdapter<CharSequence> themeAdapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.event_theme_options,
+                android.R.layout.simple_dropdown_item_1line
+        );
+        themeInput.setAdapter(themeAdapter);
+        themeInput.setOnItemClickListener((parent, itemView, position, id) ->
+                selectedTheme = parent.getItemAtPosition(position).toString());
+        themeInput.setOnClickListener(v -> themeInput.showDropDown());
 
         // Buttons and Switch
         startDateButton = view.findViewById(R.id.startDateButton);
@@ -215,14 +225,19 @@ public class OCreateEventFrag extends Fragment {
         String capacityStr = capacityInput.getText().toString().trim();
         String priceStr = priceInput.getText().toString().trim();
         String entrantsStr = entrantsDrawnInput.getText().toString().trim();
+        String theme = themeInput.getText() != null
+                ? themeInput.getText().toString().trim()
+                : "";
 
         // basic validation
         if (title.isEmpty() || address.isEmpty() || descr.isEmpty()
-                || entrantsStr.isEmpty()
+                || entrantsStr.isEmpty() || theme.isEmpty()
                 || startDateMillis == 0 || endDateMillis == 0 || selectionDateMillis == 0) {
             Toast.makeText(getContext(), "Please fill all required fields", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        selectedTheme = theme;
 
         int capacity = 0;
         if (!capacityStr.isEmpty()) {
@@ -265,6 +280,7 @@ public class OCreateEventFrag extends Fragment {
         event.setEntrantsToDraw(entrantsToDraw);
         event.setGeoRequired(geoSwitch.isChecked());
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
+        event.setTheme(selectedTheme);
 
 
         if (posterUri != null) {

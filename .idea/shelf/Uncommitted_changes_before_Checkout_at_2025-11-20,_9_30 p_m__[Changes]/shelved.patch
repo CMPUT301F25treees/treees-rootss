@@ -1,0 +1,105 @@
+Index: .idea/.gitignore
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+deleted file mode 100644
+--- a/.idea/.gitignore	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
++++ /dev/null	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
+@@ -1,3 +0,0 @@
+-# Default ignored files
+-/shelf/
+-/workspace.xml
+Index: .idea/gradle.xml
+===================================================================
+diff --git a/.idea/gradle.xml b/.idea/gradle.xml
+deleted file mode 100644
+--- a/.idea/gradle.xml	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
++++ /dev/null	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
+@@ -1,12 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="GradleSettings">
+-    <option name="linkedExternalProjectsSettings">
+-      <GradleProjectSettings>
+-        <option name="testRunner" value="CHOOSE_PER_TEST" />
+-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+-        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+-      </GradleProjectSettings>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/runConfigurations.xml
+===================================================================
+diff --git a/.idea/runConfigurations.xml b/.idea/runConfigurations.xml
+deleted file mode 100644
+--- a/.idea/runConfigurations.xml	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
++++ /dev/null	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
+@@ -1,17 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="RunConfigurationProducerService">
+-    <option name="ignoredProducers">
+-      <set>
+-        <option value="com.intellij.execution.junit.AbstractAllInDirectoryConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.AllInPackageConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.PatternConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.TestInClassConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.UniqueIdConfigurationProducer" />
+-        <option value="com.intellij.execution.junit.testDiscovery.JUnitTestDiscoveryConfigurationProducer" />
+-        <option value="org.jetbrains.kotlin.idea.junit.KotlinJUnitRunConfigurationProducer" />
+-        <option value="org.jetbrains.kotlin.idea.junit.KotlinPatternConfigurationProducer" />
+-      </set>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/migrations.xml
+===================================================================
+diff --git a/.idea/migrations.xml b/.idea/migrations.xml
+deleted file mode 100644
+--- a/.idea/migrations.xml	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
++++ /dev/null	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
+@@ -1,10 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="ProjectMigrations">
+-    <option name="MigrateToGradleLocalJavaHome">
+-      <set>
+-        <option value="$PROJECT_DIR$" />
+-      </set>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/misc.xml
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+deleted file mode 100644
+--- a/.idea/misc.xml	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
++++ /dev/null	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
+@@ -1,10 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="ExternalStorageConfigurationManager" enabled="true" />
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7">
+-    <output url="file://$PROJECT_DIR$/build/classes" />
+-  </component>
+-  <component name="ProjectType">
+-    <option name="id" value="Android" />
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/AndroidProjectSystem.xml
+===================================================================
+diff --git a/.idea/AndroidProjectSystem.xml b/.idea/AndroidProjectSystem.xml
+deleted file mode 100644
+--- a/.idea/AndroidProjectSystem.xml	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
++++ /dev/null	(revision fe754d85e20cb1314f27fd9c667bd981077cc5e7)
+@@ -1,6 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="AndroidProjectSystem">
+-    <option name="providerId" value="com.android.tools.idea.GradleProjectSystem" />
+-  </component>
+-</project>
+\ No newline at end of file
