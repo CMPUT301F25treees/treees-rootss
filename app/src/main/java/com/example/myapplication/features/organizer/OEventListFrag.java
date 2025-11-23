@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -46,13 +47,23 @@ public class OEventListFrag extends Fragment {
     private static final String FIELD_WAITING = "waiting";
 
     /** Firestore field name representing the finalized list. */
-    private static final String FIELD_FINAL = "final"; // Adjust if your field name differs
+    private static final String FIELD_FINAL = "final";
+
+    /**
+     * Firestore field name representing the invited list
+     */
+    private static final String FIELD_INVITED = "invited";
+
+    /**
+     * Firestore field name representing the canceled list
+     */
+    private static final String FIELD_CANCELLED = "canceled";
 
     /**
      * Represents the current list being displayed:
      * either the waiting list or the final list.
      */
-    private enum ListMode { WAITING, FINAL }
+    private enum ListMode { WAITING, INVITED, CANCELED, FINAL }
 
     /** Current view mode of the fragment (WAITING or FINAL). */
     private ListMode currentMode = ListMode.WAITING;
@@ -78,8 +89,6 @@ public class OEventListFrag extends Fragment {
     /** Button used to trigger a draw from the waiting list. */
     private MaterialButton drawBtn;
 
-    /** Button used to switch between waiting and final lists. */
-    private MaterialButton btnEvent;
 
     /** Adapter backing the RecyclerView of participant names. */
     private OEventListAdapter adapter;
@@ -137,7 +146,25 @@ public class OEventListFrag extends Fragment {
         waitlistRecycler = view.findViewById(R.id.waitlistRecycler);
         emptyState = view.findViewById(R.id.emptyState);
         drawBtn = view.findViewById(R.id.btnDraw);
-        btnEvent = view.findViewById(R.id.btnEvent);
+        MaterialButtonToggleGroup statusToggleGroup = view.findViewById(R.id.statusToggleGroup);
+
+        statusToggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+
+            if (checkedId == R.id.tab_waitlist) {
+                currentMode = ListMode.WAITING;
+            } else if (checkedId == R.id.tab_invited) {
+                currentMode = ListMode.INVITED;
+            } else if (checkedId == R.id.tab_canceled) {
+                currentMode = ListMode.CANCELED;
+            } else if (checkedId == R.id.tab_final) {
+                currentMode = ListMode.FINAL;
+            }
+
+            loadListForCurrentMode();
+        });
+
+        statusToggleGroup.check(R.id.tab_waitlist);
 
         Button backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(x -> {
@@ -152,7 +179,6 @@ public class OEventListFrag extends Fragment {
         adapter = new OEventListAdapter();
         waitlistRecycler.setAdapter(adapter);
 
-        updateListSelectorButton();
         showEmpty();
 
         if (eventId != null) {
@@ -161,40 +187,7 @@ public class OEventListFrag extends Fragment {
         }
 
         drawBtn.setOnClickListener(v -> drawApplicants());
-        btnEvent.setOnClickListener(v -> showListChooser());
-    }
 
-    /**
-     * Displays a popup menu allowing the organizer to switch
-     * between the waiting list and final list.
-     */
-    private void showListChooser() {
-        PopupMenu menu = new PopupMenu(requireContext(), btnEvent);
-        menu.getMenu().add(0, 1, 0, "Waiting list");
-        menu.getMenu().add(0, 2, 1, "Final list");
-
-        menu.setOnMenuItemClickListener(item -> {
-            ListMode chosen = (item.getItemId() == 1) ? ListMode.WAITING : ListMode.FINAL;
-            if (chosen != currentMode) {
-                currentMode = chosen;
-                updateListSelectorButton();
-                loadListForCurrentMode();
-            }
-            return true;
-        });
-
-        menu.show();
-    }
-
-    /**
-     * Updates the UI of the list selector button and
-     * visibility of the draw button based on the current list mode.
-     */
-    private void updateListSelectorButton() {
-        if (btnEvent == null) return;
-        String label = (currentMode == ListMode.WAITING) ? "Waiting list" : "Final list";
-        btnEvent.setText(label);
-        drawBtn.setVisibility(currentMode == ListMode.WAITING ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -220,7 +213,7 @@ public class OEventListFrag extends Fragment {
 
     /**
      * Loads and displays the list of user IDs corresponding to
-     * the current mode (waiting or final list) for this event.
+     * the current mode (waiting, invited, canceled, or final list) for this event.
      */
     private void loadListForCurrentMode() {
         final int myEpoch = ++dataEpoch;
@@ -243,11 +236,17 @@ public class OEventListFrag extends Fragment {
                     DocumentSnapshot doc = query.getDocuments().get(0);
                     notificationDocId = doc.getId();
 
-                    String field = (currentMode == ListMode.WAITING)
-                            ? FIELD_WAITING
-                            : FIELD_FINAL;
+                    String field = FIELD_WAITING;
+                    if(currentMode == ListMode.WAITING){
+                        field = FIELD_WAITING;
+                    } else if (currentMode == ListMode.INVITED){
+                        field = FIELD_INVITED;
+                    } else if (currentMode == ListMode.CANCELED){
+                        field = FIELD_CANCELLED;
+                    } else if (currentMode == ListMode.FINAL){
+                        field = FIELD_FINAL;
+                    }
 
-                    @SuppressWarnings("unchecked")
                     List<String> ids = (List<String>) doc.get(field);
 
                     if (ids == null || ids.isEmpty()) {
