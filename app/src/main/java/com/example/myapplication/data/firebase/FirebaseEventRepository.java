@@ -75,7 +75,8 @@ public class FirebaseEventRepository implements EventRepository {
      *
      * The method will update the "events" collection in the application FireStore by removing
      * the user id (uid) from an array named "waitlist". "waitlist" is an array of user ids
-     * that are a part of the specified event waitlist.
+     * that are a part of the specified event waitlist. Also updated the notificationList to remove
+     * the user id from the waitlist array.
      *
      * @param eventId The id of event the user wants to leave
      * @param uid The id of the user themselves
@@ -88,6 +89,19 @@ public class FirebaseEventRepository implements EventRepository {
                 .update("waitlist", FieldValue.arrayRemove(uid))
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
+
+        db.collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(x -> {
+                    if (!x.isEmpty()) {
+                        var doc = x.getDocuments().get(0);
+                        doc.getReference().update(
+                                "waiting", FieldValue.arrayRemove(uid)
+                        );
+                    }
+                });
     }
 
 
