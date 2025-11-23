@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 
 import com.example.myapplication.data.model.Event;
+import com.example.myapplication.data.model.NotificationList;
 import com.example.myapplication.data.repo.EventRepository;
 import com.example.myapplication.data.repo.ImageRepository;
 import com.example.myapplication.features.user.UserEvent;
@@ -166,9 +167,13 @@ public class FirebaseEventRepository implements EventRepository {
     }
 
     /**
-     * Creates a new event in the Firestore "events" collection.
+     * Creates a new event in the Firestore "events" collection as well as the QR code image.
      *
-     * This method is incharge of performing multiple operations.
+     * The following operations are performed by this method:
+     * - A Firestore document Id gets generated.
+     * - A QR code gets generated and saved to cloudinary database
+     * - The event objects itself gets saved to Firestore
+     * - A corresponding notificationList document is created in Firestore.
      *
      * @param context application context
      * @param event UserEvent object that is to be created on Firestore
@@ -235,6 +240,10 @@ public class FirebaseEventRepository implements EventRepository {
                 onFailure.onFailure(new Exception("QR upload failed: " + e));
             }
         });
+
+        db.collection("notificationList")
+                .document(id)
+                .set(new NotificationList(id));
 
 
     }
@@ -365,7 +374,10 @@ public class FirebaseEventRepository implements EventRepository {
                     if (!qs.isEmpty()) {
                         var doc = qs.getDocuments().get(0);
                         doc.getReference()
-                                .update("invited", FieldValue.arrayUnion(winners.toArray()))
+                                .update(
+                                        "invited", FieldValue.arrayUnion(winners.toArray()),
+                                        "waiting", FieldValue.arrayRemove(winners.toArray()),
+                                        "all", FieldValue.arrayUnion(winners.toArray()))
                                 .addOnSuccessListener(aVoid -> {
                                     // Notify winners
                                     sendLotteryWinNotifications(eventId, eventName, winners,
@@ -405,6 +417,20 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(onFailure);
     }
 
+    /**
+     * Accepts the event invitation that a user receives.
+     *
+     * This method is in charge of the following:
+     * - Updates status to "accepted"
+     * - Moves the user from the invited list ot the final list
+     * - The user gets removed from the waiting list.
+     *
+     * @param notificationId Firestore id of the notificationList
+     * @param eventId the event that the invitation is connected to
+     * @param userId the user who accepts the invite
+     * @param onSuccess callback triggered on a successful update
+     * @param onFailure callback triggered on a failure
+     */
     public void acceptInvitation(String notificationId, String eventId, String userId,
                                  OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
@@ -416,8 +442,37 @@ public class FirebaseEventRepository implements EventRepository {
                     onSuccess.onSuccess(null);
                 })
                 .addOnFailureListener(onFailure);
+
+        db.collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(x -> {
+                    if (!x.isEmpty()) {
+                        var doc = x.getDocuments().get(0);
+                        doc.getReference().update(
+                                "invited", FieldValue.arrayRemove(userId),
+                                "waiting", FieldValue.arrayRemove(userId),
+                                "final", FieldValue.arrayUnion(userId)
+                        );
+                    }
+                });
     }
 
+    /**
+     * Declines an event invitation for a user
+     *
+     * This method is in charge of the following:
+     * - The notification status gets updated to declined
+     * - The user gets moved from the invited list to the cancelled list
+     * - The user is removed from the waiting list
+     *
+     * @param notificationId Firestore id of the notification list
+     * @param eventId the event that the invitation is connected to
+     * @param userId the user who declines the invite
+     * @param onSuccess callback triggered on a successful update
+     * @param onFailure callback triggered on a failure
+     */
     public void declineInvitation(String notificationId, String eventId, String userId,
                                   OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
@@ -437,7 +492,8 @@ public class FirebaseEventRepository implements EventRepository {
                                     doc.getReference()
                                             .update(
                                                     "invited", FieldValue.arrayRemove(userId),
-                                                    "cancelled", FieldValue.arrayUnion(userId)
+                                                    "cancelled", FieldValue.arrayUnion(userId),
+                                                    "waiting", FieldValue.arrayRemove(userId)
                                             )
                                             .addOnSuccessListener(v -> onSuccess.onSuccess(null))
                                             .addOnFailureListener(onFailure);
@@ -448,6 +504,8 @@ public class FirebaseEventRepository implements EventRepository {
                             .addOnFailureListener(onFailure);
                 })
                 .addOnFailureListener(onFailure);
+
+
     }
 
 }
