@@ -17,6 +17,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
+import com.example.myapplication.core.DeviceLoginStore;
 import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.User;
 import com.google.android.material.button.MaterialButton;
@@ -217,6 +218,7 @@ public class OProfileFrag extends Fragment {
                     }
                     showToast(getString(R.string.delete_profile_success));
                     FirebaseAuth.getInstance().signOut();
+                    DeviceLoginStore.markLoggedOut(requireContext());
                     UserSession.getInstance().setCurrentUser(null);
                     setDeleting(false);
                     navigateToWelcomeScreen();
