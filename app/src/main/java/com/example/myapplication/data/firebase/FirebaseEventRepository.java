@@ -39,7 +39,8 @@ public class FirebaseEventRepository implements EventRepository {
      *
      * The method will update the "events" collection in the application FireStore by adding
      * the user id (uid) into an array named "waitlist". "waitlist" is an array of user ids that
-     * are a part of the specified events waitlist.
+     * are a part of the specified events waitlist. It also updates the notificationList document
+     * for the linked event with the user id.
      *
      * @param eventId The id of event the user wants to join
      * @param uid The id of the user themselves
@@ -52,6 +53,20 @@ public class FirebaseEventRepository implements EventRepository {
                 .update("waitlist", FieldValue.arrayUnion(uid))
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
+
+        db.collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener( x -> {
+                   if(!x.isEmpty()) {
+                       var doc = x.getDocuments().get(0);
+                       doc.getReference().update(
+                               "waiting", FieldValue.arrayUnion(uid),
+                               "all", FieldValue.arrayUnion(uid)
+                       );
+                   }
+                });
     }
 
 
