@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="event_theme_options">
+        <item>Music &amp; Entertainment</item>
+        <item>Art &amp; Culture</item>
+        <item>Food &amp; Drink</item>
+        <item>Sports &amp; Fitness</item>
+        <item>Wellness &amp; Mindfulness</item>
+        <item>Tech &amp; Innovation</item>
+        <item>Outdoors &amp; Adventure</item>
+    </string-array>
+</resources>
