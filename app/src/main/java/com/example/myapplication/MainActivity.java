@@ -1,15 +1,19 @@
 package com.example.myapplication;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import androidx.annotation.IdRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
+import com.example.myapplication.core.DeviceLoginStore;
 import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * This class is the main entry point of the application
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
 
         NavigationUI.setupWithNavController(navView, navController);
+        navView.setOnItemSelectedListener(this::handleBottomNavSelection);
         currentMenuResId = -1;
 
         navController.addOnDestinationChangedListener((c, d, a) -> {
@@ -63,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         navView.getMenu().clear();
         navView.inflateMenu(desiredMenu);
         NavigationUI.setupWithNavController(navView, navController);
+        navView.setOnItemSelectedListener(this::handleBottomNavSelection);
         currentMenuResId = desiredMenu;
     }
 
@@ -98,5 +104,27 @@ public class MainActivity extends AppCompatActivity {
      */
     public void navigateToBottomDestination(@IdRes int destinationId) {
         navView.setSelectedItemId(destinationId);
+    }
+
+    private boolean handleBottomNavSelection(MenuItem item) {
+        if (item.getItemId() == R.id.navigation_logout) {
+            performLogout();
+            return true;
+        }
+        return NavigationUI.onNavDestinationSelected(item, navController);
+    }
+
+    private void performLogout() {
+        FirebaseAuth.getInstance().signOut();
+        UserSession.getInstance().clearSession();
+        DeviceLoginStore.markLoggedOut(getApplicationContext());
+
+        if (navController != null) {
+            NavOptions options = new NavOptions.Builder()
+                    .setPopUpTo(navController.getGraph().getId(), true)
+                    .build();
+            navController.navigate(R.id.navigation_welcome, null, options);
+        }
+        currentMenuResId = -1;
     }
 }
