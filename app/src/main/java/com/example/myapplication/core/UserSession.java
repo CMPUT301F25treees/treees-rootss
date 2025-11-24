@@ -48,6 +48,8 @@ public class UserSession {
 
     /**
      * Check if a user is currently logged in
+     * @param None
+     * @return true if a user is logged in, false otherwise
      */
     public boolean isLoggedIn() {
         return currentUser != null;
@@ -55,6 +57,8 @@ public class UserSession {
 
     /**
      * Clear the current user session (logout)
+     * @param None
+     * @return void
      */
     public void clearSession() {
         this.currentUser = null;

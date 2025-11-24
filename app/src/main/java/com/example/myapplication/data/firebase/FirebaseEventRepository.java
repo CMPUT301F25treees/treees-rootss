@@ -108,6 +108,7 @@ public class FirebaseEventRepository implements EventRepository {
 
     public interface EventListCallback {
         void onEventsFetched(List<UserEvent> events);
+
         void onError(Exception e);
     }
 
@@ -224,10 +225,8 @@ public class FirebaseEventRepository implements EventRepository {
         imageRepository.uploadImage(qrUri, new ImageRepository.UploadCallback() {
             @Override
             public void onSuccess(String secureUrl) {
-                // 6) Store QR URL on the event
                 event.setQrData(secureUrl);
 
-                // 7) Save the event (with qrImageUrl) into Firestore
                 db.collection("events")
                         .document(id)
                         .set(event)
@@ -256,7 +255,7 @@ public class FirebaseEventRepository implements EventRepository {
      * @param eventId Firestore ID of the event
      * @param event event with updated data
      * @param onSuccess callback triggered when successful
-     * @param onFailure callback triggered when uncsuccessful
+     * @param onFailure callback triggered when unsuccessful
      */
     @Override
     public void updateEvent(String eventId, UserEvent event, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
@@ -289,7 +288,7 @@ public class FirebaseEventRepository implements EventRepository {
         payload.put("event", eventName);
         payload.put("eventId", eventId);
         payload.put("from", "System");
-        payload.put("message", "🎉 Congratulations! You've been selected to participate in this event.");
+        payload.put("message", "Congratulations! You've been selected to participate in this event.");
         payload.put("type", "lottery_win");
         payload.put("status", "pending");
         payload.put("uID", winnerIds);
