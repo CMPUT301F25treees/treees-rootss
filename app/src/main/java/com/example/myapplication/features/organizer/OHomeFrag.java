@@ -162,11 +162,25 @@ public class OHomeFrag extends Fragment {
         private final int spanCount;
         private final int spacing;
 
+        /**
+         * Constructor for GridSpacingItemDecoration.
+         *
+         * @param spanCount The number of columns in the grid.
+         * @param spacing   The spacing in pixels to apply between items.
+         */
         GridSpacingItemDecoration(int spanCount, int spacing) {
             this.spanCount = spanCount;
             this.spacing = spacing;
         }
 
+        /**
+         * Calculates the offsets for each item in the grid to ensure even spacing.
+         *
+         * @param outRect The Rect to receive the output.
+         * @param view    The child view to decorate.
+         * @param parent  The RecyclerView this ItemDecoration is decorating.
+         * @param state   The current state of RecyclerView.
+         */
         @Override
         public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
                                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
