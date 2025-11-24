@@ -478,7 +478,14 @@ public class OEventListFrag extends Fragment {
                 }
         );
     }
-        private void onExportClicked() {
+
+    /**
+     * Handles the exporting after export button is clicked
+     *
+     * The current list mode is determined and then using the ExportHelper methods
+     * a CSV is created and saved to the devices file storage.
+     */
+    private void onExportClicked() {
             String modeLabel;
             switch (currentMode) {
                 case WAITING:
