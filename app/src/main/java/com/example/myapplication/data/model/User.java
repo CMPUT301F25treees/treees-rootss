@@ -58,7 +58,18 @@ public class User {
      */
     public void setEmail(String email) { this.email = email; }
 
+    /**
+     * Get username of the user.
+     * @param None
+     * @return username as String
+     */
     public String getUsername() { return username; }
+
+    /**
+     * Set username of the user.
+     * @param username Display name to set
+     * @return void
+     */
     public void setUsername(String username) { this.username = username; }
 
     public String getRole() { return role; }
