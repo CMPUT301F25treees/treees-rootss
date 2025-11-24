@@ -10,6 +10,7 @@ import androidx.annotation.*;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import com.example.myapplication.R;
+import com.example.myapplication.core.DeviceLoginStore;
 import com.example.myapplication.data.model.User;
 import com.example.myapplication.core.UserSession;
 import com.google.firebase.auth.FirebaseAuth;
@@ -116,6 +117,7 @@ public class LoginFrag extends Fragment {
 
                 // Store in session
                 UserSession.getInstance().setCurrentUser(user);
+                DeviceLoginStore.rememberUser(requireContext(), user);
 
                 int destination = R.id.navigation_user_home;
                 if ("admin".equalsIgnoreCase(user.getRole())) {
@@ -160,6 +162,7 @@ public class LoginFrag extends Fragment {
         dummyUser.setCreatedAt(System.currentTimeMillis());
 
         UserSession.getInstance().setCurrentUser(dummyUser);
+        DeviceLoginStore.rememberUser(requireContext(), dummyUser);
         toast("Logged in as demo user");
 
         NavHostFragment.findNavController(this).navigate(R.id.navigation_user_home);

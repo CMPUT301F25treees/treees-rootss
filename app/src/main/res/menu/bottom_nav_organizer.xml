@@ -16,4 +16,10 @@
         android:icon="@drawable/ic_create"
         android:iconTint="@null"
         android:title="Create"/>
+
+    <item
+        android:id="@+id/navigation_logout"
+        android:icon="@drawable/ic_logout"
+        android:iconTint="@null"
+        android:title="Logout"/>
 </menu>
