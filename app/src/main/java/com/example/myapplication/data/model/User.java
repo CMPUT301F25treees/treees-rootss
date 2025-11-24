@@ -7,9 +7,21 @@ public class User {
     private String role;
     private long createdAt;
 
-    // Empty constructor for Firebase
+    /**
+     * Empty constructor for user deserialization
+     * @param None
+     * @return void
+     */
     public User() {}
 
+    /**
+     * Parameterized constructor for User
+     * @param uid Unique identifier for the user
+     * @param email Email address of the user
+     * @param username Display name of the user
+     * @param role Role of the user (e.g., "admin", "user")
+     * @return void
+     */
     public User(String uid, String email, String username, String role) {
         this.uid = uid;
         this.email = email;
@@ -18,10 +30,25 @@ public class User {
         this.createdAt = System.currentTimeMillis();
     }
 
-    // Getters and Setters
+    /**
+     * Get uid of the user.
+     * @param None
+     * @return uid as String
+     */
     public String getUid() { return uid; }
+
+    /**
+     * Set uid of the user.
+     * @param uid Unique identifier to set
+     * @return void
+     */
     public void setUid(String uid) { this.uid = uid; }
 
+    /**
+     * Get email of the user.
+     * @param None
+     * @return email as String
+     */
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
