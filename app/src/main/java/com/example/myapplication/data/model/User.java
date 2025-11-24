@@ -72,16 +72,48 @@ public class User {
      */
     public void setUsername(String username) { this.username = username; }
 
+    /**
+     * Get role of the user.
+     * @param None
+     * @return role as String
+     */
     public String getRole() { return role; }
+
+    /**
+     * Set role of the user.
+     * @param role Role to set (e.g., "admin", "user")
+     * @return void
+     */
     public void setRole(String role) { this.role = role; }
 
+    /**
+     * Get account creation timestamp.
+     * @param None
+     * @return createdAt as long
+     */
     public long getCreatedAt() { return createdAt; }
+
+    /**
+     * Set account creation timestamp.
+     * @param createdAt Timestamp to set
+     * @return void
+     */
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 
+    /**
+     * Check if the user has admin role.
+     * @param None
+     * @return true if user is admin, false otherwise
+     */
     public boolean isAdmin() {
         return "admin".equalsIgnoreCase(role);
     }
 
+    /**
+     * String representation of the User object.
+     * @param None
+     * @return String describing the user
+     */
     @Override
     public String toString() {
         return "User{" +
