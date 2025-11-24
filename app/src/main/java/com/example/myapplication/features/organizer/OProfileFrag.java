@@ -46,9 +46,21 @@ public class OProfileFrag extends Fragment {
     private View deleteProfileCard;
     private boolean isDeleting = false;
 
+    /**
+     * Constructor for OProfileFrag.
+     * @param None
+     * @return void
+     */
     public OProfileFrag() {
         super(R.layout.fragment_o_profile);
     }
+
+    /**
+     * Configures the role selection, navigation cards, and delete profile workflow.
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return void
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -97,6 +109,12 @@ public class OProfileFrag extends Fragment {
         }
     }
 
+    /**
+     * Updates the role button label, user session, and main activity navigation.
+     * @param roleLabel The selected role label.
+     * @param roleButton The button to update the label on.
+     * @return void
+     */
     private void applyRoleSelection(String roleLabel, MaterialButton roleButton) {
         String normalized = "organizer".equalsIgnoreCase(roleLabel) ? "organizer" : "user";
         roleButton.setText(formatRoleLabel(normalized));
@@ -120,6 +138,11 @@ public class OProfileFrag extends Fragment {
         }
     }
 
+    /**
+     * Formats the role label for display.
+     * @param role The role string to format.
+     * @return A user-friendly role label.
+     */
     private String formatRoleLabel(String role) {
         if (role == null || role.trim().isEmpty()) {
             return "User";
