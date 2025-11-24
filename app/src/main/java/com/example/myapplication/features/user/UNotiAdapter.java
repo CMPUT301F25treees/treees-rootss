@@ -23,30 +23,18 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
         void onOptionClick(DocumentSnapshot snapshot);
     }
 
-    public interface OnLotteryActionListener {
-        void onAccept(DocumentSnapshot snapshot, UNotiItem item);
-        void onDecline(DocumentSnapshot snapshot, UNotiItem item);
-    }
-
     private final OnOptionClickListener optionListener;
-    private final OnLotteryActionListener lotteryListener;
 
     public UNotiAdapter(@NonNull FirestoreRecyclerOptions<UNotiItem> options) {
-        this(options, snapshot -> {}, null);
+        this(options, snapshot -> {});
     }
 
     public UNotiAdapter(@NonNull FirestoreRecyclerOptions<UNotiItem> options,
                         @NonNull OnOptionClickListener optionListener) {
-        this(options, optionListener, null);
-    }
-
-    public UNotiAdapter(@NonNull FirestoreRecyclerOptions<UNotiItem> options,
-                        @NonNull OnOptionClickListener optionListener,
-                        OnLotteryActionListener lotteryListener) {
         super(options);
         this.optionListener = optionListener;
-        this.lotteryListener = lotteryListener;
     }
+
 
     /**
      * Binds the UNotiItem to the UI Elements
@@ -61,49 +49,18 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
         holder.messageText.setText(model.getMessage());
         holder.eventText.setText(model.getEvent());
 
-        // Handle lottery win notifications with accept/decline buttons
-        if (model.isLotteryWin() && model.isPending()) {
-            holder.optionButton.setVisibility(View.GONE);
-            holder.acceptButton.setVisibility(View.VISIBLE);
-            holder.declineButton.setVisibility(View.VISIBLE);
+        // We ALWAYS show only the options button; user/admin behavior is decided in the fragment.
 
-            holder.acceptButton.setOnClickListener(v -> {
-                int pos = holder.getBindingAdapterPosition();
-                if (pos != RecyclerView.NO_POSITION && lotteryListener != null) {
-                    lotteryListener.onAccept(getSnapshots().getSnapshot(pos), model);
-                }
-            });
+        holder.optionButton.setVisibility(View.VISIBLE);
+        holder.optionButton.setEnabled(true);
+        holder.optionButton.setText("Select options");
 
-            holder.declineButton.setOnClickListener(v -> {
-                int pos = holder.getBindingAdapterPosition();
-                if (pos != RecyclerView.NO_POSITION && lotteryListener != null) {
-                    lotteryListener.onDecline(getSnapshots().getSnapshot(pos), model);
-                }
-            });
-        }
-        // Show status for already responded lottery wins
-        else if (model.isLotteryWin() && (model.isAccepted() || model.isDeclined())) {
-            holder.optionButton.setVisibility(View.VISIBLE);
-            holder.acceptButton.setVisibility(View.GONE);
-            holder.declineButton.setVisibility(View.GONE);
-
-            String statusText = model.isAccepted() ? "✓ Accepted" : "✗ Declined";
-            holder.optionButton.setText(statusText);
-            holder.optionButton.setEnabled(false);
-        }
-        // Regular notifications or lottery lose
-        else {
-            holder.optionButton.setVisibility(View.VISIBLE);
-            holder.acceptButton.setVisibility(View.GONE);
-            holder.declineButton.setVisibility(View.GONE);
-
-            holder.optionButton.setOnClickListener(v -> {
-                int pos = holder.getBindingAdapterPosition();
-                if (pos != RecyclerView.NO_POSITION) {
-                    optionListener.onOptionClick(getSnapshots().getSnapshot(pos));
-                }
-            });
-        }
+        holder.optionButton.setOnClickListener(v -> {
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && optionListener != null) {
+                optionListener.onOptionClick(getSnapshots().getSnapshot(pos));
+            }
+        });
     }
 
     @NonNull

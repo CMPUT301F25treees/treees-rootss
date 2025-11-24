@@ -439,7 +439,25 @@ public class FirebaseEventRepository implements EventRepository {
                 .document(notificationId)
                 .update("status", "accepted")
                 .addOnSuccessListener(aVoid -> {
-                    onSuccess.onSuccess(null);
+                    db.collection("notificationList")
+                            .whereEqualTo("eventId", eventId)
+                            .limit(1)
+                            .get()
+                            .addOnSuccessListener(qs -> {
+                                if (!qs.isEmpty()) {
+                                    var doc = qs.getDocuments().get(0);
+                                    doc.getReference()
+                                            .update(
+                                                    "waiting", FieldValue.arrayRemove(userId),
+                                                    "final", FieldValue.arrayUnion(userId)
+                                            )
+                                            .addOnSuccessListener(v -> onSuccess.onSuccess(null))
+                                            .addOnFailureListener(onFailure);
+                                } else {
+                                    onSuccess.onSuccess(null);
+                                }
+                            })
+                            .addOnFailureListener(onFailure);
                 })
                 .addOnFailureListener(onFailure);
 
@@ -476,7 +494,6 @@ public class FirebaseEventRepository implements EventRepository {
     public void declineInvitation(String notificationId, String eventId, String userId,
                                   OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
 
-        // Update notification status to "declined"
         db.collection("notifications")
                 .document(notificationId)
                 .update("status", "declined")
