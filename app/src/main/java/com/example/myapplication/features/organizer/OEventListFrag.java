@@ -412,7 +412,8 @@ public class OEventListFrag extends Fragment {
 
     /**
      * Executes the lottery draw by delegating to {@link FirebaseEventRepository#runLottery}
-     * and displays the result to the organizer.
+     * and displays the result to the organizer. The list is also requeried so that the view
+     * stays updated.
      */
     private void runLotteryNow() {
         int toSelect = (int) Math.max(1, entrantsToDraw);
@@ -422,16 +423,25 @@ public class OEventListFrag extends Fragment {
                 eventName,
                 new ArrayList<>(currentUids),
                 toSelect,
-                selectedCount -> Toast.makeText(
-                        requireContext(),
-                        "Invited " + selectedCount + " user(s). Notifications sent for \"" + eventName + "\".",
-                        Toast.LENGTH_LONG
-                ).show(),
-                e -> Toast.makeText(
-                        requireContext(),
-                        "Draw failed: " + e.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show()
+                selectedCount -> {
+                    if (!isAdded()) return;
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Invited " + selectedCount + " user(s). Notifications sent for \"" + eventName + "\".",
+                            Toast.LENGTH_LONG
+                    ).show();
+                    loadListForCurrentMode();
+                },
+                e -> {
+                    if (!isAdded()) return;
+
+                    Toast.makeText(
+                            requireContext(),
+                            "Draw failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
         );
     }
 }
