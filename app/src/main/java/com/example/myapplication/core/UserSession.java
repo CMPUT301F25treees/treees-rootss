@@ -11,10 +11,17 @@ public class UserSession {
     private User currentUser;
 
     /**
-     *
+     * Private constructor to prevent instantiation
+     * @param None
+     * @return void
      */
     private UserSession() {}
 
+    /**
+     * Get the singleton instance of UserSession
+     * @param None
+     * @return UserSession instance
+     */
     public static UserSession getInstance() {
         if (instance == null) {
             instance = new UserSession();
@@ -24,6 +31,8 @@ public class UserSession {
 
     /**
      * Set the current logged-in user
+     * @param user The User object representing the logged-in user
+     * @return void
      */
     public void setCurrentUser(User user) {
         this.currentUser = user;
@@ -51,6 +60,3 @@ public class UserSession {
         this.currentUser = null;
     }
 }
-
-
-// user@example.com password123
