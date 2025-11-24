@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -63,6 +64,11 @@ public class ANotiFrag extends Fragment {
         recyclerView = view.findViewById(R.id.notifications_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setHasFixedSize(true);
+
+        SwitchCompat switchNotifications = view.findViewById(R.id.switch_notifications);
+        if (switchNotifications != null) {
+            switchNotifications.setVisibility(View.GONE);
+        }
 
         Button backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(x -> {

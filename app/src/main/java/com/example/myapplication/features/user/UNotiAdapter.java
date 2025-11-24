@@ -22,6 +22,12 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
     public interface OnOptionClickListener {
         void onOptionClick(DocumentSnapshot snapshot);
     }
+    private boolean showPersonalNoti = true;
+
+    public void setShowPersonalNoti(boolean show) {
+        this.showPersonalNoti = show;
+        notifyDataSetChanged();
+    }
 
     private final OnOptionClickListener optionListener;
 
@@ -45,15 +51,29 @@ public class UNotiAdapter extends FirestoreRecyclerAdapter<UNotiItem, UNotiAdapt
      */
     @Override
     protected void onBindViewHolder(@NonNull UNotiViewHolder holder, int position, @NonNull UNotiItem model) {
+        if (!showPersonalNoti && "custom".equalsIgnoreCase(model.getType())) {
+            // Hide and collapse this row
+            holder.itemView.setVisibility(View.GONE);
+            ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
+            if (params instanceof RecyclerView.LayoutParams) {
+                RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) params;
+                lp.height = 0;
+                holder.itemView.setLayoutParams(lp);
+            }
+            return;
+        } else {
+            holder.itemView.setVisibility(View.VISIBLE);
+            ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
+            if (params instanceof RecyclerView.LayoutParams) {
+                RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) params;
+                lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                holder.itemView.setLayoutParams(lp);
+            }
+        }
+
         holder.fromText.setText(model.getFrom());
         holder.messageText.setText(model.getMessage());
         holder.eventText.setText(model.getEvent());
-
-        // We ALWAYS show only the options button; user/admin behavior is decided in the fragment.
-
-        holder.optionButton.setVisibility(View.VISIBLE);
-        holder.optionButton.setEnabled(true);
-        holder.optionButton.setText("Select options");
 
         holder.optionButton.setOnClickListener(v -> {
             int pos = holder.getBindingAdapterPosition();
