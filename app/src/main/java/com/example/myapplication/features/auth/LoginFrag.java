@@ -20,6 +20,9 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.annotations.Nullable;
+
 /**
  * This class handles user authentication using Firebase Auth.
  *
@@ -36,13 +39,36 @@ public class LoginFrag extends Fragment {
     private TextInputEditText etEmail, etPassword;
     private ProgressBar progress;
 
+    /**
+     * Default constructor
+     * @param: None
+     * @return: void
+     */
     public LoginFrag() {}
 
-    @Nullable @Override
+    /**
+     * This method inflates the layout for the fragment.
+     *
+     * @param inf LayoutInflater object that can be used to inflate any views in the fragment
+     * @param c If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param b If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return The View for the fragment's UI, or null.
+     */
+    @Nullable
+    @Override
     public View onCreateView(@NonNull LayoutInflater inf, @Nullable ViewGroup c, @Nullable Bundle b) {
         return inf.inflate(R.layout.fragment_auth_login, c, false);
     }
 
+    /**
+     * This method is called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     *
+     * Initializes FirebaseAuth and Firestore instances. Also initializes input fields
+     * and login button listener.
+     *
+     * @param v The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param b If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     */
     @Override public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
         auth = FirebaseAuth.getInstance();
         db   = FirebaseFirestore.getInstance();
