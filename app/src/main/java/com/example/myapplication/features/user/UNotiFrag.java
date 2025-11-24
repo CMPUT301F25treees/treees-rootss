@@ -24,6 +24,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.appcompat.widget.SwitchCompat;
 
 /**
  * Fragment responsible for displaying a list of notifications for the currently logged-in user.
@@ -42,6 +43,7 @@ public class UNotiFrag extends Fragment {
 
     FirebaseEventRepository repo = new FirebaseEventRepository();
 
+    private boolean showPersonalNoti = false;
 
     /**
      * Called to have the fragment instantiate its user interface view.
@@ -80,6 +82,8 @@ public class UNotiFrag extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setHasFixedSize(true);
 
+        SwitchCompat switchNotifications = view.findViewById(R.id.switch_notifications);
+
         Button backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(x -> {
             Navigation.findNavController(view).navigateUp();
@@ -113,6 +117,14 @@ public class UNotiFrag extends Fragment {
         });
 
         recyclerView.setAdapter(adapter);
+
+        switchNotifications.setChecked(true);
+        adapter.setShowPersonalNoti(true);
+
+        switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            adapter.setShowPersonalNoti(isChecked);
+        });
+
     }
 
     /**
