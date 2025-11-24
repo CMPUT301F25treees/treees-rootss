@@ -50,6 +50,12 @@ public class User {
      * @return email as String
      */
     public String getEmail() { return email; }
+
+    /**
+     * Set email of the user.
+     * @param email Email address to set
+     * @return void
+     */
     public void setEmail(String email) { this.email = email; }
 
     public String getUsername() { return username; }
