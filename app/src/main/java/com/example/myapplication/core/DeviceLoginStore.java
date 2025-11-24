@@ -22,8 +22,18 @@ public class DeviceLoginStore {
     private static final String KEY_DEVICE_ID = "device_id";
     private static final String KEY_LOGGED_OUT = "logged_out";
 
+    /** Private constructor to prevent instantiation
+     * @param None
+     * @return None
+     * */
     private DeviceLoginStore() {}
 
+    /**
+     * Remember the given user as the last signed-in user on this device.
+     * @param context The application context
+     * @param user The user to remember
+     * @return None
+     */
     public static void rememberUser(Context context, User user) {
         if (context == null || user == null || user.getUid() == null) {
             return;
@@ -39,6 +49,11 @@ public class DeviceLoginStore {
                 .apply();
     }
 
+    /**
+     * Marks the user as logged out on this device.
+     * @param context The application context
+     * @return None
+     */
     public static void markLoggedOut(Context context) {
         if (context == null) {
             return;
@@ -52,6 +67,11 @@ public class DeviceLoginStore {
                 .apply();
     }
 
+    \**
+     * Retrieves the remembered user if they are still valid for this device.
+     * @param context The application context
+     * @return The remembered user, or null if none is remembered or valid
+     */
     @Nullable
     public static User getRememberedUser(Context context) {
         if (context == null) {
