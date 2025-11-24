@@ -39,27 +39,52 @@ public class ImageRepository {
         MediaManager.get().upload(imageUri)
                 .callback(new com.cloudinary.android.callback.UploadCallback(){
 
+                    /** Empty overridden methods
+                        @params requestId - the unique ID of the upload request
+                        @return void
+                     */
                     @Override
                     public void onStart(String requestId) {
 
                     }
 
+                    /** Empty overridden methods
+                        @params requestId - the unique ID of the upload request
+                        @params bytes - the number of bytes uploaded so far
+                        @params totalBytes - the total number of bytes to be uploaded
+                        @return void
+                     */
                     @Override
                     public void onProgress(String requestId, long bytes, long totalBytes) {
 
                     }
 
+                    /** Handles successful image upload
+                        @params requestId - the unique ID of the upload request
+                        @params resultData - a map containing details about the uploaded image
+                        @return void
+                     */
                     @Override
                     public void onSuccess(String requestId, Map resultData) {
                         String secureUrl = resultData.get("secure_url").toString();
                         callback.onSuccess((secureUrl));
                     }
 
+                    /** Handles image upload errors
+                        @params requestId - the unique ID of the upload request
+                        @params error - an ErrorInfo object containing error details
+                        @return void
+                     */
                     @Override
                     public void onError(String requestId, ErrorInfo error) {
                         callback.onError(error.getDescription());
                     }
 
+                    /** Empty overridden methods
+                        @params requestId - the unique ID of the upload request
+                        @params error - an ErrorInfo object containing error details
+                        @return void
+                     */
                     @Override
                     public void onReschedule(String requestId, ErrorInfo error) {
 

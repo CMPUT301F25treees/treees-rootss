@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -48,12 +50,19 @@ public class UHomeFrag extends Fragment {
     private final SimpleDateFormat availabilityDateFormat =
             new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
 
+    /**
+     * Default constructor.
+     * @param None
+     * @return void
+     */
     public UHomeFrag() {
         super(R.layout.fragment_u_home);
     }
 
     /**
      * Sets up the event grid, search/filter controls, and kicks off the initial fetch.
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @return void
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -105,6 +114,8 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Loads all events from Firestore and filters out those owned by the current user.
+     * @param None
+     * @return void
      */
     private void fetchEventsFromFirestore(){
         FirebaseEventRepository repo = new FirebaseEventRepository();
@@ -134,6 +145,8 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Placeholder filter menu that demonstrates how filtering options will surface.
+     * @param anchor The view to anchor the popup menu to.
+     * @return void
      */
     private void showFilterMenu(View anchor) {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
@@ -159,6 +172,11 @@ public class UHomeFrag extends Fragment {
         menu.show();
     }
 
+    /**
+     * Shows a multi-choice dialog for selecting event interests to filter by.
+     * @param None
+     * @return void
+     */
     private void showInterestsDialog() {
         String[] options = getResources().getStringArray(R.array.event_theme_options);
         boolean[] checked = new boolean[options.length];
@@ -205,6 +223,11 @@ public class UHomeFrag extends Fragment {
                 .show();
     }
 
+    /**
+     * Shows a date range picker for selecting availability dates to filter by.
+     * @param None
+     * @return void
+     */
     private void showAvailabilityPicker() {
         MaterialDatePicker.Builder<Pair<Long, Long>> builder =
                 MaterialDatePicker.Builder.dateRangePicker()
@@ -231,6 +254,11 @@ public class UHomeFrag extends Fragment {
         picker.show(getParentFragmentManager(), "availability_range_picker");
     }
 
+    /**
+     * Gets the currently selected availability date range.
+     * @param None
+     * @return Pair of start and end millis, or null if not set.
+     */
     @Nullable
     private Pair<Long, Long> getAvailabilitySelection() {
         if (availabilityStartMillis == null || availabilityEndMillis == null) {
@@ -239,6 +267,11 @@ public class UHomeFrag extends Fragment {
         return new Pair<>(availabilityStartMillis, availabilityEndMillis);
     }
 
+    /**
+     * Clears the availability date filter.
+     * @param None
+     * @return void
+     */
     private void clearAvailabilityFilter() {
         if (availabilityStartMillis == null && availabilityEndMillis == null) {
             return;
@@ -251,10 +284,20 @@ public class UHomeFrag extends Fragment {
                 Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Summarizes the selected interests as a comma-separated string.
+     * @param None
+     * @return Comma-separated list of selected interests.
+     */
     private String summarizeInterests() {
         return TextUtils.join(", ", selectedInterests);
     }
 
+    /**
+     * Formats a millis timestamp into a readable date string.
+     * @param millis The timestamp in milliseconds.
+     * @return Formatted date string.
+     */
     private String formatAvailabilityDate(Long millis) {
         if (millis == null) {
             return "";
@@ -262,6 +305,11 @@ public class UHomeFrag extends Fragment {
         return availabilityDateFormat.format(millis);
     }
 
+    /**
+     * Returns the start of the day (00:00:00.000) for the given timestamp.
+     * @param timeMillis The input timestamp in milliseconds.
+     * @return Timestamp at the start of the day.
+     */
     private long startOfDay(long timeMillis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timeMillis);
@@ -272,6 +320,11 @@ public class UHomeFrag extends Fragment {
         return calendar.getTimeInMillis();
     }
 
+    /**
+     * Returns the end of the day (23:59:59.999) for the given timestamp.
+     * @param timeMillis The input timestamp in milliseconds.
+     * @return Timestamp at the end of the day.
+     */
     private long endOfDay(long timeMillis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timeMillis);
@@ -282,6 +335,11 @@ public class UHomeFrag extends Fragment {
         return calendar.getTimeInMillis();
     }
 
+    /**
+     * Applies the currently selected filters to the full event list and updates the adapter.
+     * @param None
+     * @return void
+     */
     private void applyCurrentFilters() {
         if (adapter == null) {
             return;
@@ -307,6 +365,12 @@ public class UHomeFrag extends Fragment {
         }
     }
 
+    /**
+     * Filters events based on the provided list of interests.
+     * @param events The list of events to filter.
+     * @param interests The list of interests to filter by.
+     * @return A list of events matching the interests.
+     */
     static List<UserEvent> filterEventsByInterests(List<UserEvent> events, List<String> interests) {
         List<UserEvent> filtered = new ArrayList<>();
         if (events == null || events.isEmpty()) {
@@ -334,6 +398,13 @@ public class UHomeFrag extends Fragment {
         return filtered;
     }
 
+    /**
+     * Filters events based on availability within the specified time range.
+     * @param events The list of events to filter.
+     * @param startTime The start of the availability range in milliseconds.
+     * @param endTime The end of the availability range in milliseconds.
+     * @return A list of events available within the specified time range.
+     */
     static List<UserEvent> filterEventsByAvailability(List<UserEvent> events, long startTime, long endTime) {
         List<UserEvent> filtered = new ArrayList<>();
         if (events == null || events.isEmpty()) {
@@ -362,6 +433,9 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Returns a new list that excludes events owned by the provided user ID.
+     * @param events The list of events to filter.
+     * @param currentUserId The user ID to exclude events for.
+     * @return A list of events not organized by the specified user.
      */
     static List<UserEvent> filterEventsForDisplay(List<UserEvent> events, String currentUserId) {
         List<UserEvent> filtered = new ArrayList<>();
@@ -389,11 +463,25 @@ public class UHomeFrag extends Fragment {
         private final int spanCount;
         private final int spacing;
 
+        /**
+         * Constructor for GridSpacingItemDecoration.
+         *
+         * @param spanCount The number of columns in the grid.
+         * @param spacing   The spacing in pixels to apply between items.
+         */
         GridSpacingItemDecoration(int spanCount, int spacing) {
             this.spanCount = spanCount;
             this.spacing = spacing;
         }
 
+        /**
+         * Calculates and applies the offsets for each item to maintain even spacing.
+         *
+         * @param outRect The Rect to receive the output.
+         * @param view    The child view to decorate.
+         * @param parent  The RecyclerView this ItemDecoration is decorating.
+         * @param state   The current state of RecyclerView.
+         */
         @Override
         public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
                                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {

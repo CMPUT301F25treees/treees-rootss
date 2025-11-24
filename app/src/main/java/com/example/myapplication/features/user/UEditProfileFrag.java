@@ -3,7 +3,9 @@ package com.example.myapplication.features.user;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -44,10 +46,22 @@ public class UEditProfileFrag extends Fragment {
     private FirebaseAuth auth;
     private FirebaseFirestore db;
 
+    /**
+     * Constructor for UEditProfileFrag.
+     * @param None
+     * @return void
+     */
     public UEditProfileFrag() {
         super(R.layout.fragment_u_edit_profile);
     }
 
+    /**
+     * Initializes Firebase instances, input fields, and button listeners.
+     *
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return void
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -93,6 +107,12 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
+    /**
+     * Applies the loaded document data to the input fields.
+     *
+     * @param snapshot The Firestore document snapshot containing user profile data.
+     * @return void
+     */
     private void applyDocument(DocumentSnapshot snapshot) {
         setLoading(false);
         if (snapshot == null || !snapshot.exists()) {
@@ -120,6 +140,8 @@ public class UEditProfileFrag extends Fragment {
 
     /**
      * Validates the inputs and starts the save flow.
+     * @param None
+     * @return void
      */
     private void attemptSave() {
         tilFirstName.setError(null);
@@ -178,6 +200,14 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
+    /**
+     * Updates the user's email in Firebase Authentication and persists it in Firestore.
+     *
+     * @param firebaseUser The current Firebase user.
+     * @param firstName The user's first name.
+     * @param desiredEmail The new email address to set.
+     * @return void
+     */
     private void updateEmailAndPersist(FirebaseUser firebaseUser, String firstName, String desiredEmail) {
         firebaseUser.updateEmail(desiredEmail)
                 .addOnSuccessListener(v -> persistEmailField(firstName, desiredEmail))
@@ -187,6 +217,13 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
+    /**
+     * Persists the updated email field in Firestore.
+     *
+     * @param firstName The user's first name.
+     * @param email The new email address to set.
+     * @return void
+     */
     private void persistEmailField(String firstName, String email) {
         FirebaseUser firebaseUser = auth.getCurrentUser();
         if (firebaseUser == null) {
@@ -208,6 +245,13 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
+    /**
+     * Finalizes the save operation by updating the session and notifying the user.
+     *
+     * @param firstName The user's first name.
+     * @param email The user's email address.
+     * @return void
+     */
     private void finishSave(String firstName, String email) {
         setLoading(false);
 
@@ -222,15 +266,33 @@ public class UEditProfileFrag extends Fragment {
         NavHostFragment.findNavController(this).popBackStack();
     }
 
+    /**
+     * Sets the loading state of the UI.
+     *
+     * @param loading True to show loading state, false to hide.
+     * @return void
+     */
     private void setLoading(boolean loading) {
         progressView.setVisibility(loading ? View.VISIBLE : View.GONE);
         saveButton.setEnabled(!loading);
     }
 
+    /**
+     * Retrieves trimmed text from a TextInputEditText.
+     *
+     * @param input The TextInputEditText to extract text from.
+     * @return The trimmed text as a String.
+     */
     private String textOf(TextInputEditText input) {
         return input.getText() != null ? input.getText().toString().trim() : "";
     }
 
+    /**
+     * Displays a short Toast message.
+     *
+     * @param message The message to display.
+     * @return void
+     */
     private void toast(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
     }

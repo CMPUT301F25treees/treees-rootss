@@ -22,8 +22,18 @@ public class DeviceLoginStore {
     private static final String KEY_DEVICE_ID = "device_id";
     private static final String KEY_LOGGED_OUT = "logged_out";
 
+    /** Private constructor to prevent instantiation
+     * @param None
+     * @return void
+     * */
     private DeviceLoginStore() {}
 
+    /**
+     * Remember the given user as the last signed-in user on this device.
+     * @param context The application context
+     * @param user The user to remember
+     * @return void
+     */
     public static void rememberUser(Context context, User user) {
         if (context == null || user == null || user.getUid() == null) {
             return;
@@ -39,6 +49,11 @@ public class DeviceLoginStore {
                 .apply();
     }
 
+    /**
+     * Marks the user as logged out on this device.
+     * @param context The application context
+     * @return void
+     */
     public static void markLoggedOut(Context context) {
         if (context == null) {
             return;
@@ -52,6 +67,11 @@ public class DeviceLoginStore {
                 .apply();
     }
 
+    /**
+     * Retrieves the remembered user if they are still considered logged in on this device.
+     * @param context The application context
+     * @return The remembered user, or null if no valid user is remembered
+     */
     @Nullable
     public static User getRememberedUser(Context context) {
         if (context == null) {
@@ -81,10 +101,20 @@ public class DeviceLoginStore {
         return user;
     }
 
+    /**
+     * Gets the SharedPreferences instance for device login storage.
+     * @param context The application context
+     * @return The SharedPreferences instance
+     */
     private static SharedPreferences prefs(Context context) {
         return context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
+    /**
+     * Retrieves the unique device ID for this Android device.
+     * @param context The application context
+     * @return The device ID string
+     */
     private static String deviceId(Context context) {
         return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }

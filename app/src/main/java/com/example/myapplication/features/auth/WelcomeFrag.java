@@ -31,13 +31,32 @@ public class WelcomeFrag extends Fragment {
     private CharSequence loginButtonText;
     private boolean isAutoLoggingIn = false;
 
+    /** Default constructor
+     * @param: None
+     * @return: void
+     * */
     public WelcomeFrag() {}
 
+    /**
+     * This method inflates the layout for the fragment.
+     *
+     * @param i LayoutInflater object that can be used to inflate any views in the fragment
+     * @param c If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param b If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return The View for the fragment's UI, or null.
+     */
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater i, @Nullable ViewGroup c, @Nullable Bundle b) {
         return i.inflate(R.layout.fragment_auth_welcome, c, false);
     }
 
+    /**
+     * This method gets called after the view has been created. Initializes FirebaseAuth and
+     * Firestore instances, and sets up button click listeners.
+     *
+     * @param v The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param b If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     */
     @Override public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -51,6 +70,12 @@ public class WelcomeFrag extends Fragment {
                 NavHostFragment.findNavController(this).navigate(R.id.navigation_register));
     }
 
+    /**
+     * Handles the login button click event. Attempts to auto-login the user if a remembered
+     * user exists. If auto-login fails, redirects to manual login.
+     * @param: None
+     * @return: void
+     */
     private void handleLoginButton() {
         if (isAutoLoggingIn) {
             return;
@@ -118,6 +143,11 @@ public class WelcomeFrag extends Fragment {
                 });
     }
 
+    /**
+     * Redirects the user to the manual login screen after clearing session data.
+     * @param: None
+     * @return: void
+     */
     private void redirectToManualLogin() {
         isAutoLoggingIn = false;
         setLoginLoading(false);
@@ -136,6 +166,12 @@ public class WelcomeFrag extends Fragment {
         NavHostFragment.findNavController(this).navigate(R.id.navigation_login);
     }
 
+    /**
+     * Continues the login process using the saved user data when profile refresh fails.
+     *
+     * @param savedUser The user data saved on the device.
+     * @return: void
+     */
     private void continueWithSavedUser(User savedUser) {
         if (!isAdded()) {
             return;
@@ -144,6 +180,12 @@ public class WelcomeFrag extends Fragment {
         finalizeLogin(savedUser);
     }
 
+    /**
+     * Sets the login button state to loading or normal.
+     *
+     * @param loading true to show loading state, false to show normal state.
+     * @return: void
+     */
     private void setLoginLoading(boolean loading) {
         if (btnLogin == null) {
             return;
@@ -152,6 +194,13 @@ public class WelcomeFrag extends Fragment {
         btnLogin.setText(loading ? "Logging you in..." : loginButtonText);
     }
 
+    /**
+     * Finalizes the login process by setting the current user in session,
+     * remembering the user on the device, and navigating based on user role.
+     *
+     * @param user The user to finalize login for.
+     * @return: void
+     */
     private void finalizeLogin(User user) {
         if (!isAdded()) {
             return;
@@ -161,6 +210,12 @@ public class WelcomeFrag extends Fragment {
         navigateBasedOnRole(user);
     }
 
+    /**
+     * Navigates the user to the appropriate home screen based on their role.
+     *
+     * @param user The user whose role determines the navigation destination.
+     * @return: void
+     */
     private void navigateBasedOnRole(User user) {
         if (!isAdded()) {
             return;
@@ -174,10 +229,22 @@ public class WelcomeFrag extends Fragment {
         NavHostFragment.findNavController(this).navigate(destination);
     }
 
+    /**
+     * Checks if the user is a local (dummy) user.
+     *
+     * @param user The user to check.
+     * @return true if the user is local, false otherwise.
+     */
     private boolean isLocalUser(User user) {
         return user.getUid() != null && user.getUid().startsWith("LOCAL_");
     }
 
+    /**
+     * Displays a toast message.
+     *
+     * @param message The message to display.
+     * @return: void
+     */
     private void toast(String message) {
         if (!isAdded()) {
             return;

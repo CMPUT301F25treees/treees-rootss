@@ -47,11 +47,26 @@ public class OEventDetailFrag extends Fragment {
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
 
+    /**
+     * This method inflates the layout for the fragment.
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return The View for the fragment's UI, or null.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
         return  inflater.inflate(R.layout.fragment_o_event_details, container, false);
     }
 
+    /**
+     * This method gets called after the view has been created. Initializes FirebaseAuth and
+     * Firestore instances, and sets up button click listeners.
+     *
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return void
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
 
@@ -101,6 +116,7 @@ public class OEventDetailFrag extends Fragment {
      * Changes all the UI elements of the xml to the specific event data.
      *
      * @param event The UserEvent object that holds all the details.
+     * @return void
      */
     private void bindEventData(UserEvent event) {
         if (event == null) {
@@ -131,6 +147,7 @@ public class OEventDetailFrag extends Fragment {
      * Helper method that fetches the details From Firestore
      *
      * @param eventId event Id of the event to retrieve
+     * @return void
      */
     private void refreshEventDetail(String eventId) {
         eventRepository.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
@@ -148,6 +165,9 @@ public class OEventDetailFrag extends Fragment {
 
     /**
      * This method makes sure that event details are refreshed.
+     *
+     * @param None
+     * @return void
      */
     @Override
     public void onResume() {
@@ -160,6 +180,8 @@ public class OEventDetailFrag extends Fragment {
     /**
      * Updates displayed event price or null
      * @param priceText event price
+     *
+     * @return void
      */
     private void updatePrice(String priceText) {
         if (TextUtils.isEmpty(priceText)) {
@@ -173,6 +195,7 @@ public class OEventDetailFrag extends Fragment {
      * Updates displayed date or null
      *
      * @param startMillis event start date
+     * @return void
      */
     private void updateStartDate(long startMillis) {
         if (startMillis > 0) {
@@ -187,6 +210,7 @@ public class OEventDetailFrag extends Fragment {
      * Updates waitling list count.
      *
      * @param event the event contianing the waitinglist.
+     * @return void
      */
     private void updateWaitingListCount(UserEvent event) {
         int count = event.getWaitlist() != null ? event.getWaitlist().size() : 0;
@@ -197,6 +221,7 @@ public class OEventDetailFrag extends Fragment {
      * This method retrieves and displays the organizers name.
      *
      * @param event The specified event the name if from
+     * @return void
      */
     private void loadOrganizerName(UserEvent event) {
         String fallback = extractFirstName(event.getInstructor());
@@ -232,6 +257,7 @@ public class OEventDetailFrag extends Fragment {
      * the ImageView is just cleared.
      *
      * @param event the specified event that image is for
+     * @return void
      */
     private void loadEventImage(UserEvent event) {
         if (eventImage == null) {
@@ -254,6 +280,7 @@ public class OEventDetailFrag extends Fragment {
      * Updates organizer TextView with teh users firstname.
      *
      * @param firstName first name of the organizer
+     * @return void
      */
     private void setOrganizerLabel(String firstName) {
         if (!TextUtils.isEmpty(firstName)) {

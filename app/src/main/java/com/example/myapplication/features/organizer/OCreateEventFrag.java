@@ -78,13 +78,32 @@ public class OCreateEventFrag extends Fragment {
     private ImageRepository imageRepository;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
+    /** Default constructor
+     * @param None
+     * @return void
+     * */
     public OCreateEventFrag(){}
 
+    /**
+     * This method inflates the layout for the fragment.
+     *
+     * @param inflater LayoutInflater object that can be used to inflate any views in the fragment
+     * @param container If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return The View for the fragment's UI, or null.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         return inflater.inflate(R.layout.fragment_o_create_event, container, false);
     }
 
+    /**
+     * This method gets called after the view has been created. Initializes input fields,
+     * buttons, labels, and their listeners.
+     *
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
         super.onViewCreated(view, savedInstanceState);
@@ -163,6 +182,7 @@ public class OCreateEventFrag extends Fragment {
      * This method opens a date picker dialog and returns the selected date through a callback.
      *
      * @param callback Receives the selected date.
+     * @return void
      */
     private void pickDate(DateCallback callback) {
         final Calendar calendar = Calendar.getInstance();
@@ -181,6 +201,8 @@ public class OCreateEventFrag extends Fragment {
 
     /**
      * Launches the image picker so the user can select an image to upload.
+     * @param None
+     * @return void
      */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -216,6 +238,9 @@ public class OCreateEventFrag extends Fragment {
      * returned after upload.
      *
      * ImageRepository is used to upload the image.
+     *
+     * @param None
+     * @return void
      */
     private void onCreateClicked() {
         Log.d("OCreateEventFrag", "onCreateClicked Called");
@@ -307,6 +332,7 @@ public class OCreateEventFrag extends Fragment {
      * whether saving is successful or not, a message gets displayed.
      *
      * @param event event the event object to be saved.
+     * @return void
      */
     private void saveEvent(UserEvent event) {
         ServiceLocator.getEventRepository().createEvent(
