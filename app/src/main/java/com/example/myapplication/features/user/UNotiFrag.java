@@ -15,10 +15,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.data.firebase.FirebaseEventRepository;
+import com.example.myapplication.features.user.UNotiAdapter;
+import com.example.myapplication.features.user.UNotiItem;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import androidx.navigation.fragment.NavHostFragment;
 
 /**
  * Fragment responsible for displaying a list of notifications for the currently logged-in user.
@@ -34,6 +39,9 @@ public class UNotiFrag extends Fragment {
 
     /** Adapter that binds Firestore notification data to the RecyclerView. */
     private UNotiAdapter adapter;
+
+    FirebaseEventRepository repo = new FirebaseEventRepository();
+
 
     /**
      * Called to have the fragment instantiate its user interface view.
@@ -91,32 +99,18 @@ public class UNotiFrag extends Fragment {
                 .setLifecycleOwner(getViewLifecycleOwner())
                 .build();
 
-        adapter = new UNotiAdapter(
-                options,
-                snapshot -> {
-                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                            .setTitle("USER DIALOG")
-                            .setItems(new CharSequence[]{"View Details"}, (dialog, which) -> {
-                                if (which == 0) {
-                                    Toast.makeText(requireContext(),
-                                            "View details coming soon", Toast.LENGTH_SHORT).show();
-                                }
-                            })
-                            .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
-                            .show();
-                },
-                new UNotiAdapter.OnLotteryActionListener() {
-                    @Override
-                    public void onAccept(com.google.firebase.firestore.DocumentSnapshot snapshot, UNotiItem item) {
-                        handleAcceptInvitation(snapshot.getId(), item);
-                    }
+        adapter = new UNotiAdapter(options, snapshot -> {
+            UNotiItem item = snapshot.toObject(UNotiItem.class);
+            if (item == null) return;
 
-                    @Override
-                    public void onDecline(com.google.firebase.firestore.DocumentSnapshot snapshot, UNotiItem item) {
-                        handleDeclineInvitation(snapshot.getId(), item);
-                    }
-                }
-        );
+            boolean isInvitation = "lottery_win".equalsIgnoreCase(item.getType());
+
+            if (isInvitation) {
+                checkWaitingList(snapshot, item, uid);
+            } else{
+                showOtherOption(snapshot, item);
+            }
+        });
 
         recyclerView.setAdapter(adapter);
     }
@@ -131,61 +125,104 @@ public class UNotiFrag extends Fragment {
         super.onDestroyView();
     }
 
-    /**
-     * Handles accepting a notification invitation.
-     * Displays a confirmation dialog before performing the action via Firebase.
-     *
-     * @param notificationId The unique ID of the notification document.
-     * @param item           The {@link UNotiItem} representing the invitation.
-     */
-    private void handleAcceptInvitation(String notificationId, UNotiItem item) {
-        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
-        if (uid == null) return;
+    private void checkWaitingList(DocumentSnapshot notificationSnapshot,
+                                                UNotiItem item,
+                                                String uid) {
+        String eventId = item.getEventId();
 
+        FirebaseFirestore.getInstance()
+                .collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(qs -> {
+                    if (!qs.isEmpty()) {
+                        DocumentSnapshot doc = qs.getDocuments().get(0);
+
+                        @SuppressWarnings("unchecked")
+                        java.util.List<String> waiting =
+                                (java.util.List<String>) doc.get("waiting");
+
+                        boolean userIsWaiting = waiting != null && waiting.contains(uid);
+
+                        if (userIsWaiting) {
+                            // type = lottery_win AND user is in waiting[]
+                            showInviteOption(notificationSnapshot, item);
+                        } else {
+                            // user is not in waiting → treat as normal notification
+                            showOtherOption(notificationSnapshot, item);
+                        }
+                    } else {
+                        // no notificationList entry found, fallback
+                        showOtherOption(notificationSnapshot, item);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(),
+                            "Error checking invitation status",
+                            Toast.LENGTH_SHORT).show();
+                    showOtherOption(notificationSnapshot, item);
+                });
+    }
+
+    private void showInviteOption(DocumentSnapshot snapshot, UNotiItem item){
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Accept Invitation")
-                .setMessage("Are you sure you want to accept the invitation for \"" + item.getEvent() + "\"?")
-                .setPositiveButton("Accept", (dialog, which) -> {
-                    com.example.myapplication.data.firebase.FirebaseEventRepository repo =
-                            new com.example.myapplication.data.firebase.FirebaseEventRepository();
-
-                    repo.acceptInvitation(notificationId, item.getEventId(), uid,
-                            aVoid -> Toast.makeText(requireContext(),
-                                    "Invitation accepted!", Toast.LENGTH_SHORT).show(),
-                            e -> Toast.makeText(requireContext(),
-                                    "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .setTitle("Invitation Options")
+                .setItems(new CharSequence[]{"Accept", "Decline", "View Event"}, (dialog, which) -> {
+                    if (which == 0) {
+                        acceptInvite(snapshot, item);
+                    } else if (which == 1) {
+                        declineInvite(snapshot, item);
+                    }
+                    else if (which == 2) {
+                        viewEvent(item);
+                    }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    /**
-     * Handles declining a notification invitation.
-     * Displays a confirmation dialog before performing the action via Firebase.
-     *
-     * @param notificationId The unique ID of the notification document.
-     * @param item           The {@link UNotiItem} representing the invitation.
-     */
-    private void handleDeclineInvitation(String notificationId, UNotiItem item) {
-        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
-        if (uid == null) return;
-
+    private void showOtherOption(DocumentSnapshot snapshot, UNotiItem item){
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Decline Invitation")
-                .setMessage("Are you sure you want to decline the invitation for \"" + item.getEvent() + "\"?")
-                .setPositiveButton("Decline", (dialog, which) -> {
-                    com.example.myapplication.data.firebase.FirebaseEventRepository repo =
-                            new com.example.myapplication.data.firebase.FirebaseEventRepository();
+                .setTitle("Notification Options")
+                .setItems(new CharSequence[]{"View Event"}, (dialog, which) -> {
+                        if (which == 0) {
+                            viewEvent(item);
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+    }
 
-                    repo.declineInvitation(notificationId, item.getEventId(), uid,
-                            aVoid -> Toast.makeText(requireContext(),
-                                    "Invitation declined.", Toast.LENGTH_SHORT).show(),
-                            e -> Toast.makeText(requireContext(),
-                                    "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+    private void viewEvent(UNotiItem item){
+        String eventId = item.getEventId();
+        if (eventId == null || eventId.trim().isEmpty()) {
+            Toast.makeText(requireContext(), "Event information is missing for this notification",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Bundle bundle = new Bundle();
+        bundle.putString("eventId", eventId);
+
+        NavHostFragment.findNavController(this)
+                .navigate(R.id.navigation_user_event_detail, bundle);
+
+    }
+    private void acceptInvite(DocumentSnapshot snapshot, UNotiItem item){
+        String notificationId = snapshot.getId();
+        String eventId = item.getEventId();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        repo.acceptInvitation(notificationId, eventId, userId,
+                v -> Toast.makeText(requireContext(), "Invitation accepted", Toast.LENGTH_SHORT).show(),
+                e -> Toast.makeText(requireContext(), "Error accepting invitation", Toast.LENGTH_SHORT).show());
+    }
+
+    private void declineInvite(DocumentSnapshot snapshot, UNotiItem item){
+        String notificationId = snapshot.getId();
+        String eventId = item.getEventId();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        repo.declineInvitation(notificationId, eventId, userId,
+                v -> Toast.makeText(requireContext(), "Invitation declined", Toast.LENGTH_SHORT).show(),
+                e -> Toast.makeText(requireContext(), "Error declining invitation", Toast.LENGTH_SHORT).show());
     }
 }

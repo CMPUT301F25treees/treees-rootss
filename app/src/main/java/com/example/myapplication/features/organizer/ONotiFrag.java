@@ -215,9 +215,12 @@ public class ONotiFrag extends Fragment {
                     var payload = new java.util.HashMap<String, Object>();
                     payload.put("dateMade", Timestamp.now());
                     payload.put("event", eventName);
+                    payload.put("eventId", eventId);
+                    payload.put("type", "custom");
                     payload.put("from", organizerName);
                     payload.put("message", message);
                     payload.put("uID", recipients);
+
 
                     db.collection("notifications").add(payload)
                             .addOnSuccessListener(ref -> toast("Notification sent!"))
