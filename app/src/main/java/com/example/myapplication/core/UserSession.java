@@ -10,6 +10,9 @@ public class UserSession {
     private static UserSession instance;
     private User currentUser;
 
+    /**
+     *
+     */
     private UserSession() {}
 
     public static UserSession getInstance() {

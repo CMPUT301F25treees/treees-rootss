@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * This is a calss that is responsible for exporting a list of names as a CSV file
+ * This is a class that is responsible for exporting a list of names as a CSV file
  * to then devices storage.
  *
  * This helper manages the ACTION_CREATE_DOCUMENT flow, opens the system
