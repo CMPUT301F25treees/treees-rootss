@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ArrayRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.core.ExportHelper;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
@@ -115,6 +117,17 @@ public class OEventListFrag extends Fragment {
     private int dataEpoch = 0;
 
     /**
+     * This si a list of names that is visible in the view. This is added to make
+     * exporting much easier.
+     */
+    private final List<String> displayedNames = new ArrayList<>();
+
+    /**
+     * This is a helper that handles the CSV exporting.
+     */
+    private ExportHelper exportHelper;
+
+    /**
      * Inflates the layout for the organizer event list fragment.
      *
      * @param inflater  LayoutInflater to inflate the layout XML.
@@ -141,12 +154,15 @@ public class OEventListFrag extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        exportHelper = new ExportHelper(this);
+
         eventId = getArguments() != null ? getArguments().getString("eventId") : null;
 
         waitlistRecycler = view.findViewById(R.id.waitlistRecycler);
         emptyState = view.findViewById(R.id.emptyState);
         drawBtn = view.findViewById(R.id.btnDraw);
         MaterialButtonToggleGroup statusToggleGroup = view.findViewById(R.id.statusToggleGroup);
+        MaterialButton exportButton = view.findViewById(R.id.btnExport);
 
         statusToggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (!isChecked) return;
@@ -186,6 +202,7 @@ public class OEventListFrag extends Fragment {
             loadListForCurrentMode();
         }
 
+        exportButton.setOnClickListener(v -> onExportClicked());
         drawBtn.setOnClickListener(v -> drawApplicants());
 
     }
@@ -345,16 +362,33 @@ public class OEventListFrag extends Fragment {
      */
     private void applyNames(int epoch, List<String> names) {
         if (epoch != dataEpoch || !isAdded()) return;
+
+        displayedNames.clear();
+        displayedNames.addAll(names);
+
         adapter.setNames(names);
         waitlistRecycler.setVisibility(View.VISIBLE);
 
         boolean empty = names.isEmpty();
         emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
-        emptyState.setText(
-                (currentMode == ListMode.WAITING)
-                        ? "No one on the waitlist."
-                        : "No one on the final list."
-        );
+
+        String emptyText;
+        switch (currentMode) {
+            case WAITING:
+                emptyText = "No one on the waitlist.";
+                break;
+            case INVITED:
+                emptyText = "No one on the invited list.";
+                break;
+            case CANCELED:
+                emptyText = "No one on the canceled list.";
+                break;
+            case FINAL:
+            default:
+                emptyText = "No one on the final list.";
+                break;
+        }
+        emptyState.setText(emptyText);
 
         boolean enableDraw = (currentMode == ListMode.WAITING) && !currentUids.isEmpty();
         drawBtn.setEnabled(enableDraw);
@@ -444,4 +478,24 @@ public class OEventListFrag extends Fragment {
                 }
         );
     }
+        private void onExportClicked() {
+            String modeLabel;
+            switch (currentMode) {
+                case WAITING:
+                    modeLabel = "waiting_list";
+                    break;
+                case INVITED:
+                    modeLabel = "invited_list";
+                    break;
+                case CANCELED:
+                    modeLabel = "canceled_list";
+                    break;
+                case FINAL:
+                default:
+                    modeLabel = "final_list";
+                    break;
+            }
+
+            exportHelper.exportNamesCsv(eventName, modeLabel, displayedNames);
+        }
 }
