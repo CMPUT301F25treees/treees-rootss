@@ -56,6 +56,7 @@ public class UProfileFrag extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         MaterialButton roleButton = view.findViewById(R.id.btnRole);
+        View cardPastEvents = view.findViewById(R.id.cardPastEvents);
         View cardNotifications = view.findViewById(R.id.cardNotifications);
         View cardEditInfo = view.findViewById(R.id.cardEditInfo);
         deleteProfileCard = view.findViewById(R.id.cardDeleteProfile);
@@ -86,6 +87,11 @@ public class UProfileFrag extends Fragment {
         cardNotifications.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)
                     .navigate(R.id.navigation_user_notifications);
+        });
+
+        cardPastEvents.setOnClickListener(v -> {
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.navigation_user_past_events);
         });
 
         if (cardEditInfo != null) {

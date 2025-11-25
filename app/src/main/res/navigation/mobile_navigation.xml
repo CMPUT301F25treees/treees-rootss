@@ -58,6 +58,11 @@
         android:layout="@layout/fragment_u_event_detail"/>
 
     <fragment
+        android:id="@+id/navigation_user_past_events"
+        android:name="com.example.myapplication.features.user.UPastEventsFrag"
+        android:layout="@layout/fragment_u_past_events"/>
+
+    <fragment
         android:id="@+id/navigation_user_profile"
         android:name="com.example.myapplication.features.user.UProfileFrag"
         tools:layout="@layout/fragment_u_profile">

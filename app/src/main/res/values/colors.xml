@@ -19,6 +19,10 @@
     <color name="gradient_start">#1F1C18</color>
     <color name="gradient_end">#8E0E00</color>
 
+    <color name="selected_green">#2E7D32</color>
+    <color name="not_selected_red">#C62828</color>
+    <color name="waiting_orange">#F9A825</color>
+
     <color name="profile_role_rouge">#B2555D</color>
     <color name="profile_card_gray">#F2F2F2</color>
     <color name="profile_delete_red">#D64A4A</color>
