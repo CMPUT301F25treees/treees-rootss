@@ -108,22 +108,15 @@ public class UPastEventsFrag extends Fragment {
             @SuppressWarnings("unchecked")
             List<String> finalUsers = (List<String>) notifDoc.get("final");
             @SuppressWarnings("unchecked")
-            List<String> waitingUsers = (List<String>) notifDoc.get("waiting");
-            @SuppressWarnings("unchecked")
             List<String> cancelledUsers = (List<String>) notifDoc.get("cancelled");
-            @SuppressWarnings("unchecked")
-            List<String> invitedUsers = (List<String>) notifDoc.get("invited");
+
 
 
             String status;
             if (finalUsers != null && finalUsers.contains(uid)) {
                 status = "Selected";
-            } else if (waitingUsers != null && waitingUsers.contains(uid)) {
-                status = "Waiting";
             } else if (cancelledUsers != null && cancelledUsers.contains(uid)) {
                 status = "Cancelled";
-            } else if (invitedUsers != null && invitedUsers.contains(uid)) {
-                status = "Invited";
             } else {
                 status = "Not Selected";
             }
