@@ -106,17 +106,19 @@ public class UPastEventsFrag extends Fragment {
             }
 
             @SuppressWarnings("unchecked")
-            List<String> finalUsers = (List<String>) notifDoc.get("final");
+            List<String> finalUsers     = (List<String>) notifDoc.get("final");
+            @SuppressWarnings("unchecked")
+            List<String> invitedUsers   = (List<String>) notifDoc.get("invited");
             @SuppressWarnings("unchecked")
             List<String> cancelledUsers = (List<String>) notifDoc.get("cancelled");
 
-
-
             String status;
             if (finalUsers != null && finalUsers.contains(uid)) {
-                status = "Selected";
+                status = "Accepted";
+            } else if (invitedUsers != null && invitedUsers.contains(uid)) {
+                status = "Invited";
             } else if (cancelledUsers != null && cancelledUsers.contains(uid)) {
-                status = "Cancelled";
+                status = "Declined";
             } else {
                 status = "Not Selected";
             }
@@ -135,17 +137,21 @@ public class UPastEventsFrag extends Fragment {
                         String priceDisplay = eventSnap.getString("priceDisplay");
                         Long endMillis = eventSnap.getLong("endTimeMillis");
 
-                        String dateStr = formatDate(endMillis);
+                        long now = System.currentTimeMillis();
 
-                        UPastEventItem item = new UPastEventItem(
-                                eventId,
-                                name != null ? name : "",
-                                priceDisplay != null ? priceDisplay : "",
-                                dateStr,
-                                status
-                        );
+                        if (endMillis != null && endMillis <= now) {
+                            String dateStr = formatDate(endMillis);
 
-                        pastEvents.add(item);
+                            UPastEventItem item = new UPastEventItem(
+                                    eventId,
+                                    name != null ? name : "",
+                                    priceDisplay != null ? priceDisplay : "",
+                                    dateStr,
+                                    status
+                            );
+
+                            pastEvents.add(item);
+                        }
                     }
 
                     if (remaining.decrementAndGet() == 0) {

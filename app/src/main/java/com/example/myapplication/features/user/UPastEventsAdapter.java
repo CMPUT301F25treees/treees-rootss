@@ -47,13 +47,10 @@ public class UPastEventsAdapter
         holder.tvStatus.setText(status);
 
         Context ctx = holder.itemView.getContext();
-        if ("Selected".equals(status)) {
+        if ("Accepted".equals(status)) {
             holder.cardStatus.setCardBackgroundColor(
                     ContextCompat.getColor(ctx, R.color.selected_green));
-        } else if ("Waiting".equals(status)) {
-            holder.cardStatus.setCardBackgroundColor(
-                    ContextCompat.getColor(ctx, R.color.waiting_orange));
-        }else if ("Invited".equals(status)) {
+        } else if ("Invited".equals(status)) {
             holder.cardStatus.setCardBackgroundColor(
                     ContextCompat.getColor(ctx, R.color.waiting_orange));
         } else {
