@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,8 @@ import com.example.myapplication.data.firebase.FirebaseEventRepository;
 import com.example.myapplication.features.user.UNotiAdapter;
 import com.example.myapplication.features.user.UNotiItem;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -110,7 +113,7 @@ public class UNotiFrag extends Fragment {
             boolean isInvitation = "lottery_win".equalsIgnoreCase(item.getType());
 
             if (isInvitation) {
-                checkWaitingList(snapshot, item, uid);
+                checkInvitationStatus(snapshot, item, uid);
             } else{
                 showOtherOption(snapshot, item);
             }
@@ -137,9 +140,9 @@ public class UNotiFrag extends Fragment {
         super.onDestroyView();
     }
 
-    private void checkWaitingList(DocumentSnapshot notificationSnapshot,
-                                                UNotiItem item,
-                                                String uid) {
+    private void checkInvitationStatus(DocumentSnapshot notificationSnapshot,
+                                       UNotiItem item,
+                                       String uid) {
         String eventId = item.getEventId();
 
         FirebaseFirestore.getInstance()
@@ -152,20 +155,29 @@ public class UNotiFrag extends Fragment {
                         DocumentSnapshot doc = qs.getDocuments().get(0);
 
                         @SuppressWarnings("unchecked")
-                        java.util.List<String> waiting =
-                                (java.util.List<String>) doc.get("waiting");
+                        java.util.List<String> invited =
+                                (java.util.List<String>) doc.get("invited");
+                        @SuppressWarnings("unchecked")
+                        java.util.List<String> finalUsers =
+                                (java.util.List<String>) doc.get("final");
+                        @SuppressWarnings("unchecked")
+                        java.util.List<String> cancelled =
+                                (java.util.List<String>) doc.get("cancelled");
 
-                        boolean userIsWaiting = waiting != null && waiting.contains(uid);
+                        boolean isInvited  = invited != null && invited.contains(uid);
+                        boolean isFinal    = finalUsers != null && finalUsers.contains(uid);
+                        boolean isCancelled = cancelled != null && cancelled.contains(uid);
 
-                        if (userIsWaiting) {
-                            // type = lottery_win AND user is in waiting[]
+                        if (isFinal) {
+                            showAlreadyAcceptedOption(notificationSnapshot, item);
+                        } else if (isInvited) {
                             showInviteOption(notificationSnapshot, item);
+                        } else if (isCancelled) {
+                            showAlreadyDeclinedOption(notificationSnapshot, item);
                         } else {
-                            // user is not in waiting → treat as normal notification
                             showOtherOption(notificationSnapshot, item);
                         }
                     } else {
-                        // no notificationList entry found, fallback
                         showOtherOption(notificationSnapshot, item);
                     }
                 })
@@ -178,32 +190,159 @@ public class UNotiFrag extends Fragment {
     }
 
     private void showInviteOption(DocumentSnapshot snapshot, UNotiItem item){
-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Invitation Options")
-                .setItems(new CharSequence[]{"Accept", "Decline", "View Event"}, (dialog, which) -> {
-                    if (which == 0) {
-                        acceptInvite(snapshot, item);
-                    } else if (which == 1) {
-                        declineInvite(snapshot, item);
-                    }
-                    else if (which == 2) {
-                        viewEvent(item);
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_invitation, null);
+
+        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView tvEvent = dialogView.findViewById(R.id.tvDialogEvent);
+        TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
+        MaterialButton btnAccept = dialogView.findViewById(R.id.btnAccept);
+        MaterialButton btnDecline = dialogView.findViewById(R.id.btnDecline);
+        MaterialButton btnViewEvent = dialogView.findViewById(R.id.btnViewEvent);
+
+        tvTitle.setText("Invitation Options");
+        tvEvent.setText(item.getEvent());
+        tvMessage.setText("You have been invited to this event.");
+
+        var dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        btnAccept.setOnClickListener(v -> {
+            acceptInvite(snapshot, item);
+            dialog.dismiss();
+        });
+
+        btnDecline.setOnClickListener(v -> {
+            declineInvite(snapshot, item);
+            dialog.dismiss();
+        });
+
+        btnViewEvent.setOnClickListener(v -> {
+            viewEvent(item);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            );
+        }
+    }
+
+    private void showAlreadyAcceptedOption(DocumentSnapshot snapshot, UNotiItem item) {
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_invitation, null);
+
+        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView tvEvent = dialogView.findViewById(R.id.tvDialogEvent);
+        TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
+        MaterialButton btnAccept = dialogView.findViewById(R.id.btnAccept);
+        MaterialButton btnDecline = dialogView.findViewById(R.id.btnDecline);
+        MaterialButton btnViewEvent = dialogView.findViewById(R.id.btnViewEvent);
+
+        tvTitle.setText("You have already accepted this invite");
+        tvEvent.setText(item.getEvent());
+        tvMessage.setText("You can still view the event details below.");
+
+        btnAccept.setVisibility(View.GONE);
+        btnDecline.setVisibility(View.GONE);
+
+        var dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        btnViewEvent.setOnClickListener(v -> {
+            viewEvent(item);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            );
+        }
+    }
+
+    private void showAlreadyDeclinedOption(DocumentSnapshot snapshot, UNotiItem item) {
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_invitation, null);
+
+        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView tvEvent = dialogView.findViewById(R.id.tvDialogEvent);
+        TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
+        MaterialButton btnAccept = dialogView.findViewById(R.id.btnAccept);
+        MaterialButton btnDecline = dialogView.findViewById(R.id.btnDecline);
+        MaterialButton btnViewEvent = dialogView.findViewById(R.id.btnViewEvent);
+
+        tvTitle.setText("You have already declined this invite");
+        tvEvent.setText(item.getEvent());
+        tvMessage.setText("You can still view the event details if you like.");
+
+        btnAccept.setVisibility(View.GONE);
+        btnDecline.setVisibility(View.GONE);
+
+        var dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        btnViewEvent.setOnClickListener(v -> {
+            viewEvent(item);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            );
+        }
     }
 
     private void showOtherOption(DocumentSnapshot snapshot, UNotiItem item){
-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Notification Options")
-                .setItems(new CharSequence[]{"View Event"}, (dialog, which) -> {
-                        if (which == 0) {
-                            viewEvent(item);
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_invitation, null);
+
+        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView tvEvent = dialogView.findViewById(R.id.tvDialogEvent);
+        TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
+        MaterialButton btnAccept = dialogView.findViewById(R.id.btnAccept);
+        MaterialButton btnDecline = dialogView.findViewById(R.id.btnDecline);
+        MaterialButton btnViewEvent = dialogView.findViewById(R.id.btnViewEvent);
+
+        tvTitle.setText("Personal Notification");
+        tvEvent.setText(item.getEvent());
+        tvMessage.setText(item.getMessage() != null ? item.getMessage()
+                : "View event details.");
+
+        btnAccept.setVisibility(View.GONE);
+        btnDecline.setVisibility(View.GONE);
+
+        var dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        btnViewEvent.setOnClickListener(v -> {
+            viewEvent(item);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            );
+        }
     }
 
     private void viewEvent(UNotiItem item){

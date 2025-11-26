@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,8 @@ import com.example.myapplication.R;
 import com.example.myapplication.features.user.UNotiAdapter;
 import com.example.myapplication.features.user.UNotiItem;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -84,19 +87,57 @@ public class ANotiFrag extends Fragment {
                 .build();
 
         adapter = new UNotiAdapter(options, snapshot -> {
-            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("ADMIN DIALOG")
-                    .setItems(new CharSequence[]{"Delete"}, (dialog, which) -> {
-                        if (which == 0) {
-                            snapshot.getReference().delete()
-                                    .addOnSuccessListener(aVoid ->
-                                            Toast.makeText(requireContext(), "Notification deleted", Toast.LENGTH_SHORT).show())
-                                    .addOnFailureListener(e ->
-                                            Toast.makeText(requireContext(), "Error deleting notification", Toast.LENGTH_SHORT).show());
-                        }
-                    })
-                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                    .show();
+            UNotiItem item = snapshot.toObject(UNotiItem.class);
+
+            View dialogView = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.dialog_invitation, null);
+
+            TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
+            TextView tvEvent = dialogView.findViewById(R.id.tvDialogEvent);
+            TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
+            MaterialButton btnAccept = dialogView.findViewById(R.id.btnAccept);
+            MaterialButton btnDecline = dialogView.findViewById(R.id.btnDecline);
+            MaterialButton btnViewEvent = dialogView.findViewById(R.id.btnViewEvent);
+
+            tvTitle.setText("Admin Options");
+            if (item != null) {
+                String eventName = item.getEvent();   // or getEventName()
+                tvEvent.setText(eventName != null ? eventName : "Notification");
+            } else {
+                tvEvent.setText("Notification");
+            }
+            tvMessage.setText("Do you want to delete this notification?");
+
+            btnAccept.setVisibility(View.GONE);
+            btnDecline.setVisibility(View.GONE);
+
+            btnViewEvent.setText("Delete");
+
+            var dialog = new MaterialAlertDialogBuilder(requireContext())
+                    .setView(dialogView)
+                    .setCancelable(true)
+                    .create();
+
+            btnViewEvent.setOnClickListener(v -> {
+                snapshot.getReference().delete()
+                        .addOnSuccessListener(aVoid ->
+                                Toast.makeText(requireContext(),
+                                        "Notification deleted", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e ->
+                                Toast.makeText(requireContext(),
+                                        "Error deleting notification", Toast.LENGTH_SHORT).show());
+                dialog.dismiss();
+            });
+
+            dialog.show();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(
+                        new android.graphics.drawable.ColorDrawable(
+                                android.graphics.Color.TRANSPARENT
+                        )
+                );
+            }
         });
         recyclerView.setAdapter(adapter);
 
