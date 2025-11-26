@@ -5,14 +5,31 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="@drawable/bg_login_gradient" android:padding="16dp">
 
+    <ImageButton
+        android:id="@+id/bckButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="back"
+        android:padding="4dp"
+        android:rotation="180"
+        android:rotationX="180"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_back_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:id="@+id/eventImage"
-        android:layout_width="0dp" android:layout_height="180dp"
+        android:layout_width="0dp"
+        android:layout_height="180dp"
+        android:background="@drawable/bg_time_chip"
         android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@drawable/bg_time_chip"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bckButton" />
 
     <TextView
         android:id="@+id/EventTitle"

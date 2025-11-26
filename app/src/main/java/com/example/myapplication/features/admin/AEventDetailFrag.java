@@ -3,6 +3,7 @@ package com.example.myapplication.features.admin;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.*;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -11,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.bumptech.glide.Glide;
@@ -81,12 +83,11 @@ public class AEventDetailFrag extends Fragment {
                     .navigate(R.id.navigation_admin_remove_options, args);
         });
 
-        View backButton = v.findViewById(R.id.backButton);
-        if (backButton != null) {
-            backButton.setOnClickListener(x ->
-                    NavHostFragment.findNavController(this).navigateUp()
-            );
-        }
+        ImageButton backButton = v.findViewById(R.id.bckButton);
+        backButton.setOnClickListener(x -> {
+            Navigation.findNavController(v).navigateUp();
+        });
+
 
         FirebaseFirestore.getInstance().collection("events").document(eventId).get()
                 .addOnSuccessListener(d -> bindEventDoc(d, tvTitle, tvOrganizer, tvLocation,

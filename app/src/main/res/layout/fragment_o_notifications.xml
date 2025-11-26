@@ -6,6 +6,22 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_login_gradient">
 
+
+    <ImageButton
+        android:id="@+id/bckButton2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="back"
+        android:padding="4dp"
+        android:rotation="180"
+        android:rotationX="180"
+        android:scaleType="centerInside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_back_arrow" />
+
     <LinearLayout
         android:id="@+id/currentlyContainer"
         android:layout_width="wrap_content"
