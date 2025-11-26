@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -81,7 +82,7 @@ public class OEventDetailFrag extends Fragment {
         descr = view.findViewById(R.id.description);
         eventImage = view.findViewById(R.id.eventImage);
 
-        Button backButton = view.findViewById(R.id.backButton);
+        ImageButton backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(x -> {
             Navigation.findNavController(view).navigateUp();
         });

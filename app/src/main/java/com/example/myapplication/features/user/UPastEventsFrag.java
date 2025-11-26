@@ -4,10 +4,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -72,6 +74,12 @@ public class UPastEventsFrag extends Fragment {
         if (currentUser != null) {
             loadPastEvents();
         }
+
+        ImageButton backButton = view.findViewById(R.id.bckButton);
+        backButton.setOnClickListener(x -> {
+            Navigation.findNavController(view).navigateUp();
+        });
+
     }
 
     private void loadPastEvents() {

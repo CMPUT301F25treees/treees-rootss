@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -76,10 +77,11 @@ public class UEventDetailFrag extends Fragment {
         endTime = view.findViewById(R.id.endTime);
         descr = view.findViewById(R.id.description);
 
-        MaterialButton backButton = view.findViewById(R.id.backButton);
+        ImageButton backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(x -> {
             Navigation.findNavController(view).navigateUp();
         });
+
 
         String eventId = getArguments() != null ? getArguments().getString("eventId") : null;
 

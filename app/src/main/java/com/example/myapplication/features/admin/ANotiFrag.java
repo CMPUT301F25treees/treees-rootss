@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,7 +74,7 @@ public class ANotiFrag extends Fragment {
             switchNotifications.setVisibility(View.GONE);
         }
 
-        Button backButton = view.findViewById(R.id.bckButton);
+        ImageButton backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(x -> {
             Navigation.findNavController(view).navigateUp();
         });

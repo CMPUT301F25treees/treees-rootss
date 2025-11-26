@@ -8,12 +8,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.R;
@@ -54,7 +56,6 @@ public class OEditEventFrag extends Fragment {
     private MaterialButton selectionDateButton;
     private MaterialButton posterButton;
     private MaterialButton updateButton;
-    private MaterialButton backButton;
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -99,6 +100,12 @@ public class OEditEventFrag extends Fragment {
         }
 
         loadEvent();
+
+        ImageButton backButton = view.findViewById(R.id.bckButton);
+        backButton.setOnClickListener(x -> {
+            Navigation.findNavController(view).navigateUp();
+        });
+
     }
 
     /**
@@ -120,7 +127,6 @@ public class OEditEventFrag extends Fragment {
         selectionDateButton = view.findViewById(R.id.btnSelectionDate);
         posterButton = view.findViewById(R.id.btnSelectPoster);
         updateButton = view.findViewById(R.id.btnUpdateEvent);
-        backButton = view.findViewById(R.id.btnBack);
     }
 
     /**
@@ -149,8 +155,6 @@ public class OEditEventFrag extends Fragment {
         });
 
         updateButton.setOnClickListener(v -> onUpdateClicked());
-
-        backButton.setOnClickListener(v -> NavHostFragment.findNavController(this).navigateUp());
     }
 
     private interface DateCallback {
