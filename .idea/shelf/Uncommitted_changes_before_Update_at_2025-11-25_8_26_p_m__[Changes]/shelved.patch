@@ -1,0 +1,275 @@
+Index: app/src/main/java/com/example/myapplication/features/user/UNotiFrag.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.myapplication.features.user;\r\n\r\nimport android.os.Bundle;\r\nimport android.view.LayoutInflater;\r\nimport android.view.View;\r\nimport android.view.ViewGroup;\r\nimport android.widget.Button;\r\nimport android.widget.Toast;\r\n\r\nimport androidx.annotation.NonNull;\r\nimport androidx.annotation.Nullable;\r\nimport androidx.fragment.app.Fragment;\r\nimport androidx.navigation.Navigation;\r\nimport androidx.recyclerview.widget.LinearLayoutManager;\r\nimport androidx.recyclerview.widget.RecyclerView;\r\n\r\nimport com.example.myapplication.R;\r\nimport com.example.myapplication.data.firebase.FirebaseEventRepository;\r\nimport com.example.myapplication.features.user.UNotiAdapter;\r\nimport com.example.myapplication.features.user.UNotiItem;\r\nimport com.firebase.ui.firestore.FirestoreRecyclerOptions;\r\nimport com.google.firebase.auth.FirebaseAuth;\r\nimport com.google.firebase.firestore.DocumentSnapshot;\r\nimport com.google.firebase.firestore.FirebaseFirestore;\r\nimport com.google.firebase.firestore.Query;\r\nimport androidx.navigation.fragment.NavHostFragment;\r\nimport androidx.appcompat.widget.SwitchCompat;\r\n\r\n/**\r\n * Fragment responsible for displaying a list of notifications for the currently logged-in user.\r\n * <p>\r\n * This fragment retrieves user-specific notifications from the Firestore database,\r\n * orders them by the date they were created, and displays them using a RecyclerView\r\n * populated by a {@link UNotiAdapter}.\r\n */\r\npublic class UNotiFrag extends Fragment {\r\n\r\n    /** RecyclerView for displaying user notifications. */\r\n    private RecyclerView recyclerView;\r\n\r\n    /** Adapter that binds Firestore notification data to the RecyclerView. */\r\n    private UNotiAdapter adapter;\r\n\r\n    FirebaseEventRepository repo = new FirebaseEventRepository();\r\n\r\n    private boolean showPersonalNoti = false;\r\n\r\n    /**\r\n     * Called to have the fragment instantiate its user interface view.\r\n     *\r\n     * @param inflater  The LayoutInflater object that can be used to inflate\r\n     *                  any views in the fragment.\r\n     * @param container If non-null, this is the parent view that the fragment's\r\n     *                  UI should be attached to.\r\n     * @param savedInstanceState If non-null, this fragment is being restored\r\n     *                           from a previous saved state as given here.\r\n     * @return The View for the fragment's UI, or {@code null}.\r\n     */\r\n    @Override\r\n    @Nullable\r\n    public View onCreateView(@NonNull LayoutInflater inflater,\r\n                             @Nullable ViewGroup container,\r\n                             @Nullable Bundle savedInstanceState) {\r\n        return inflater.inflate(R.layout.fragment_u_notifications, container, false);\r\n    }\r\n\r\n    /**\r\n     * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)} has returned.\r\n     * Sets up the RecyclerView, initializes the adapter, and defines user interactions for\r\n     * accepting or declining invitations.\r\n     *\r\n     * @param view               The View returned by {@link #onCreateView}.\r\n     * @param savedInstanceState If non-null, this fragment is being re-constructed\r\n     *                           from a previous saved state as given here.\r\n     */\r\n    @Override\r\n    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {\r\n        super.onViewCreated(view, savedInstanceState);\r\n        requireActivity().setTitle(\"USER Notifications\");\r\n\r\n        recyclerView = view.findViewById(R.id.notifications_list);\r\n        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));\r\n        recyclerView.setHasFixedSize(true);\r\n\r\n        SwitchCompat switchNotifications = view.findViewById(R.id.switch_notifications);\r\n\r\n        Button backButton = view.findViewById(R.id.bckButton);\r\n        backButton.setOnClickListener(x -> {\r\n            Navigation.findNavController(view).navigateUp();\r\n        });\r\n\r\n        String uid = FirebaseAuth.getInstance().getCurrentUser() != null\r\n                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;\r\n        if (uid == null) return;\r\n\r\n        Query query = FirebaseFirestore.getInstance()\r\n                .collection(\"notifications\")\r\n                .whereArrayContains(\"uID\", uid)\r\n                .orderBy(\"dateMade\", Query.Direction.DESCENDING);\r\n\r\n        FirestoreRecyclerOptions<UNotiItem> options = new FirestoreRecyclerOptions.Builder<UNotiItem>()\r\n                .setQuery(query, UNotiItem.class)\r\n                .setLifecycleOwner(getViewLifecycleOwner())\r\n                .build();\r\n\r\n        adapter = new UNotiAdapter(options, snapshot -> {\r\n            UNotiItem item = snapshot.toObject(UNotiItem.class);\r\n            if (item == null) return;\r\n\r\n            boolean isInvitation = \"lottery_win\".equalsIgnoreCase(item.getType());\r\n\r\n            if (isInvitation) {\r\n                checkWaitingList(snapshot, item, uid);\r\n            } else{\r\n                showOtherOption(snapshot, item);\r\n            }\r\n        });\r\n\r\n        recyclerView.setAdapter(adapter);\r\n\r\n        switchNotifications.setChecked(true);\r\n        adapter.setShowPersonalNoti(true);\r\n\r\n        switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {\r\n            adapter.setShowPersonalNoti(isChecked);\r\n        });\r\n\r\n    }\r\n\r\n    /**\r\n     * Called when the view previously created by {@link #onCreateView} is about to be destroyed.\r\n     * Cleans up resources by detaching the adapter from the RecyclerView.\r\n     */\r\n    @Override\r\n    public void onDestroyView() {\r\n        recyclerView.setAdapter(null);\r\n        super.onDestroyView();\r\n    }\r\n\r\n    private void checkWaitingList(DocumentSnapshot notificationSnapshot,\r\n                                                UNotiItem item,\r\n                                                String uid) {\r\n        String eventId = item.getEventId();\r\n\r\n        FirebaseFirestore.getInstance()\r\n                .collection(\"notificationList\")\r\n                .whereEqualTo(\"eventId\", eventId)\r\n                .limit(1)\r\n                .get()\r\n                .addOnSuccessListener(qs -> {\r\n                    if (!qs.isEmpty()) {\r\n                        DocumentSnapshot doc = qs.getDocuments().get(0);\r\n\r\n                        @SuppressWarnings(\"unchecked\")\r\n                        java.util.List<String> waiting =\r\n                                (java.util.List<String>) doc.get(\"waiting\");\r\n\r\n                        boolean userIsWaiting = waiting != null && waiting.contains(uid);\r\n\r\n                        if (userIsWaiting) {\r\n                            // type = lottery_win AND user is in waiting[]\r\n                            showInviteOption(notificationSnapshot, item);\r\n                        } else {\r\n                            // user is not in waiting → treat as normal notification\r\n                            showOtherOption(notificationSnapshot, item);\r\n                        }\r\n                    } else {\r\n                        // no notificationList entry found, fallback\r\n                        showOtherOption(notificationSnapshot, item);\r\n                    }\r\n                })\r\n                .addOnFailureListener(e -> {\r\n                    Toast.makeText(requireContext(),\r\n                            \"Error checking invitation status\",\r\n                            Toast.LENGTH_SHORT).show();\r\n                    showOtherOption(notificationSnapshot, item);\r\n                });\r\n    }\r\n\r\n    private void showInviteOption(DocumentSnapshot snapshot, UNotiItem item){\r\n        new androidx.appcompat.app.AlertDialog.Builder(requireContext())\r\n                .setTitle(\"Invitation Options\")\r\n                .setItems(new CharSequence[]{\"Accept\", \"Decline\", \"View Event\"}, (dialog, which) -> {\r\n                    if (which == 0) {\r\n                        acceptInvite(snapshot, item);\r\n                    } else if (which == 1) {\r\n                        declineInvite(snapshot, item);\r\n                    }\r\n                    else if (which == 2) {\r\n                        viewEvent(item);\r\n                    }\r\n                })\r\n                .setNegativeButton(\"Cancel\", null)\r\n                .show();\r\n    }\r\n\r\n    private void showOtherOption(DocumentSnapshot snapshot, UNotiItem item){\r\n        new androidx.appcompat.app.AlertDialog.Builder(requireContext())\r\n                .setTitle(\"Notification Options\")\r\n                .setItems(new CharSequence[]{\"View Event\"}, (dialog, which) -> {\r\n                        if (which == 0) {\r\n                            viewEvent(item);\r\n                        }\r\n                    })\r\n                    .setNegativeButton(\"Cancel\", null)\r\n                    .show();\r\n    }\r\n\r\n    private void viewEvent(UNotiItem item){\r\n        String eventId = item.getEventId();\r\n        if (eventId == null || eventId.trim().isEmpty()) {\r\n            Toast.makeText(requireContext(), \"Event information is missing for this notification\",\r\n                    Toast.LENGTH_SHORT).show();\r\n            return;\r\n        }\r\n        Bundle bundle = new Bundle();\r\n        bundle.putString(\"eventId\", eventId);\r\n\r\n        NavHostFragment.findNavController(this)\r\n                .navigate(R.id.navigation_user_event_detail, bundle);\r\n\r\n    }\r\n    private void acceptInvite(DocumentSnapshot snapshot, UNotiItem item){\r\n        String notificationId = snapshot.getId();\r\n        String eventId = item.getEventId();\r\n        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();\r\n        repo.acceptInvitation(notificationId, eventId, userId,\r\n                v -> Toast.makeText(requireContext(), \"Invitation accepted\", Toast.LENGTH_SHORT).show(),\r\n                e -> Toast.makeText(requireContext(), \"Error accepting invitation\", Toast.LENGTH_SHORT).show());\r\n    }\r\n\r\n    private void declineInvite(DocumentSnapshot snapshot, UNotiItem item){\r\n        String notificationId = snapshot.getId();\r\n        String eventId = item.getEventId();\r\n        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();\r\n        repo.declineInvitation(notificationId, eventId, userId,\r\n                v -> Toast.makeText(requireContext(), \"Invitation declined\", Toast.LENGTH_SHORT).show(),\r\n                e -> Toast.makeText(requireContext(), \"Error declining invitation\", Toast.LENGTH_SHORT).show());\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/myapplication/features/user/UNotiFrag.java b/app/src/main/java/com/example/myapplication/features/user/UNotiFrag.java
+--- a/app/src/main/java/com/example/myapplication/features/user/UNotiFrag.java	(revision e9f221b101f301507a3d78a7027bd2f01b53a07f)
++++ b/app/src/main/java/com/example/myapplication/features/user/UNotiFrag.java	(date 1764127361774)
+@@ -5,6 +5,7 @@
+ import android.view.View;
+ import android.view.ViewGroup;
+ import android.widget.Button;
++import android.widget.TextView;
+ import android.widget.Toast;
+ 
+ import androidx.annotation.NonNull;
+@@ -19,6 +20,8 @@
+ import com.example.myapplication.features.user.UNotiAdapter;
+ import com.example.myapplication.features.user.UNotiItem;
+ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
++import com.google.android.material.button.MaterialButton;
++import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+ import com.google.firebase.auth.FirebaseAuth;
+ import com.google.firebase.firestore.DocumentSnapshot;
+ import com.google.firebase.firestore.FirebaseFirestore;
+@@ -110,7 +113,7 @@
+             boolean isInvitation = "lottery_win".equalsIgnoreCase(item.getType());
+ 
+             if (isInvitation) {
+-                checkWaitingList(snapshot, item, uid);
++                checkInvitationStatus(snapshot, item, uid);
+             } else{
+                 showOtherOption(snapshot, item);
+             }
+@@ -137,9 +140,9 @@
+         super.onDestroyView();
+     }
+ 
+-    private void checkWaitingList(DocumentSnapshot notificationSnapshot,
+-                                                UNotiItem item,
+-                                                String uid) {
++    private void checkInvitationStatus(DocumentSnapshot notificationSnapshot,
++                                       UNotiItem item,
++                                       String uid) {
+         String eventId = item.getEventId();
+ 
+         FirebaseFirestore.getInstance()
+@@ -152,20 +155,29 @@
+                         DocumentSnapshot doc = qs.getDocuments().get(0);
+ 
+                         @SuppressWarnings("unchecked")
+-                        java.util.List<String> waiting =
+-                                (java.util.List<String>) doc.get("waiting");
++                        java.util.List<String> invited =
++                                (java.util.List<String>) doc.get("invited");
++                        @SuppressWarnings("unchecked")
++                        java.util.List<String> finalUsers =
++                                (java.util.List<String>) doc.get("final");
++                        @SuppressWarnings("unchecked")
++                        java.util.List<String> cancelled =
++                                (java.util.List<String>) doc.get("cancelled");
+ 
+-                        boolean userIsWaiting = waiting != null && waiting.contains(uid);
++                        boolean isInvited  = invited != null && invited.contains(uid);
++                        boolean isFinal    = finalUsers != null && finalUsers.contains(uid);
++                        boolean isCancelled = cancelled != null && cancelled.contains(uid);
+ 
+-                        if (userIsWaiting) {
+-                            // type = lottery_win AND user is in waiting[]
++                        if (isFinal) {
++                            showAlreadyAcceptedOption(notificationSnapshot, item);
++                        } else if (isInvited) {
+                             showInviteOption(notificationSnapshot, item);
++                        } else if (isCancelled) {
++                            showAlreadyDeclinedOption(notificationSnapshot, item);
+                         } else {
+-                            // user is not in waiting → treat as normal notification
+                             showOtherOption(notificationSnapshot, item);
+                         }
+                     } else {
+-                        // no notificationList entry found, fallback
+                         showOtherOption(notificationSnapshot, item);
+                     }
+                 })
+@@ -178,32 +190,116 @@
+     }
+ 
+     private void showInviteOption(DocumentSnapshot snapshot, UNotiItem item){
+-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+-                .setTitle("Invitation Options")
+-                .setItems(new CharSequence[]{"Accept", "Decline", "View Event"}, (dialog, which) -> {
+-                    if (which == 0) {
+-                        acceptInvite(snapshot, item);
+-                    } else if (which == 1) {
+-                        declineInvite(snapshot, item);
+-                    }
+-                    else if (which == 2) {
+-                        viewEvent(item);
+-                    }
+-                })
+-                .setNegativeButton("Cancel", null)
+-                .show();
++        View dialogView = LayoutInflater.from(requireContext())
++                .inflate(R.layout.dialog_invitation, null);
++
++        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
++        TextView tvEvent = dialogView.findViewById(R.id.tvDialogEvent);
++        TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
++        MaterialButton btnAccept = dialogView.findViewById(R.id.btnAccept);
++        MaterialButton btnDecline = dialogView.findViewById(R.id.btnDecline);
++        MaterialButton btnViewEvent = dialogView.findViewById(R.id.btnViewEvent);
++
++        tvTitle.setText("Invitation Options");
++        tvEvent.setText(item.getEvent());
++        tvMessage.setText("You have been invited to this event.");
++
++        var dialog = new MaterialAlertDialogBuilder(requireContext())
++                .setView(dialogView)
++                .setCancelable(true)
++                .create();
++
++        btnAccept.setOnClickListener(v -> {
++            acceptInvite(snapshot, item);
++            dialog.dismiss();
++        });
++
++        btnDecline.setOnClickListener(v -> {
++            declineInvite(snapshot, item);
++            dialog.dismiss();
++        });
++
++        btnViewEvent.setOnClickListener(v -> {
++            viewEvent(item);
++            dialog.dismiss();
++        });
++
++        dialog.show();
++    }
++
++    private void showAlreadyAcceptedOption(DocumentSnapshot snapshot, UNotiItem item) {
++        View dialogView = LayoutInflater.from(requireContext())
++                .inflate(R.layout.dialog_invitation, null);
++
++        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
++        TextView tvEvent = dialogView.findViewById(R.id.tvDialogEvent);
++        TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
++        MaterialButton btnAccept = dialogView.findViewById(R.id.btnAccept);
++        MaterialButton btnDecline = dialogView.findViewById(R.id.btnDecline);
++        MaterialButton btnViewEvent = dialogView.findViewById(R.id.btnViewEvent);
++
++        tvTitle.setText("You have already accepted this invite");
++        tvEvent.setText(item.getEvent());
++        tvMessage.setText("You can still view the event details below.");
++
++        // hide accept/decline for already accepted
++        btnAccept.setVisibility(View.GONE);
++        btnDecline.setVisibility(View.GONE);
++
++        var dialog = new MaterialAlertDialogBuilder(requireContext())
++                .setView(dialogView)
++                .setCancelable(true)
++                .create();
++
++        btnViewEvent.setOnClickListener(v -> {
++            viewEvent(item);
++            dialog.dismiss();
++        });
++
++        dialog.show();
++    }
++
++    private void showAlreadyDeclinedOption(DocumentSnapshot snapshot, UNotiItem item) {
++        View dialogView = LayoutInflater.from(requireContext())
++                .inflate(R.layout.dialog_invitation, null);
++
++        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
++        TextView tvEvent = dialogView.findViewById(R.id.tvDialogEvent);
++        TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
++        MaterialButton btnAccept = dialogView.findViewById(R.id.btnAccept);
++        MaterialButton btnDecline = dialogView.findViewById(R.id.btnDecline);
++        MaterialButton btnViewEvent = dialogView.findViewById(R.id.btnViewEvent);
++
++        tvTitle.setText("You have already declined this invite");
++        tvEvent.setText(item.getEvent());
++        tvMessage.setText("You can still view the event details if you like.");
++
++        btnAccept.setVisibility(View.GONE);
++        btnDecline.setVisibility(View.GONE);
++
++        var dialog = new MaterialAlertDialogBuilder(requireContext())
++                .setView(dialogView)
++                .setCancelable(true)
++                .create();
++
++        btnViewEvent.setOnClickListener(v -> {
++            viewEvent(item);
++            dialog.dismiss();
++        });
++
++        dialog.show();
+     }
+ 
+     private void showOtherOption(DocumentSnapshot snapshot, UNotiItem item){
+         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                 .setTitle("Notification Options")
+                 .setItems(new CharSequence[]{"View Event"}, (dialog, which) -> {
+-                        if (which == 0) {
+-                            viewEvent(item);
+-                        }
+-                    })
+-                    .setNegativeButton("Cancel", null)
+-                    .show();
++                    if (which == 0) {
++                        viewEvent(item);
++                    }
++                })
++                .setNegativeButton("Cancel", null)
++                .show();
+     }
+ 
+     private void viewEvent(UNotiItem item){
+Index: .idea/deploymentTargetSelector.xml
+===================================================================
+diff --git a/.idea/deploymentTargetSelector.xml b/.idea/deploymentTargetSelector.xml
+deleted file mode 100644
+--- a/.idea/deploymentTargetSelector.xml	(revision e9f221b101f301507a3d78a7027bd2f01b53a07f)
++++ /dev/null	(revision e9f221b101f301507a3d78a7027bd2f01b53a07f)
+@@ -1,10 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="deploymentTargetSelector">
+-    <selectionStates>
+-      <SelectionState runConfigName="app">
+-        <option name="selectionMode" value="DROPDOWN" />
+-      </SelectionState>
+-    </selectionStates>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ExternalStorageConfigurationManager\" enabled=\"true\" />\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision e9f221b101f301507a3d78a7027bd2f01b53a07f)
++++ b/.idea/misc.xml	(date 1764126655724)
+@@ -1,4 +1,5 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="ExternalStorageConfigurationManager" enabled="true" />
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="jbr-21" project-jdk-type="JavaSDK" />
+ </project>
+\ No newline at end of file
+Index: gradle/libs.versions.toml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>[versions]\r\nagp = \"8.13.0\"\r\njunit = \"4.13.2\"\r\njunitVersion = \"1.3.0\"\r\nespressoCore = \"3.7.0\"\r\nappcompat = \"1.7.1\"\r\nmaterial = \"1.13.0\"\r\nconstraintlayout = \"2.2.1\"\r\nlifecycleLivedataKtx = \"2.9.4\"\r\nlifecycleViewmodelKtx = \"2.9.4\"\r\nnavigationFragment = \"2.9.5\"\r\nnavigationUi = \"2.9.5\"\r\nfirebaseCommon = \"22.0.1\"\r\n\r\n[libraries]\r\njunit = { group = \"junit\", name = \"junit\", version.ref = \"junit\" }\r\next-junit = { group = \"androidx.test.ext\", name = \"junit\", version.ref = \"junitVersion\" }\r\nespresso-core = { group = \"androidx.test.espresso\", name = \"espresso-core\", version.ref = \"espressoCore\" }\r\nappcompat = { group = \"androidx.appcompat\", name = \"appcompat\", version.ref = \"appcompat\" }\r\nmaterial = { group = \"com.google.android.material\", name = \"material\", version.ref = \"material\" }\r\nconstraintlayout = { group = \"androidx.constraintlayout\", name = \"constraintlayout\", version.ref = \"constraintlayout\" }\r\nlifecycle-livedata-ktx = { group = \"androidx.lifecycle\", name = \"lifecycle-livedata-ktx\", version.ref = \"lifecycleLivedataKtx\" }\r\nlifecycle-viewmodel-ktx = { group = \"androidx.lifecycle\", name = \"lifecycle-viewmodel-ktx\", version.ref = \"lifecycleViewmodelKtx\" }\r\nnavigation-fragment = { group = \"androidx.navigation\", name = \"navigation-fragment\", version.ref = \"navigationFragment\" }\r\nnavigation-ui = { group = \"androidx.navigation\", name = \"navigation-ui\", version.ref = \"navigationUi\" }\r\nfirebase-common = { group = \"com.google.firebase\", name = \"firebase-common\", version.ref = \"firebaseCommon\" }\r\n\r\n[plugins]\r\nandroid-application = { id = \"com.android.application\", version.ref = \"agp\" }\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+--- a/gradle/libs.versions.toml	(revision e9f221b101f301507a3d78a7027bd2f01b53a07f)
++++ b/gradle/libs.versions.toml	(date 1764126663701)
+@@ -1,5 +1,5 @@
+ [versions]
+-agp = "8.13.0"
++agp = "8.13.1"
+ junit = "4.13.2"
+ junitVersion = "1.3.0"
+ espressoCore = "3.7.0"

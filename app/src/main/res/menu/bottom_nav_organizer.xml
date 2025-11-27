@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_organizer_profile"
+        android:icon="@drawable/ic_dodo_red"
+        android:iconTint="@null"
+        android:title="Profile"/>
+
+    <item
+        android:id="@+id/navigation_organizer_home"
+        android:icon="@drawable/ic_nest_eggs"
+        android:iconTint="@null"
+        android:title="Home"/>
+
+    <item
+        android:id="@+id/navigation_organizer_create"
+        android:icon="@drawable/ic_create"
+        android:iconTint="@null"
+        android:title="Create"/>
+
+    <item
+        android:id="@+id/navigation_logout"
+        android:icon="@drawable/ic_logout"
+        android:iconTint="@null"
+        android:title="Logout"/>
+</menu>
