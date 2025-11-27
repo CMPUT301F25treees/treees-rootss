@@ -35,7 +35,8 @@ import androidx.appcompat.widget.SwitchCompat;
  * <p>
  * This fragment retrieves user-specific notifications from the Firestore database,
  * orders them by the date they were created, and displays them using a RecyclerView
- * populated by a {@link UNotiAdapter}.
+ * populated by a {@link UNotiAdapter}. It also provides interaction options for
+ * invitation-type notifications (accept, decline, or view event).
  */
 public class UNotiFrag extends Fragment {
 
@@ -45,8 +46,10 @@ public class UNotiFrag extends Fragment {
     /** Adapter that binds Firestore notification data to the RecyclerView. */
     private UNotiAdapter adapter;
 
+    /** Repository used to perform event-related operations such as accepting or declining invitations. */
     FirebaseEventRepository repo = new FirebaseEventRepository();
 
+    /** Flag indicating whether personal notifications should be shown in the list. */
     private boolean showPersonalNoti = false;
 
     /**
@@ -70,8 +73,11 @@ public class UNotiFrag extends Fragment {
 
     /**
      * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)} has returned.
-     * Sets up the RecyclerView, initializes the adapter, and defines user interactions for
-     * accepting or declining invitations.
+     * <p>
+     * Initializes the toolbar title, sets up the RecyclerView and its adapter, builds the Firestore
+     * query for the current user's notifications, and wires up UI interactions such as the back button
+     * and the personal-notification switch. Invitation-type notifications trigger additional checks
+     * to determine which dialog options to present.
      *
      * @param view               The View returned by {@link #onCreateView}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
@@ -132,8 +138,11 @@ public class UNotiFrag extends Fragment {
     }
 
     /**
-     * Called when the view previously created by {@link #onCreateView} is about to be destroyed.
-     * Cleans up resources by detaching the adapter from the RecyclerView.
+     * Called when the view previously created by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * is about to be destroyed.
+     * <p>
+     * Cleans up resources by detaching the adapter from the RecyclerView to avoid leaking
+     * the view hierarchy.
      */
     @Override
     public void onDestroyView() {
@@ -141,6 +150,17 @@ public class UNotiFrag extends Fragment {
         super.onDestroyView();
     }
 
+    /**
+     * Checks the invitation status of a lottery-win notification for the current user.
+     * <p>
+     * Queries the {@code notificationList} collection for the associated event, inspects
+     * the invitation-related arrays, and shows the appropriate dialog depending on whether
+     * the user has already accepted, declined, or is newly invited to the event.
+     *
+     * @param notificationSnapshot The Firestore snapshot representing the notification document.
+     * @param item                 The parsed notification model associated with the snapshot.
+     * @param uid                  The UID of the currently logged-in user.
+     */
     private void checkInvitationStatus(DocumentSnapshot notificationSnapshot,
                                        UNotiItem item,
                                        String uid) {
@@ -190,6 +210,15 @@ public class UNotiFrag extends Fragment {
                 });
     }
 
+    /**
+     * Displays a dialog for an invitation that the user can still respond to.
+     * <p>
+     * Shows options to accept, decline, or view the event details associated with
+     * the provided notification item.
+     *
+     * @param snapshot The Firestore snapshot representing the notification document.
+     * @param item     The notification data model containing event information.
+     */
     private void showInviteOption(DocumentSnapshot snapshot, UNotiItem item){
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_invitation, null);
@@ -234,6 +263,15 @@ public class UNotiFrag extends Fragment {
         }
     }
 
+    /**
+     * Displays a dialog indicating that the user has already accepted the invitation.
+     * <p>
+     * This dialog hides the accept/decline buttons and only allows the user to
+     * view the event details.
+     *
+     * @param snapshot The Firestore snapshot representing the notification document.
+     * @param item     The notification data model containing event information.
+     */
     private void showAlreadyAcceptedOption(DocumentSnapshot snapshot, UNotiItem item) {
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_invitation, null);
@@ -271,6 +309,15 @@ public class UNotiFrag extends Fragment {
         }
     }
 
+    /**
+     * Displays a dialog indicating that the user has already declined the invitation.
+     * <p>
+     * The dialog hides the accept/decline buttons but still allows the user to
+     * view the event details if desired.
+     *
+     * @param snapshot The Firestore snapshot representing the notification document.
+     * @param item     The notification data model containing event information.
+     */
     private void showAlreadyDeclinedOption(DocumentSnapshot snapshot, UNotiItem item) {
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_invitation, null);
@@ -308,6 +355,15 @@ public class UNotiFrag extends Fragment {
         }
     }
 
+    /**
+     * Displays a dialog for non-invitation (personal) notifications.
+     * <p>
+     * The dialog hides accept/decline buttons and focuses on showing the
+     * message content and an option to navigate to the related event.
+     *
+     * @param snapshot The Firestore snapshot representing the notification document.
+     * @param item     The notification data model containing event information and message text.
+     */
     private void showOtherOption(DocumentSnapshot snapshot, UNotiItem item){
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_invitation, null);
@@ -346,6 +402,14 @@ public class UNotiFrag extends Fragment {
         }
     }
 
+    /**
+     * Navigates to the event detail screen associated with the given notification item.
+     * <p>
+     * If the notification does not have an event ID, a toast message is shown
+     * and no navigation occurs.
+     *
+     * @param item The notification item containing the target event's ID.
+     */
     private void viewEvent(UNotiItem item){
         String eventId = item.getEventId();
         if (eventId == null || eventId.trim().isEmpty()) {
@@ -360,6 +424,16 @@ public class UNotiFrag extends Fragment {
                 .navigate(R.id.navigation_user_event_detail, bundle);
 
     }
+
+    /**
+     * Handles accepting an event invitation from a notification.
+     * <p>
+     * Delegates to {@link FirebaseEventRepository acceptInvitation(String, String, String, java.util.function.Consumer, java.util.function.Consumer)}
+     * and shows a toast indicating success or failure.
+     *
+     * @param snapshot The Firestore snapshot representing the notification document.
+     * @param item     The notification item containing the event ID.
+     */
     private void acceptInvite(DocumentSnapshot snapshot, UNotiItem item){
         String notificationId = snapshot.getId();
         String eventId = item.getEventId();
@@ -369,6 +443,15 @@ public class UNotiFrag extends Fragment {
                 e -> Toast.makeText(requireContext(), "Error accepting invitation", Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Handles declining an event invitation from a notification.
+     * <p>
+     * Delegates to {@link FirebaseEventRepository declineInvitation(String, String, String, java.util.function.Consumer, java.util.function.Consumer)}
+     * and shows a toast indicating success or failure.
+     *
+     * @param snapshot The Firestore snapshot representing the notification document.
+     * @param item     The notification item containing the event ID.
+     */
     private void declineInvite(DocumentSnapshot snapshot, UNotiItem item){
         String notificationId = snapshot.getId();
         String eventId = item.getEventId();
