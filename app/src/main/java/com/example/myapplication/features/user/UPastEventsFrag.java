@@ -31,17 +31,39 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class UPastEventsFrag extends Fragment {
 
+    /**
+     *  Recycler view for displaying past events
+     */
     private RecyclerView recycler;
+    /**
+     *  Adapter for displaying past events
+     */
     private UPastEventsAdapter adapter;
 
+    /**
+     *  Firebase database
+     */
     private FirebaseFirestore db;
+    /**
+     *  Current user
+     */
     private FirebaseUser currentUser;
 
+    /**
+     *  List of past events
+     */
     private final List<UPastEventItem> pastEvents = new ArrayList<>();
 
+    /**
+     *  Date format for displaying dates
+     */
     private static final SimpleDateFormat DATE_FORMAT =
             new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
 
+    /**
+     * @param millis
+     * @return
+     */
     private String formatDate(Long millis) {
         if (millis == null) return "";
         return DATE_FORMAT.format(new Date(millis));
@@ -49,6 +71,16 @@ public class UPastEventsFrag extends Fragment {
 
     public UPastEventsFrag() {}
 
+    /**
+     * @param inflater           The LayoutInflater object that can be used to inflate
+     *                           any views in the fragment,
+     * @param container          If non-null, this is the parent view that the fragment's
+     *                           UI should be attached to.  The fragment should not add the view itself,
+     *                           but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     * @return
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,6 +89,11 @@ public class UPastEventsFrag extends Fragment {
         return inflater.inflate(R.layout.fragment_u_past_events, container, false);
     }
 
+    /**
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
@@ -82,6 +119,9 @@ public class UPastEventsFrag extends Fragment {
 
     }
 
+    /**
+     *  Loads past events from the database
+     */
     private void loadPastEvents() {
         pastEvents.clear();
         final String uid = currentUser.getUid();
@@ -92,6 +132,9 @@ public class UPastEventsFrag extends Fragment {
                 .addOnSuccessListener(this::handlePastEventsResult);
     }
 
+    /**
+     * @param notiSnapshot
+     */
     private void handlePastEventsResult(QuerySnapshot notiSnapshot) {
         final String uid = currentUser.getUid();
         pastEvents.clear();
@@ -135,6 +178,11 @@ public class UPastEventsFrag extends Fragment {
         }
     }
 
+    /**
+     * @param eventId
+     * @param status
+     * @param remaining
+     */
     private void fetchEventDetails(String eventId, String status, AtomicInteger remaining) {
         db.collection("events")
                 .document(eventId)
@@ -173,6 +221,9 @@ public class UPastEventsFrag extends Fragment {
                 });
     }
 
+    /**
+     *  Sorts and shows past events
+     */
     private void sortAndShow() {
         Collections.sort(pastEvents, (e1, e2) -> {
             try {
