@@ -36,7 +36,14 @@ import com.google.firebase.firestore.Query;
  */
 public class ANotiFrag extends Fragment {
 
+    /**
+     *  The RecyclerView for displaying the notifications.
+     */
     private RecyclerView recyclerView;
+
+    /**
+     *  The adapter for the RecyclerView.
+     */
     private UNotiAdapter adapter;
 
     /**
@@ -80,7 +87,10 @@ public class ANotiFrag extends Fragment {
         });
 
         Query query = FirebaseFirestore.getInstance()
-                .collection("notifications");
+                .collection("notifications")
+                .whereNotEqualTo("message", "This notification was deleted by the system.")
+                .orderBy("message")
+                .orderBy("dateMade", Query.Direction.DESCENDING);
 
         FirestoreRecyclerOptions<UNotiItem> options = new FirestoreRecyclerOptions.Builder<UNotiItem>()
                 .setQuery(query, UNotiItem.class)
@@ -120,13 +130,20 @@ public class ANotiFrag extends Fragment {
                     .create();
 
             btnViewEvent.setOnClickListener(v -> {
-                snapshot.getReference().delete()
+                snapshot.getReference()
+                        .update(
+                                "message", "This notification was deleted by the system.",
+                                "type", "custom"
+                        )
                         .addOnSuccessListener(aVoid ->
                                 Toast.makeText(requireContext(),
-                                        "Notification deleted", Toast.LENGTH_SHORT).show())
+                                        "Notification marked as deleted", Toast.LENGTH_SHORT).show()
+                        )
                         .addOnFailureListener(e ->
                                 Toast.makeText(requireContext(),
-                                        "Error deleting notification", Toast.LENGTH_SHORT).show());
+                                        "Error deleting notification", Toast.LENGTH_SHORT).show()
+                        );
+
                 dialog.dismiss();
             });
 
