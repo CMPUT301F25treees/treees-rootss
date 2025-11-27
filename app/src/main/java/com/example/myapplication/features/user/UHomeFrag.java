@@ -336,16 +336,31 @@ public class UHomeFrag extends Fragment {
     }
 
     /**
-     * Applies the currently selected filters to the full event list and updates the adapter.
+     *
+     * First applies a filter to hide any events that have finished and then,
+     * applies the currently selected filters to the full event list and updates the adapter.
      * @param None
      * @return void
      */
     private void applyCurrentFilters() {
+
+        long now = System.currentTimeMillis();
+
         if (adapter == null) {
             return;
         }
 
+
         List<UserEvent> working = new ArrayList<>(allEvents);
+
+        for(UserEvent event : allEvents){
+            if (event == null){
+                continue;
+            } if(isUpcomingEvent(event, now)){
+                working.add(event);
+            }
+        }
+
         if (!selectedInterests.isEmpty()) {
             working = filterEventsByInterests(working, selectedInterests);
         }
