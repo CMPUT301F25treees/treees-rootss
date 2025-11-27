@@ -183,7 +183,7 @@ public class UEventDetailFrag extends Fragment {
     }
 
 
-    /** Try to capture location → then join */
+    /** Try to capture location, then join */
     private void captureLocationAndJoin(String uid) {
 
         FirebaseEventRepository repo = new FirebaseEventRepository();
