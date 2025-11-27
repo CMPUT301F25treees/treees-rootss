@@ -48,10 +48,23 @@ public class UEditProfileFrag extends Fragment {
     private String pendingEmailChange = null;
     private String pendingFirstName = null;
 
+    /**
+     * Default public constructor for the fragment.
+     * Inflates {@code R.layout.fragment_u_edit_profile} as the associated view.
+     * @param None
+     * @return void
+     */
     public UEditProfileFrag() {
         super(R.layout.fragment_u_edit_profile);
     }
 
+    /**
+     * Called immediately after the view hierarchy associated with this fragment has been created.
+     *
+     * @param view the view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved state, if any
+     * @return void
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -65,6 +78,12 @@ public class UEditProfileFrag extends Fragment {
         populateFields();
     }
 
+    /**
+     * Initializes view components and sets up button listeners.
+     *
+     * @param view The root view of the fragment.
+     * @return void
+     */
     private void initViews(View view) {
         inputFirstName = view.findViewById(R.id.edit_first_name_input);
         inputLastName = view.findViewById(R.id.edit_last_name_input);
@@ -83,6 +102,12 @@ public class UEditProfileFrag extends Fragment {
         goBackButton.setOnClickListener(backListener);
     }
 
+    /**
+     * Populates the input fields with the current user's profile data from Firestore.
+     *
+     * @param None
+     * @return void
+     */
     private void populateFields() {
         FirebaseUser firebaseUser = auth.getCurrentUser();
         if (firebaseUser == null) return;
@@ -114,6 +139,12 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
+    /**
+     * Validates input fields and attempts to save profile changes to Firestore and Firebase Auth.
+     *
+     * @param None
+     * @return void
+     */
     private void attemptSave() {
         tilFirstName.setError(null);
         tilEmail.setError(null);
@@ -165,6 +196,14 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
+    /**
+     * Attempts to change the user's email, handling reauthentication if required.
+     *
+     * @param user The current Firebase user.
+     * @param newEmail The new email address to set.
+     * @param firstName The updated first name for local session update.
+     * @return void
+     */
     private void attemptEmailChange(FirebaseUser user, String newEmail, String firstName) {
         // Send a verification link to the new email before applying the change
         user.verifyBeforeUpdateEmail(newEmail)
@@ -214,6 +253,12 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
+    /**
+     * Displays a dialog prompting the user to enter their password for reauthentication.
+     *
+     * @param user The current Firebase user.
+     * @return void
+     */
     private void showPasswordDialog(FirebaseUser user) {
         setLoading(false);
 
@@ -255,6 +300,13 @@ public class UEditProfileFrag extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Reauthenticates the user with the provided password and retries the pending email change.
+     *
+     * @param user The current Firebase user.
+     * @param password The password entered by the user for reauthentication.
+     * @return void
+     */
     private void reauthenticateAndRetry(FirebaseUser user, String password) {
         if (pendingEmailChange == null) return;
 
@@ -292,6 +344,13 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
+    /**
+     * Updates the local user session and device storage with the new profile data.
+     *
+     * @param firstName The updated first name.
+     * @param email The updated email address.
+     * @return void
+     */
     private void updateLocalSession(String firstName, String email) {
         User user = UserSession.getInstance().getCurrentUser();
         if (user != null) {
@@ -304,6 +363,13 @@ public class UEditProfileFrag extends Fragment {
         }
     }
 
+    /**
+     * Sets the loading state of the fragment, showing or hiding the progress indicator
+     * and enabling/disabling the save button.
+     *
+     * @param loading true to show loading state, false to hide
+     * @return void
+     */
     private void setLoading(boolean loading) {
         if (progressView != null) {
             progressView.setVisibility(loading ? View.VISIBLE : View.GONE);
@@ -313,22 +379,41 @@ public class UEditProfileFrag extends Fragment {
         }
     }
 
+    /**
+     * Retrieves and trims text from a TextInputEditText.
+     * @param input
+     * @return
+     */
     private String textOf(TextInputEditText input) {
         return input.getText() != null ? input.getText().toString().trim() : "";
     }
 
+    /**
+     * Displays a short Toast message.
+     *
+     * @param message The message to display.
+     * @return void
+     */
     private void toast(String message) {
         if (getContext() != null) {
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
     }
 
-    // Visible for tests
+    /**
+     * Sets a custom FirebaseAuth instance (for testing purposes).
+     * @param auth
+     * @return void
+     */
     void setAuth(FirebaseAuth auth) {
         this.auth = auth;
     }
 
-    // Visible for tests
+    /**
+     * Sets a custom FirebaseFirestore instance (for testing purposes).
+     * @param db
+     * @return void
+     */
     void setDb(FirebaseFirestore db) {
         this.db = db;
     }
