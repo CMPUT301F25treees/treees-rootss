@@ -1,6 +1,9 @@
 package com.example.myapplication.features.user;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -13,59 +16,51 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
+import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import com.bumptech.glide.Glide;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 /**
- * This class is for displaying the detailed information about an event
- * that the user has selected.
- *
- * From here the user can view details and join waitlist
+ * Displays event details for entrants, allows joining the waitlist,
+ * and captures optional geolocation.
  */
 public class UEventDetailFrag extends Fragment {
 
+    private static final int LOCATION_REQUEST_CODE = 201;
+
     private TextView title, organizer, location, price, endTime, descr, waitingList;
 
+    /** The REAL eventId field (no shadowing) */
+    private String eventId;
 
-    /**
-     * Inflates the layout for the event detail fragment.
-     *
-     * @param inflater The LayoutInflater object that can be used to inflate
-     *                 any views in the fragment.
-     * @param container If non-null, this is the parent view that the fragment's
-     *                  UI should be attached to. The fragment should not add the view
-     *                  itself, but this can be used to generate the LayoutParams
-     *                  of the view.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     * from a previous saved state as given here.
-     * @return Return the View for the fragment's UI, or null.
-     */
+    // Whether geolocation is required for this event — set when binding event data
+    private boolean geoRequired = false;
+
+    private FusedLocationProviderClient fusedLocationClient;
+
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
-        return  inflater.inflate(R.layout.fragment_u_event_detail, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_u_event_detail, container, false);
     }
 
-    /**
-     * This method is called after the view has been created.
-     *
-     * It initializes UI elements, sets up button listeners, and fetches
-     * event details to display.
-     *
-     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     * from a previous saved state as given here.
-     */
+
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
 
         super.onViewCreated(view, savedInstanceState);
 
@@ -77,74 +72,67 @@ public class UEventDetailFrag extends Fragment {
         endTime = view.findViewById(R.id.endTime);
         descr = view.findViewById(R.id.description);
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+
+        // Back button
         ImageButton backButton = view.findViewById(R.id.bckButton);
-        backButton.setOnClickListener(x -> {
+        backButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
+
+        /** -------------------------------
+         *  FIXED: ASSIGN FIELD, NOT LOCAL
+         * -------------------------------- */
+        eventId = getArguments() != null ? getArguments().getString("eventId") : null;
+
+        if (eventId == null) {
+            Toast.makeText(requireContext(), "Event not found.", Toast.LENGTH_SHORT).show();
             Navigation.findNavController(view).navigateUp();
+            return;
+        }
+
+        // Load event details
+        FirebaseEventRepository repo = new FirebaseEventRepository();
+        repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
+            @Override
+            public void onEventFetched(UserEvent event) {
+                bindEventData(event);
+
+                // Geo requirement flag (if your UserEvent supports it)
+                geoRequired = event.isGeoRequired();   // <-- Adjust if getter name differs
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(requireContext(), "Could not load event.", Toast.LENGTH_SHORT).show();
+            }
         });
 
 
-        String eventId = getArguments() != null ? getArguments().getString("eventId") : null;
-
+        // Join waitlist button
         MaterialButton joinWaitlistButton = view.findViewById(R.id.joinWaitlist);
         joinWaitlistButton.setOnClickListener(x -> {
+
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             if (user == null) {
                 Toast.makeText(getContext(), "Please log in first!", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             String uid = user.getUid();
 
-            FirebaseEventRepository repo = new FirebaseEventRepository();
-            repo.joinWaitlist(eventId, uid, a -> {
-                repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
-                    @Override
-                    public void onEventFetched(UserEvent event) {
-                        int cap = event.getCapacity();
-                        int drawn = event.getEntrantsToDraw();
+            if (geoRequired && !hasLocationPermission()) {
+                requestPermissions(
+                        new String[]{ Manifest.permission.ACCESS_FINE_LOCATION },
+                        LOCATION_REQUEST_CODE
+                );
+                return;
+            }
 
-
-                        new AlertDialog.Builder(requireContext())
-                                .setTitle("You have joined the waitlist!")
-                                .setMessage("The event has a waitlist capacity of " + cap + ", from which " +
-                                        drawn + " will be drawn randomly. We promise.")
-                                .setPositiveButton("Okay", (dialogInterface, i) -> dialogInterface.dismiss())
-                                .show();
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Toast.makeText(getContext(), "Unable to get event", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                refreshEventDetail(eventId);
-            }, e-> Toast.makeText(getContext(), "Sorry, you could not join at the moment!", Toast.LENGTH_SHORT).show());
+            captureLocationAndJoin(uid);
         });
-
-
-        if(eventId != null){
-            FirebaseEventRepository repo = new FirebaseEventRepository();
-            repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
-                @Override
-                public void onEventFetched(UserEvent event) {
-                    bindEventData(event);
-                }
-
-                @Override
-                public void onError(Exception e) {
-
-                }
-            });
-        }
     }
 
-    /**
-     * This method binde the details of an event to teh UI elements.
-     *
-     * It takes the details and changes the title, description, location, price,
-     * days left to join, waitlist count, and loads in the event image.
-     *
-     * @param event the UserEvent object that holds all the detials
-     */
+
+    /** Bind event details to the UI */
     private void bindEventData(UserEvent event) {
         long millisLeft = event.getEndTimeMillis() - System.currentTimeMillis();
         long daysLeft = (long) Math.ceil(millisLeft / (1000.0 * 60 * 60 * 24));
@@ -152,46 +140,31 @@ public class UEventDetailFrag extends Fragment {
         title.setText(event.getName());
         organizer.setText("Organizer: " + event.getInstructor());
         location.setText(event.getLocation());
+
         String priceText = event.getPriceDisplay();
         if (TextUtils.isEmpty(priceText)) {
             price.setText(getString(R.string.event_price_unavailable));
         } else {
             price.setText(getString(R.string.event_price_label, priceText));
         }
+
         descr.setText(event.getDescr());
         endTime.setText("Days Left: " + Math.max(daysLeft, 0));
+
         waitingList.setText("Currently in Waitinglist: " +
-                (event.getWaitlist() != null ? event.getWaitlist().size() : 0)
-        );
+                (event.getWaitlist() != null ? event.getWaitlist().size() : 0));
 
         ImageView imageView = requireView().findViewById(R.id.eventImage);
-        String imageUrl = event.getImageUrl();
+        ImageView qrImageView = requireView().findViewById(R.id.qrCodeImage);
 
-        // QR Image View
-        ImageView qrImageUrl = requireView().findViewById(R.id.qrCodeImage);
-        String qrUrl = event.getQrData();
+        if (event.getImageUrl() != null)
+            Glide.with(this).load(event.getImageUrl()).into(imageView);
 
-
-        if(imageUrl != null && !imageUrl.isEmpty()){
-            Glide.with(this)
-                    .load(imageUrl)
-                    .into(imageView);
-        }
-
-        if (qrUrl != null && !qrUrl.isEmpty()) {
-            Glide.with(this)
-                    .load(qrUrl)
-                    .into(qrImageUrl);
-        }
+        if (event.getQrData() != null)
+            Glide.with(this).load(event.getQrData()).into(qrImageView);
     }
 
-    /**
-     * This method is for refresshing teh current event's deatils.
-     *
-     * For example: after the user joins the waitlist, the count gets updated.
-     *
-     * @param eventId event ID of the event.
-     */
+
     private void refreshEventDetail(String eventId) {
         FirebaseEventRepository repo = new FirebaseEventRepository();
         repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
@@ -203,5 +176,103 @@ public class UEventDetailFrag extends Fragment {
             @Override
             public void onError(Exception e) { }
         });
+    }
+
+
+    private boolean hasLocationPermission() {
+        return ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+
+    /** Try to capture location → then join */
+    private void captureLocationAndJoin(String uid) {
+
+        FirebaseEventRepository repo = new FirebaseEventRepository();
+
+        // If location NOT required → join immediately
+        if (!geoRequired || !hasLocationPermission()) {
+            joinWithLocation(repo, uid, null, null);
+            return;
+        }
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        joinWithLocation(repo, uid,
+                                location.getLatitude(),
+                                location.getLongitude());
+                    } else {
+                        Toast.makeText(
+                                getContext(),
+                                "Could not get location. Try again outdoors.",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(),
+                                "Location failed: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show());
+    }
+
+
+    /** Actually join waitlist with optional lat/lng */
+    private void joinWithLocation(FirebaseEventRepository repo,
+                                  String uid,
+                                  @Nullable Double lat,
+                                  @Nullable Double lng) {
+
+        repo.joinWaitlist(eventId, uid, lat, lng, a -> {
+
+            repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
+                @Override
+                public void onEventFetched(UserEvent event) {
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("You have joined the waitlist!")
+                            .setMessage("You have been added successfully.")
+                            .setPositiveButton("Okay", (dialog, i) -> dialog.dismiss())
+                            .show();
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Toast.makeText(getContext(),
+                            "Unable to reload event.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            refreshEventDetail(eventId);
+
+        }, e -> Toast.makeText(getContext(),
+                "Could not join waitlist.",
+                Toast.LENGTH_SHORT).show());
+    }
+
+
+    /** Permission callback */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_REQUEST_CODE) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null)
+                    captureLocationAndJoin(user.getUid());
+
+            } else {
+                Toast.makeText(requireContext(),
+                        "Location permission denied.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 
+import androidx.annotation.Nullable;
+
+import com.example.myapplication.data.model.EntrantLocation;
 import com.example.myapplication.data.model.Event;
 import com.example.myapplication.data.model.NotificationList;
 import com.example.myapplication.data.repo.EventRepository;
@@ -48,7 +51,13 @@ public class FirebaseEventRepository implements EventRepository {
      * @param successListener Callback on success
      * @param failureListener Callback on failure
      */
-    public void joinWaitlist(String eventId, String uid, OnSuccessListener<Void> successListener, OnFailureListener failureListener){
+    public void joinWaitlist(String eventId,
+                             String uid,
+                             @Nullable Double lat,
+                             @Nullable Double lng,
+                             OnSuccessListener<Void> successListener,
+                             OnFailureListener failureListener) {
+
         db.collection("events")
                 .document(eventId)
                 .update("waitlist", FieldValue.arrayUnion(uid))
@@ -59,15 +68,30 @@ public class FirebaseEventRepository implements EventRepository {
                 .whereEqualTo("eventId", eventId)
                 .limit(1)
                 .get()
-                .addOnSuccessListener( x -> {
-                   if(!x.isEmpty()) {
-                       var doc = x.getDocuments().get(0);
-                       doc.getReference().update(
-                               "waiting", FieldValue.arrayUnion(uid),
-                               "all", FieldValue.arrayUnion(uid)
-                       );
-                   }
+                .addOnSuccessListener(x -> {
+                    if (!x.isEmpty()) {
+                        var doc = x.getDocuments().get(0);
+                        doc.getReference().update(
+                                "waiting", FieldValue.arrayUnion(uid),
+                                "all", FieldValue.arrayUnion(uid)
+                        );
+                    }
                 });
+
+        // store location if present
+        if (lat != null && lng != null) {
+            var payload = new java.util.HashMap<String, Object>();
+            payload.put("uid", uid);
+            payload.put("lat", lat);
+            payload.put("lng", lng);
+            payload.put("joinedAt", FieldValue.serverTimestamp());
+
+            db.collection("events")
+                    .document(eventId)
+                    .collection("waitlistLocations")
+                    .document(uid)
+                    .set(payload);
+        }
     }
 
 
@@ -523,5 +547,32 @@ public class FirebaseEventRepository implements EventRepository {
 
 
     }
+
+    public interface WaitlistLocationCallback {
+        void onLocationsFetched(java.util.List<EntrantLocation> locations);
+        void onError(Exception e);
+    }
+
+    public void getWaitlistLocations(String eventId, WaitlistLocationCallback callback) {
+        db.collection("events")
+                .document(eventId)
+                .collection("waitlistLocations")
+                .get()
+                .addOnSuccessListener(qs -> {
+                    java.util.List<EntrantLocation> result = new java.util.ArrayList<>();
+                    for (var doc : qs.getDocuments()) {
+                        EntrantLocation loc = doc.toObject(EntrantLocation.class);
+                        if (loc != null) {
+                            if (loc.getUid() == null) {
+                                loc.setUid(doc.getId());
+                            }
+                            result.add(loc);
+                        }
+                    }
+                    callback.onLocationsFetched(result);
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
 
 }
