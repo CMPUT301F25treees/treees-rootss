@@ -142,7 +142,7 @@ public class FirebaseEventRepository implements EventRepository {
      * Each document is converted into a UserEvent object and is returned in a list
      * through the callback.
      *
-     * @param callback recieves the list of events or receives an error.
+     * @param callback gets the list of events or receives an error.
      */
     public void getAllEvents(EventListCallback callback){
         db.collection("events")
