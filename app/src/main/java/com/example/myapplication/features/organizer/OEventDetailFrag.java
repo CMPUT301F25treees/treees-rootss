@@ -175,7 +175,6 @@ public class OEventDetailFrag extends Fragment {
 
     /**
      * This method makes sure that event details are refreshed.
-     *
      * @return void
      */
     @Override
@@ -189,7 +188,6 @@ public class OEventDetailFrag extends Fragment {
     /**
      * Updates displayed event price or null
      * @param priceText event price
-     *
      * @return void
      */
     private void updatePrice(String priceText) {

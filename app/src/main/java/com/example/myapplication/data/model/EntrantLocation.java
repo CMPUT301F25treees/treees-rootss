@@ -7,6 +7,11 @@ public class EntrantLocation {
 
     public EntrantLocation() {}
 
+    /**
+     * @param uid
+     * @param lat
+     * @param lng
+     */
     public EntrantLocation(String uid, double lat, double lng) {
         this.uid = uid;
         this.lat = lat;

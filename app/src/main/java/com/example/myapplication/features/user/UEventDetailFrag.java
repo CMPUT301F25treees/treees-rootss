@@ -49,6 +49,16 @@ public class UEventDetailFrag extends Fragment {
     private FusedLocationProviderClient fusedLocationClient;
 
 
+    /**
+     * @param inflater           The LayoutInflater object that can be used to inflate
+     *                           any views in the fragment,
+     * @param container          If non-null, this is the parent view that the fragment's
+     *                           UI should be attached to.  The fragment should not add the view itself,
+     *                           but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     * @return
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
@@ -57,6 +67,11 @@ public class UEventDetailFrag extends Fragment {
     }
 
 
+    /**
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
@@ -161,6 +176,9 @@ public class UEventDetailFrag extends Fragment {
     }
 
 
+    /**
+     * @param eventId
+     */
     private void refreshEventDetail(String eventId) {
         FirebaseEventRepository repo = new FirebaseEventRepository();
         repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
@@ -175,6 +193,9 @@ public class UEventDetailFrag extends Fragment {
     }
 
 
+    /**
+     * @return
+     */
     private boolean hasLocationPermission() {
         return ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -183,7 +204,9 @@ public class UEventDetailFrag extends Fragment {
     }
 
 
-    /** Try to capture location, then join */
+    /**
+     * @param uid
+     */
     private void captureLocationAndJoin(String uid) {
 
         FirebaseEventRepository repo = new FirebaseEventRepository();
@@ -215,7 +238,12 @@ public class UEventDetailFrag extends Fragment {
     }
 
 
-    /** Join waitlist with optional latitude/longitude */
+    /**
+     * @param repo
+     * @param uid
+     * @param lat
+     * @param lng
+     */
     private void joinWithLocation(FirebaseEventRepository repo,
                                   String uid,
                                   @Nullable Double lat,
@@ -249,7 +277,13 @@ public class UEventDetailFrag extends Fragment {
     }
 
 
-    /** Permission callback */
+    /**
+     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions  The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *                     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     *                     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
