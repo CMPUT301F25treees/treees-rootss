@@ -37,9 +37,24 @@ import com.google.firebase.storage.FirebaseStorage;
  */
 public class ARemoveFrag extends Fragment {
 
+    /**
+     *  Event ID of the event to remove.
+     */
     private String eventId;
+
+    /**
+     *  Whether the event has a preview image.
+     */
     private boolean hasPreview = false;
+
+    /**
+     *  Event name.
+     */
     private String eventName = "";
+
+    /**
+     *  Event organizer ID.
+     */
     private String organizerId = "";
 
     /**

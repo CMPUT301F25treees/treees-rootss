@@ -36,7 +36,14 @@ import com.google.firebase.firestore.Query;
  */
 public class ANotiFrag extends Fragment {
 
+    /**
+     *  The RecyclerView for displaying the notifications.
+     */
     private RecyclerView recyclerView;
+
+    /**
+     *  The adapter for the RecyclerView.
+     */
     private UNotiAdapter adapter;
 
     /**
