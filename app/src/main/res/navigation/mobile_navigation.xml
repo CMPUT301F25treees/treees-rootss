@@ -153,6 +153,10 @@
         <action
             android:id="@+id/action_navigation_organizer_event_detail_to_navigation_organizer_event_edit"
             app:destination="@id/navigation_organizer_event_edit" />
+        <action
+            android:id="@+id/action_navigation_organizer_event_detail_to_navigation_organizer_entrant_map"
+            app:destination="@id/navigation_organizer_entrant_map" />
+
     </fragment>
 
     <fragment
@@ -173,6 +177,15 @@
             android:name="eventId"
             app:argType="string" />
 
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_organizer_entrant_map"
+        android:name="com.example.myapplication.features.organizer.OEntrantMapFrag"
+        tools:layout="@layout/fragment_o_entrant_map">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
     </fragment>
 
 

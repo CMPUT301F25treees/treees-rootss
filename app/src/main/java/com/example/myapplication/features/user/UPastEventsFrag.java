@@ -29,26 +29,71 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Fragment that displays a list of past events for the currently logged-in user.
+ * <p>
+ * Past events are derived from entries in the {@code notificationList} collection
+ * and event details from the {@code events} collection. Only events whose end
+ * time has already passed are shown, sorted by most recent date first.
+ */
 public class UPastEventsFrag extends Fragment {
 
+    /**
+     * RecyclerView used to display the list of past events.
+     */
     private RecyclerView recycler;
+
+    /**
+     * Adapter responsible for binding {@link UPastEventItem} instances
+     * to the past events RecyclerView.
+     */
     private UPastEventsAdapter adapter;
 
+    /**
+     * Firestore instance used for reading notification and event data.
+     */
     private FirebaseFirestore db;
+
+    /**
+     * The currently authenticated Firebase user, or {@code null} if not signed in.
+     */
     private FirebaseUser currentUser;
 
+    /**
+     * In-memory list of past event items to be displayed to the user.
+     */
     private final List<UPastEventItem> pastEvents = new ArrayList<>();
 
+    /**
+     * Date formatter used to present event end dates in {@code MM/dd/yyyy} format.
+     */
     private static final SimpleDateFormat DATE_FORMAT =
             new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
 
+    /**
+     * Formats a timestamp in milliseconds into a displayable date string.
+     *
+     * @param millis the timestamp in milliseconds; may be {@code null}
+     * @return formatted date string or an empty string if {@code millis} is {@code null}
+     */
     private String formatDate(Long millis) {
         if (millis == null) return "";
         return DATE_FORMAT.format(new Date(millis));
     }
 
+    /**
+     * Default empty constructor required for Fragment instantiation.
+     */
     public UPastEventsFrag() {}
 
+    /**
+     * Inflates the layout for the past events screen.
+     *
+     * @param inflater           the LayoutInflater used to inflate the view
+     * @param container          optional parent view to attach to
+     * @param savedInstanceState previously saved state, if any
+     * @return the inflated root view for this fragment
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,6 +102,15 @@ public class UPastEventsFrag extends Fragment {
         return inflater.inflate(R.layout.fragment_u_past_events, container, false);
     }
 
+    /**
+     * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * <p>
+     * Sets up the RecyclerView and its adapter, initializes Firebase instances,
+     * triggers loading of past events for the current user, and wires the back button.
+     *
+     * @param view               the root view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved instance state, if any
+     */
     @Override
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
@@ -82,6 +136,13 @@ public class UPastEventsFrag extends Fragment {
 
     }
 
+    /**
+     * Initiates a Firestore query to load all past events for the current user.
+     * <p>
+     * The query targets the {@code notificationList} collection and filters
+     * entries where the user's UID is present in the {@code all} array field.
+     * Results are forwarded to {@link #handlePastEventsResult(QuerySnapshot)}.
+     */
     private void loadPastEvents() {
         pastEvents.clear();
         final String uid = currentUser.getUid();
@@ -92,6 +153,12 @@ public class UPastEventsFrag extends Fragment {
                 .addOnSuccessListener(this::handlePastEventsResult);
     }
 
+    /**
+     * Processes the notification list query result to determine the user's status
+     * for each event and then fetches detailed event information.
+     *
+     * @param notiSnapshot the query snapshot of notification list documents
+     */
     private void handlePastEventsResult(QuerySnapshot notiSnapshot) {
         final String uid = currentUser.getUid();
         pastEvents.clear();
@@ -135,6 +202,17 @@ public class UPastEventsFrag extends Fragment {
         }
     }
 
+    /**
+     * Fetches detailed information for a single event and adds it to the list of past events
+     * if the event has already ended.
+     * <p>
+     * Once all outstanding event detail requests have completed (tracked via
+     * {@link AtomicInteger} {@code remaining}), triggers {@link #sortAndShow()}.
+     *
+     * @param eventId   the ID of the event document to fetch
+     * @param status    the user's status for this event (e.g., Accepted, Invited)
+     * @param remaining counter of how many notification documents still need processing
+     */
     private void fetchEventDetails(String eventId, String status, AtomicInteger remaining) {
         db.collection("events")
                 .document(eventId)
@@ -173,6 +251,10 @@ public class UPastEventsFrag extends Fragment {
                 });
     }
 
+    /**
+     * Sorts the collected past events by date in descending order (most recent first)
+     * and updates the adapter with the sorted list.
+     */
     private void sortAndShow() {
         Collections.sort(pastEvents, (e1, e2) -> {
             try {

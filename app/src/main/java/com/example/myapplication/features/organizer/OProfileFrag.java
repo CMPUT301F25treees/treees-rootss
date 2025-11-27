@@ -48,7 +48,6 @@ public class OProfileFrag extends Fragment {
 
     /**
      * Constructor for OProfileFrag.
-     * @param None
      * @return void
      */
     public OProfileFrag() {
