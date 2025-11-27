@@ -16,17 +16,32 @@ import com.example.myapplication.features.user.UPastEventItem;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  Adapter for Past Events screen
+ */
 public class UPastEventsAdapter
         extends RecyclerView.Adapter<UPastEventsAdapter.PastEventViewHolder> {
 
+    /**
+     *  List of Past Events
+     */
     private final List<UPastEventItem> items = new ArrayList<>();
 
+    /**
+     * @param newItems
+     */
     public void setItems(List<UPastEventItem> newItems) {
         items.clear();
         items.addAll(newItems);
         notifyDataSetChanged();
     }
 
+    /**
+     * @param parent   The ViewGroup into which the new View will be added after it is bound to
+     *                 an adapter position.
+     * @param viewType The view type of the new View.
+     * @return
+     */
     @NonNull
     @Override
     public PastEventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -35,6 +50,10 @@ public class UPastEventsAdapter
         return new PastEventViewHolder(v);
     }
 
+    /**
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull PastEventViewHolder holder, int position) {
         UPastEventItem item = items.get(position);
@@ -59,9 +78,15 @@ public class UPastEventsAdapter
         }
     }
 
+    /**
+     * @return
+     */
     @Override
     public int getItemCount() { return items.size(); }
 
+    /**
+     *  ViewHolder for Past Events
+     */
     static class PastEventViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvPrice, tvDate, tvStatus;
         com.google.android.material.card.MaterialCardView cardStatus;
