@@ -29,57 +29,70 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Fragment that displays a list of past events for the currently logged-in user.
+ * <p>
+ * Past events are derived from entries in the {@code notificationList} collection
+ * and event details from the {@code events} collection. Only events whose end
+ * time has already passed are shown, sorted by most recent date first.
+ */
 public class UPastEventsFrag extends Fragment {
 
     /**
-     *  Recycler view for displaying past events
+     * RecyclerView used to display the list of past events.
      */
     private RecyclerView recycler;
+
     /**
-     *  Adapter for displaying past events
+     * Adapter responsible for binding {@link UPastEventItem} instances
+     * to the past events RecyclerView.
      */
     private UPastEventsAdapter adapter;
 
     /**
-     *  Firebase database
+     * Firestore instance used for reading notification and event data.
      */
     private FirebaseFirestore db;
+
     /**
-     *  Current user
+     * The currently authenticated Firebase user, or {@code null} if not signed in.
      */
     private FirebaseUser currentUser;
 
     /**
-     *  List of past events
+     * In-memory list of past event items to be displayed to the user.
      */
     private final List<UPastEventItem> pastEvents = new ArrayList<>();
 
     /**
-     *  Date format for displaying dates
+     * Date formatter used to present event end dates in {@code MM/dd/yyyy} format.
      */
     private static final SimpleDateFormat DATE_FORMAT =
             new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
 
     /**
-     * @param millis
-     * @return
+     * Formats a timestamp in milliseconds into a displayable date string.
+     *
+     * @param millis the timestamp in milliseconds; may be {@code null}
+     * @return formatted date string or an empty string if {@code millis} is {@code null}
      */
     private String formatDate(Long millis) {
         if (millis == null) return "";
         return DATE_FORMAT.format(new Date(millis));
     }
 
+    /**
+     * Default empty constructor required for Fragment instantiation.
+     */
     public UPastEventsFrag() {}
 
     /**
-     * @param inflater           The LayoutInflater object that can be used to inflate
-     *                           any views in the fragment,
-     * @param container          If non-null, this is the parent view that the fragment's
-     *                           UI should be attached to.  The fragment should not add the view itself,
-     *                           but this can be used to generate the LayoutParams of the view.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given here.
-     * @return
+     * Inflates the layout for the past events screen.
+     *
+     * @param inflater           the LayoutInflater used to inflate the view
+     * @param container          optional parent view to attach to
+     * @param savedInstanceState previously saved state, if any
+     * @return the inflated root view for this fragment
      */
     @Nullable
     @Override
@@ -90,9 +103,13 @@ public class UPastEventsFrag extends Fragment {
     }
 
     /**
-     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given here.
+     * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * <p>
+     * Sets up the RecyclerView and its adapter, initializes Firebase instances,
+     * triggers loading of past events for the current user, and wires the back button.
+     *
+     * @param view               the root view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved instance state, if any
      */
     @Override
     public void onViewCreated(@NonNull View view,
@@ -120,7 +137,11 @@ public class UPastEventsFrag extends Fragment {
     }
 
     /**
-     *  Loads past events from the database
+     * Initiates a Firestore query to load all past events for the current user.
+     * <p>
+     * The query targets the {@code notificationList} collection and filters
+     * entries where the user's UID is present in the {@code all} array field.
+     * Results are forwarded to {@link #handlePastEventsResult(QuerySnapshot)}.
      */
     private void loadPastEvents() {
         pastEvents.clear();
@@ -133,7 +154,10 @@ public class UPastEventsFrag extends Fragment {
     }
 
     /**
-     * @param notiSnapshot
+     * Processes the notification list query result to determine the user's status
+     * for each event and then fetches detailed event information.
+     *
+     * @param notiSnapshot the query snapshot of notification list documents
      */
     private void handlePastEventsResult(QuerySnapshot notiSnapshot) {
         final String uid = currentUser.getUid();
@@ -179,9 +203,15 @@ public class UPastEventsFrag extends Fragment {
     }
 
     /**
-     * @param eventId
-     * @param status
-     * @param remaining
+     * Fetches detailed information for a single event and adds it to the list of past events
+     * if the event has already ended.
+     * <p>
+     * Once all outstanding event detail requests have completed (tracked via
+     * {@link AtomicInteger} {@code remaining}), triggers {@link #sortAndShow()}.
+     *
+     * @param eventId   the ID of the event document to fetch
+     * @param status    the user's status for this event (e.g., Accepted, Invited)
+     * @param remaining counter of how many notification documents still need processing
      */
     private void fetchEventDetails(String eventId, String status, AtomicInteger remaining) {
         db.collection("events")
@@ -222,7 +252,8 @@ public class UPastEventsFrag extends Fragment {
     }
 
     /**
-     *  Sorts and shows past events
+     * Sorts the collected past events by date in descending order (most recent first)
+     * and updates the adapter with the sorted list.
      */
     private void sortAndShow() {
         Collections.sort(pastEvents, (e1, e2) -> {

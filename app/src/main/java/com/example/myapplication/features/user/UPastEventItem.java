@@ -26,6 +26,10 @@ public class UPastEventItem {
      */
     private String status;
 
+    /**
+     * No-argument constructor required for certain serialization frameworks
+     * (e.g., Firestore, Gson) when deserializing objects.
+     */
     public UPastEventItem() {}
 
     /**

@@ -28,7 +28,9 @@ public class UPastEventsAdapter
     private final List<UPastEventItem> items = new ArrayList<>();
 
     /**
-     * @param newItems
+     * Replaces the current list of items with a new collection and refreshes the UI.
+     *
+     * @param newItems the new list of {@link UPastEventItem} instances to display
      */
     public void setItems(List<UPastEventItem> newItems) {
         items.clear();
@@ -37,10 +39,11 @@ public class UPastEventsAdapter
     }
 
     /**
-     * @param parent   The ViewGroup into which the new View will be added after it is bound to
-     *                 an adapter position.
-     * @param viewType The view type of the new View.
-     * @return
+     * Inflates the item layout and creates a new {@link PastEventViewHolder}.
+     *
+     * @param parent   the parent ViewGroup into which the new view will be added
+     * @param viewType the view type of the new view (unused as there is only one type)
+     * @return a new {@link PastEventViewHolder} instance
      */
     @NonNull
     @Override
@@ -51,8 +54,13 @@ public class UPastEventsAdapter
     }
 
     /**
-     * @param holder
-     * @param position
+     * Binds the data from the {@link UPastEventItem} at the given position to the provided holder.
+     * <p>
+     * Sets title, price, date, and status text, and adjusts the status card background colour
+     * based on the status value (e.g., Accepted, Invited, other).
+     *
+     * @param holder   the {@link PastEventViewHolder} to bind data to
+     * @param position the position of the item within the adapter's data set
      */
     @Override
     public void onBindViewHolder(@NonNull PastEventViewHolder holder, int position) {
@@ -79,18 +87,41 @@ public class UPastEventsAdapter
     }
 
     /**
-     * @return
+     * Returns the total number of items currently managed by this adapter.
+     *
+     * @return the item count
      */
     @Override
     public int getItemCount() { return items.size(); }
 
     /**
-     *  ViewHolder for Past Events
+     * ViewHolder representing a single past event row in the RecyclerView.
+     * <p>
+     * Holds references to the event title, price, date, status text views,
+     * and the status card used for colour-coding the event status.
      */
     static class PastEventViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvPrice, tvDate, tvStatus;
+
+        /** TextView displaying the event title. */
+        TextView tvTitle;
+
+        /** TextView displaying the formatted event price. */
+        TextView tvPrice;
+
+        /** TextView displaying the formatted event date. */
+        TextView tvDate;
+
+        /** TextView displaying the status label for the event. */
+        TextView tvStatus;
+
+        /** Card view used to visually indicate the event status by colour. */
         com.google.android.material.card.MaterialCardView cardStatus;
 
+        /**
+         * Creates a new {@code PastEventViewHolder} and binds view references.
+         *
+         * @param itemView the inflated item view for a single past event row
+         */
         PastEventViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvEventTitle);
