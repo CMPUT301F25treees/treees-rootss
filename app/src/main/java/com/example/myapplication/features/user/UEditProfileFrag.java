@@ -2,12 +2,11 @@ package com.example.myapplication.features.user;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -37,14 +36,17 @@ import java.util.Map;
 import java.util.Objects;
 
 public class UEditProfileFrag extends Fragment {
-
+    private static final String TAG = "UEditProfileFrag";
     private TextInputEditText inputFirstName, inputLastName, inputEmail, inputPhone;
     private TextInputLayout tilFirstName, tilEmail;
     private View progressView;
     private MaterialButton saveButton;
-
     private FirebaseAuth auth;
     private FirebaseFirestore db;
+
+    // Store these for retry after reauthentication
+    private String pendingEmailChange = null;
+    private String pendingFirstName = null;
 
     public UEditProfileFrag() {
         super(R.layout.fragment_u_edit_profile);
@@ -53,10 +55,12 @@ public class UEditProfileFrag extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        auth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
-
+        if (auth == null) {
+            auth = FirebaseAuth.getInstance();
+        }
+        if (db == null) {
+            db = FirebaseFirestore.getInstance();
+        }
         initViews(view);
         populateFields();
     }
@@ -69,13 +73,11 @@ public class UEditProfileFrag extends Fragment {
         tilFirstName = view.findViewById(R.id.tilEditFirstName);
         tilEmail = view.findViewById(R.id.tilEditEmail);
         progressView = view.findViewById(R.id.editProfileProgress);
-
         saveButton = view.findViewById(R.id.btnSaveProfile);
         MaterialButton backButton = view.findViewById(R.id.btnBackProfile);
         ImageButton goBackButton = view.findViewById(R.id.bckButton);
 
         saveButton.setOnClickListener(v -> attemptSave());
-
         View.OnClickListener backListener = v -> NavHostFragment.findNavController(this).popBackStack();
         backButton.setOnClickListener(backListener);
         goBackButton.setOnClickListener(backListener);
@@ -92,13 +94,18 @@ public class UEditProfileFrag extends Fragment {
                     setLoading(false);
                     if (snapshot.exists()) {
                         String firstName = snapshot.getString("firstName");
-                        if (TextUtils.isEmpty(firstName)) firstName = snapshot.getString("username");
-
+                        if (TextUtils.isEmpty(firstName)) {
+                            firstName = snapshot.getString("username");
+                        }
                         inputFirstName.setText(firstName);
                         inputLastName.setText(snapshot.getString("lastName"));
                         inputPhone.setText(snapshot.getString("cell"));
-                        // Always display the actual Auth email
-                        inputEmail.setText(firebaseUser.getEmail());
+
+                        String email = snapshot.getString("email");
+                        if (TextUtils.isEmpty(email)) {
+                            email = firebaseUser.getEmail();
+                        }
+                        inputEmail.setText(email);
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -129,10 +136,9 @@ public class UEditProfileFrag extends Fragment {
         if (firebaseUser == null) return;
 
         setLoading(true);
-
         boolean emailChanged = !Objects.equals(firebaseUser.getEmail(), email);
 
-        // 1. Batch Update: Save Name/Phone to Firestore first
+        // Update Firestore first (non-email fields)
         WriteBatch batch = db.batch();
         Map<String, Object> updates = new HashMap<>();
         updates.put("firstName", firstName);
@@ -140,21 +146,16 @@ public class UEditProfileFrag extends Fragment {
         updates.put("lastName", TextUtils.isEmpty(lastName) ? null : lastName);
         updates.put("cell", TextUtils.isEmpty(phone) ? null : phone);
 
-        if (!emailChanged) {
-            updates.put("email", email);
-        }
-
         batch.set(db.collection("users").document(firebaseUser.getUid()), updates, SetOptions.merge());
-
         batch.commit()
                 .addOnSuccessListener(v -> {
                     if (emailChanged) {
-                        // 2. Email Change Flow (Attempt Direct Update)
-                        handleEmailChange(firebaseUser, email, firstName);
+                        // Attempt email change with reauthentication support
+                        attemptEmailChange(firebaseUser, email, firstName);
                     } else {
                         updateLocalSession(firstName, email);
                         setLoading(false);
-                        toast("Profile updated");
+                        toast("Profile updated successfully!");
                         NavHostFragment.findNavController(this).popBackStack();
                     }
                 })
@@ -164,68 +165,130 @@ public class UEditProfileFrag extends Fragment {
                 });
     }
 
-    private void handleEmailChange(FirebaseUser user, String newEmail, String firstName) {
-        // DIRECT UPDATE (No verification email)
-        user.updateEmail(newEmail)
+    private void attemptEmailChange(FirebaseUser user, String newEmail, String firstName) {
+        // Send a verification link to the new email before applying the change
+        user.verifyBeforeUpdateEmail(newEmail)
                 .addOnSuccessListener(v -> {
-                    // Success! Sync Firestore.
-                    db.collection("users").document(user.getUid()).update("email", newEmail);
-                    updateLocalSession(firstName, newEmail);
-                    setLoading(false);
-                    toast("Email updated successfully");
-                    NavHostFragment.findNavController(this).popBackStack();
+                    Log.d(TAG, "Verification email sent to new address");
+                    db.collection("users").document(user.getUid())
+                            .update("email", newEmail)
+                            .addOnSuccessListener(v3 -> {
+                                updateLocalSession(firstName, newEmail);
+                                pendingEmailChange = null;
+                                pendingFirstName = null;
+                                setLoading(false);
+                                toast("Check " + newEmail + " to confirm your new email (check spam)");
+                                NavHostFragment.findNavController(this).popBackStack();
+                            })
+                            .addOnFailureListener(e -> {
+                                // Email will still update after verification; keep local state in sync
+                                updateLocalSession(firstName, newEmail);
+                                pendingEmailChange = null;
+                                pendingFirstName = null;
+                                setLoading(false);
+                                toast("Verification sent to " + newEmail + " (check spam). Confirm it to finish the update.");
+                                NavHostFragment.findNavController(this).popBackStack();
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    setLoading(false);
-                    if (e instanceof FirebaseAuthRecentLoginRequiredException) {
-                        // Security Check: Prompt for Password
-                        showReauthDialog(user, newEmail, firstName);
+                    Log.e(TAG, "Email update failed", e);
+                    String errorMsg = e.getMessage() != null ? e.getMessage() : "";
+
+                    // Check if it's a reauthentication error
+                    if (e instanceof FirebaseAuthRecentLoginRequiredException ||
+                            errorMsg.contains("requires-recent-login")) {
+                        // Store pending change and show password dialog
+                        pendingEmailChange = newEmail;
+                        pendingFirstName = firstName;
+                        showPasswordDialog(user);
+                    } else if (errorMsg.contains("email-already-in-use")) {
+                        setLoading(false);
+                        tilEmail.setError("This email is already in use");
+                    } else if (errorMsg.contains("invalid-email")) {
+                        setLoading(false);
+                        tilEmail.setError("Invalid email format");
                     } else {
-                        // This catches "Operation Not Allowed" or "Email Already in Use"
-                        toast("Update Error: " + e.getMessage());
+                        setLoading(false);
+                        toast("Failed to update email: " + errorMsg);
                     }
                 });
     }
 
-    private void showReauthDialog(FirebaseUser user, String newEmail, String firstName) {
+    private void showPasswordDialog(FirebaseUser user) {
+        setLoading(false);
+
         if (getContext() == null) return;
 
-        final EditText input = new EditText(getContext());
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        input.setHint("Current Password");
-        // Add padding to make it look nicer
-        int padding = (int) (20 * getResources().getDisplayMetrics().density);
-        input.setPadding(padding, padding/2, padding, padding/2);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_password_input, null);
+        TextInputEditText passwordInput = dialogView.findViewById(R.id.dialog_password_input);
+        TextInputLayout passwordLayout = dialogView.findViewById(R.id.dialog_password_layout);
 
-        new AlertDialog.Builder(getContext())
-                .setTitle("Security Check")
-                .setMessage("To change your email, please confirm your current password.")
-                .setView(input)
-                .setPositiveButton("Confirm", (dialog, which) -> {
-                    String password = input.getText().toString();
-                    if (!TextUtils.isEmpty(password)) {
-                        performReauth(user, password, newEmail, firstName);
-                    } else {
-                        toast("Password cannot be empty");
-                    }
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setTitle("Confirm Password")
+                .setMessage("For security, please enter your password to change your email")
+                .setView(dialogView)
+                .setPositiveButton("Confirm", null)
+                .setNegativeButton("Cancel", (d, which) -> {
+                    pendingEmailChange = null;
+                    pendingFirstName = null;
+                    d.dismiss();
                 })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
-                .show();
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String password = passwordInput.getText() != null ?
+                        passwordInput.getText().toString().trim() : "";
+
+                if (TextUtils.isEmpty(password)) {
+                    passwordLayout.setError("Password required");
+                    return;
+                }
+
+                passwordLayout.setError(null);
+                dialog.dismiss();
+
+                reauthenticateAndRetry(user, password);
+            });
+        });
+
+        dialog.show();
     }
 
-    private void performReauth(FirebaseUser user, String password, String newEmail, String firstName) {
+    private void reauthenticateAndRetry(FirebaseUser user, String password) {
+        if (pendingEmailChange == null) return;
+
         setLoading(true);
-        // Important: Use the OLD email to re-authenticate
-        AuthCredential credential = EmailAuthProvider.getCredential(Objects.requireNonNull(user.getEmail()), password);
+
+        String currentEmail = user.getEmail();
+        if (currentEmail == null) {
+            setLoading(false);
+            toast("Error: No email associated with account");
+            return;
+        }
+
+        AuthCredential credential = EmailAuthProvider.getCredential(currentEmail, password);
 
         user.reauthenticate(credential)
                 .addOnSuccessListener(v -> {
-                    // Re-auth successful, retry the update
-                    handleEmailChange(user, newEmail, firstName);
+                    Log.d(TAG, "Reauthentication successful, retrying email update");
+                    // Now retry the email change
+                    attemptEmailChange(user, pendingEmailChange, pendingFirstName);
+                    pendingEmailChange = null;
+                    pendingFirstName = null;
                 })
                 .addOnFailureListener(e -> {
+                    Log.e(TAG, "Reauthentication failed", e);
                     setLoading(false);
-                    toast("Incorrect password or login type");
+                    String errorMsg = e.getMessage() != null ? e.getMessage() : "";
+                    if (errorMsg.contains("wrong-password") || errorMsg.contains("invalid-credential")) {
+                        toast("Incorrect password");
+                        showPasswordDialog(user); // Try again
+                    } else {
+                        toast("Authentication failed: " + errorMsg);
+                        pendingEmailChange = null;
+                        pendingFirstName = null;
+                    }
                 });
     }
 
@@ -242,8 +305,12 @@ public class UEditProfileFrag extends Fragment {
     }
 
     private void setLoading(boolean loading) {
-        if (progressView != null) progressView.setVisibility(loading ? View.VISIBLE : View.GONE);
-        if (saveButton != null) saveButton.setEnabled(!loading);
+        if (progressView != null) {
+            progressView.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
+        if (saveButton != null) {
+            saveButton.setEnabled(!loading);
+        }
     }
 
     private String textOf(TextInputEditText input) {
@@ -254,5 +321,15 @@ public class UEditProfileFrag extends Fragment {
         if (getContext() != null) {
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // Visible for tests
+    void setAuth(FirebaseAuth auth) {
+        this.auth = auth;
+    }
+
+    // Visible for tests
+    void setDb(FirebaseFirestore db) {
+        this.db = db;
     }
 }

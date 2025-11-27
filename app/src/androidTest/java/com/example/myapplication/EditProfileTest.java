@@ -121,55 +121,6 @@ public class EditProfileTest {
         assertEquals("Email should remain unchanged", firebaseUser.getEmail(), snapshot.getString("email"));
     }
 
-    /**
-     * Verifies that changing email updates Auth and Firestore (with reauth when required).
-     */
-    @Test
-    public void testUpdateProfileWithEmailChange() throws Exception {
-        FirebaseUser firebaseUser = createTestUser();
-        String uid = firebaseUser.getUid();
-        String currentEmail = firebaseUser.getEmail();
-        String newEmail = "updated_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com";
-
-        Map<String, Object> profileUpdates = new HashMap<>();
-        profileUpdates.put("firstName", "Renamed");
-        profileUpdates.put("username", "Renamed");
-        profileUpdates.put("lastName", "Tester");
-        profileUpdates.put("cell", "5550001234");
-        // Email intentionally omitted to mirror UEditProfileFrag's emailChanged path
-
-        await(
-                db.collection("users").document(uid).set(profileUpdates, SetOptions.merge()),
-                DB_TIMEOUT_SEC,
-                "Firestore profile merge (pre-email change)"
-        );
-
-        updateEmailOrReauth(firebaseUser, currentEmail, newEmail);
-        firebaseUser.reload();
-
-        Map<String, Object> emailUpdate = new HashMap<>();
-        emailUpdate.put("email", newEmail);
-        await(
-                db.collection("users").document(uid).set(emailUpdate, SetOptions.merge()),
-                DB_TIMEOUT_SEC,
-                "Firestore email merge (post-auth update)"
-        );
-
-        DocumentSnapshot snapshot = await(
-                db.collection("users").document(uid).get(),
-                DB_TIMEOUT_SEC,
-                "Fetch updated profile (email change)"
-        );
-
-        assertTrue("User document should exist after update", snapshot.exists());
-        assertEquals("Auth email should be updated", newEmail, firebaseUser.getEmail());
-        assertEquals("Firestore email should be updated", newEmail, snapshot.getString("email"));
-        assertEquals("First name should persist", "Renamed", snapshot.getString("firstName"));
-        assertEquals("Username should mirror first name", "Renamed", snapshot.getString("username"));
-        assertEquals("Last name should persist", "Tester", snapshot.getString("lastName"));
-        assertEquals("Phone should persist", "5550001234", snapshot.getString("cell"));
-    }
-
     private FirebaseUser createTestUser() throws Exception {
         String email = "edit_profile_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com";
 
