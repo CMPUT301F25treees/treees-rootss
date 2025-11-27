@@ -41,6 +41,9 @@ public class LoginFrag extends Fragment {
      */
     private FirebaseFirestore db;
 
+    /**
+     *  Input fields and progress bar
+     */
     private TextInputLayout tilEmail, tilPassword;
     private TextInputEditText etEmail, etPassword;
     private ProgressBar progress;
