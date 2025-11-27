@@ -41,7 +41,6 @@ public class UEventDetailFrag extends Fragment {
 
     private TextView title, organizer, location, price, endTime, descr, waitingList;
 
-    /** The REAL eventId field (no shadowing) */
     private String eventId;
 
     // Whether geolocation is required for this event — set when binding event data
@@ -78,9 +77,6 @@ public class UEventDetailFrag extends Fragment {
         ImageButton backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
 
-        /** -------------------------------
-         *  FIXED: ASSIGN FIELD, NOT LOCAL
-         * -------------------------------- */
         eventId = getArguments() != null ? getArguments().getString("eventId") : null;
 
         if (eventId == null) {
@@ -219,7 +215,7 @@ public class UEventDetailFrag extends Fragment {
     }
 
 
-    /** Actually join waitlist with optional lat/lng */
+    /** Join waitlist with optional latitude/longitude */
     private void joinWithLocation(FirebaseEventRepository repo,
                                   String uid,
                                   @Nullable Double lat,
