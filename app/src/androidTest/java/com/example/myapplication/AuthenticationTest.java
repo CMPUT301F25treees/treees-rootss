@@ -38,6 +38,9 @@ public class AuthenticationTest {
     private String testPassword;
     private String testUserId;
 
+    /**
+     *  Set up Firebase Authentication and Firestore for each test.
+     */
     @Before
     public void setUp() {
         auth = FirebaseAuth.getInstance();
@@ -48,6 +51,9 @@ public class AuthenticationTest {
         testEmail = "test_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com";
     }
 
+    /**
+     * @throws Exception
+     */
     @After
     public void tearDown() throws Exception {
         // Clean up: delete test user if created
