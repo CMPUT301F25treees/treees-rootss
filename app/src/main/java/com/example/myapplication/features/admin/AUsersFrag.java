@@ -29,7 +29,14 @@ import java.util.List;
  */
 public class AUsersFrag extends Fragment {
 
+    /**
+     *  Firestore snapshot listener registration.
+     */
     private ListenerRegistration reg;
+
+    /**
+     *  List adapter.
+     */
     private AdminUserAdapter adapter;
 
     /** Default no-argument constructor. */
