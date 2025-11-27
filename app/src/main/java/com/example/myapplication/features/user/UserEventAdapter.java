@@ -32,6 +32,9 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
 
     private OnEventClickListener listener;
 
+    /**
+     * @param listener
+     */
     public void setOnEventClickListener(OnEventClickListener listener) {
         this.listener = listener;
     }
@@ -73,10 +76,20 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         notifyDataSetChanged();
     }
 
+    /**
+     * @param s
+     * @return
+     */
     private static String safeLower(String s) {
         return s == null ? "" : s.toLowerCase(Locale.getDefault());
     }
 
+    /**
+     * @param parent   The ViewGroup into which the new View will be added after it is bound to
+     *                 an adapter position.
+     * @param viewType The view type of the new View.
+     * @return
+     */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
