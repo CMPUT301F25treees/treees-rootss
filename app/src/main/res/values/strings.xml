@@ -47,7 +47,9 @@
     <string name="edit_profile_email_required">Email is required.</string>
     <string name="edit_profile_email_invalid">Enter a valid email address.</string>
     <string name="edit_profile_save_success">Profile updated successfully.</string>
+    <string name="edit_profile_verify_email_sent">Verification email sent. Please confirm from the new address to finish updating.</string>
     <string name="edit_profile_save_failed">Failed to update profile. %1$s</string>
     <string name="edit_profile_load_failed">Unable to load profile information.</string>
     <string name="edit_profile_auth_missing">You must be signed in to update your profile.</string>
+    <string name="edit_profile_reauth_required">Please sign in again to change your email for security.</string>
 </resources>

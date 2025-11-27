@@ -1,69 +1,55 @@
 package com.example.myapplication.features.user;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.R;
+import com.example.myapplication.core.DeviceLoginStore;
 import com.example.myapplication.core.UserSession;
 import com.example.myapplication.data.model.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Fragment that allows the user to edit their profile details.
- */
 public class UEditProfileFrag extends Fragment {
 
-    private TextInputEditText inputFirstName;
-    private TextInputEditText inputLastName;
-    private TextInputEditText inputEmail;
-    private TextInputEditText inputPhone;
-    private TextInputLayout tilFirstName;
-    private TextInputLayout tilEmail;
+    private TextInputEditText inputFirstName, inputLastName, inputEmail, inputPhone;
+    private TextInputLayout tilFirstName, tilEmail;
     private View progressView;
     private MaterialButton saveButton;
 
     private FirebaseAuth auth;
     private FirebaseFirestore db;
 
-    /**
-     * Constructor for UEditProfileFrag.
-     * @param None
-     * @return void
-     */
     public UEditProfileFrag() {
         super(R.layout.fragment_u_edit_profile);
     }
 
-    /**
-     * Initializes Firebase instances, input fields, and button listeners.
-     *
-     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
-     * @return void
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -71,6 +57,11 @@ public class UEditProfileFrag extends Fragment {
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        initViews(view);
+        populateFields();
+    }
+
+    private void initViews(View view) {
         inputFirstName = view.findViewById(R.id.edit_first_name_input);
         inputLastName = view.findViewById(R.id.edit_last_name_input);
         inputEmail = view.findViewById(R.id.edit_email_input);
@@ -81,76 +72,41 @@ public class UEditProfileFrag extends Fragment {
 
         saveButton = view.findViewById(R.id.btnSaveProfile);
         MaterialButton backButton = view.findViewById(R.id.btnBackProfile);
+        ImageButton goBackButton = view.findViewById(R.id.bckButton);
 
-        backButton.setOnClickListener(v -> NavHostFragment.findNavController(this).popBackStack());
         saveButton.setOnClickListener(v -> attemptSave());
 
-        populateFields();
-
-        ImageButton goBackButton = view.findViewById(R.id.bckButton);
-        goBackButton.setOnClickListener(x -> {
-            Navigation.findNavController(view).navigateUp();
-        });
-
+        View.OnClickListener backListener = v -> NavHostFragment.findNavController(this).popBackStack();
+        backButton.setOnClickListener(backListener);
+        goBackButton.setOnClickListener(backListener);
     }
 
-    /**
-     * Loads the current profile information from Firestore for display.
-     */
     private void populateFields() {
         FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser == null) {
-            toast(getString(R.string.edit_profile_auth_missing));
-            return;
-        }
+        if (firebaseUser == null) return;
 
         setLoading(true);
-        db.collection("users")
-                .document(firebaseUser.getUid())
+        db.collection("users").document(firebaseUser.getUid())
                 .get()
-                .addOnSuccessListener(this::applyDocument)
+                .addOnSuccessListener(snapshot -> {
+                    setLoading(false);
+                    if (snapshot.exists()) {
+                        String firstName = snapshot.getString("firstName");
+                        if (TextUtils.isEmpty(firstName)) firstName = snapshot.getString("username");
+
+                        inputFirstName.setText(firstName);
+                        inputLastName.setText(snapshot.getString("lastName"));
+                        inputPhone.setText(snapshot.getString("cell"));
+                        // Always display the actual Auth email
+                        inputEmail.setText(firebaseUser.getEmail());
+                    }
+                })
                 .addOnFailureListener(e -> {
                     setLoading(false);
-                    toast(getString(R.string.edit_profile_load_failed));
+                    toast("Failed to load profile");
                 });
     }
 
-    /**
-     * Applies the loaded document data to the input fields.
-     *
-     * @param snapshot The Firestore document snapshot containing user profile data.
-     * @return void
-     */
-    private void applyDocument(DocumentSnapshot snapshot) {
-        setLoading(false);
-        if (snapshot == null || !snapshot.exists()) {
-            User stored = UserSession.getInstance().getCurrentUser();
-            inputFirstName.setText(stored != null ? stored.getUsername() : null);
-            inputEmail.setText(stored != null ? stored.getEmail() : null);
-            return;
-        }
-
-        String firstName = snapshot.getString("firstName");
-        if (TextUtils.isEmpty(firstName)) {
-            firstName = snapshot.getString("username");
-        }
-        inputFirstName.setText(firstName);
-        inputLastName.setText(snapshot.getString("lastName"));
-
-        String email = snapshot.getString("email");
-        if (TextUtils.isEmpty(email)) {
-            FirebaseUser firebaseUser = auth.getCurrentUser();
-            email = firebaseUser != null ? firebaseUser.getEmail() : null;
-        }
-        inputEmail.setText(email);
-        inputPhone.setText(snapshot.getString("cell"));
-    }
-
-    /**
-     * Validates the inputs and starts the save flow.
-     * @param None
-     * @return void
-     */
     private void attemptSave() {
         tilFirstName.setError(null);
         tilEmail.setError(null);
@@ -164,144 +120,139 @@ public class UEditProfileFrag extends Fragment {
             tilFirstName.setError(getString(R.string.edit_profile_first_name_required));
             return;
         }
-        if (TextUtils.isEmpty(email)) {
-            tilEmail.setError(getString(R.string.edit_profile_email_required));
-            return;
-        }
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             tilEmail.setError(getString(R.string.edit_profile_email_invalid));
             return;
         }
 
         FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser == null) {
-            toast(getString(R.string.edit_profile_auth_missing));
-            return;
-        }
+        if (firebaseUser == null) return;
 
         setLoading(true);
 
         boolean emailChanged = !Objects.equals(firebaseUser.getEmail(), email);
 
-        Map<String, Object> profileUpdates = new HashMap<>();
-        profileUpdates.put("firstName", firstName);
-        profileUpdates.put("username", firstName);
-        profileUpdates.put("lastName", TextUtils.isEmpty(lastName) ? null : lastName);
-        profileUpdates.put("cell", TextUtils.isEmpty(phone) ? null : phone);
+        // 1. Batch Update: Save Name/Phone to Firestore first
+        WriteBatch batch = db.batch();
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("firstName", firstName);
+        updates.put("username", firstName);
+        updates.put("lastName", TextUtils.isEmpty(lastName) ? null : lastName);
+        updates.put("cell", TextUtils.isEmpty(phone) ? null : phone);
+
         if (!emailChanged) {
-            profileUpdates.put("email", email);
+            updates.put("email", email);
         }
 
-        db.collection("users")
-                .document(firebaseUser.getUid())
-                .set(profileUpdates, SetOptions.merge())
+        batch.set(db.collection("users").document(firebaseUser.getUid()), updates, SetOptions.merge());
+
+        batch.commit()
                 .addOnSuccessListener(v -> {
                     if (emailChanged) {
-                        updateEmailAndPersist(firebaseUser, firstName, email);
+                        // 2. Email Change Flow (Attempt Direct Update)
+                        handleEmailChange(firebaseUser, email, firstName);
                     } else {
-                        finishSave(firstName, email);
+                        updateLocalSession(firstName, email);
+                        setLoading(false);
+                        toast("Profile updated");
+                        NavHostFragment.findNavController(this).popBackStack();
                     }
                 })
                 .addOnFailureListener(e -> {
                     setLoading(false);
-                    toast(getString(R.string.edit_profile_save_failed, e.getMessage()));
+                    toast("Update failed: " + e.getMessage());
                 });
     }
 
-    /**
-     * Updates the user's email in Firebase Authentication and persists it in Firestore.
-     *
-     * @param firebaseUser The current Firebase user.
-     * @param firstName The user's first name.
-     * @param desiredEmail The new email address to set.
-     * @return void
-     */
-    private void updateEmailAndPersist(FirebaseUser firebaseUser, String firstName, String desiredEmail) {
-        firebaseUser.updateEmail(desiredEmail)
-                .addOnSuccessListener(v -> persistEmailField(firstName, desiredEmail))
+    private void handleEmailChange(FirebaseUser user, String newEmail, String firstName) {
+        // DIRECT UPDATE (No verification email)
+        user.updateEmail(newEmail)
+                .addOnSuccessListener(v -> {
+                    // Success! Sync Firestore.
+                    db.collection("users").document(user.getUid()).update("email", newEmail);
+                    updateLocalSession(firstName, newEmail);
+                    setLoading(false);
+                    toast("Email updated successfully");
+                    NavHostFragment.findNavController(this).popBackStack();
+                })
                 .addOnFailureListener(e -> {
                     setLoading(false);
-                    toast(getString(R.string.edit_profile_save_failed, e.getMessage()));
+                    if (e instanceof FirebaseAuthRecentLoginRequiredException) {
+                        // Security Check: Prompt for Password
+                        showReauthDialog(user, newEmail, firstName);
+                    } else {
+                        // This catches "Operation Not Allowed" or "Email Already in Use"
+                        toast("Update Error: " + e.getMessage());
+                    }
                 });
     }
 
-    /**
-     * Persists the updated email field in Firestore.
-     *
-     * @param firstName The user's first name.
-     * @param email The new email address to set.
-     * @return void
-     */
-    private void persistEmailField(String firstName, String email) {
-        FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser == null) {
-            setLoading(false);
-            toast(getString(R.string.edit_profile_auth_missing));
-            return;
-        }
+    private void showReauthDialog(FirebaseUser user, String newEmail, String firstName) {
+        if (getContext() == null) return;
 
-        Map<String, Object> emailUpdate = new HashMap<>();
-        emailUpdate.put("email", email);
+        final EditText input = new EditText(getContext());
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setHint("Current Password");
+        // Add padding to make it look nicer
+        int padding = (int) (20 * getResources().getDisplayMetrics().density);
+        input.setPadding(padding, padding/2, padding, padding/2);
 
-        db.collection("users")
-                .document(firebaseUser.getUid())
-                .set(emailUpdate, SetOptions.merge())
-                .addOnSuccessListener(v -> finishSave(firstName, email))
+        new AlertDialog.Builder(getContext())
+                .setTitle("Security Check")
+                .setMessage("To change your email, please confirm your current password.")
+                .setView(input)
+                .setPositiveButton("Confirm", (dialog, which) -> {
+                    String password = input.getText().toString();
+                    if (!TextUtils.isEmpty(password)) {
+                        performReauth(user, password, newEmail, firstName);
+                    } else {
+                        toast("Password cannot be empty");
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
+                .show();
+    }
+
+    private void performReauth(FirebaseUser user, String password, String newEmail, String firstName) {
+        setLoading(true);
+        // Important: Use the OLD email to re-authenticate
+        AuthCredential credential = EmailAuthProvider.getCredential(Objects.requireNonNull(user.getEmail()), password);
+
+        user.reauthenticate(credential)
+                .addOnSuccessListener(v -> {
+                    // Re-auth successful, retry the update
+                    handleEmailChange(user, newEmail, firstName);
+                })
                 .addOnFailureListener(e -> {
                     setLoading(false);
-                    toast(getString(R.string.edit_profile_save_failed, e.getMessage()));
+                    toast("Incorrect password or login type");
                 });
     }
 
-    /**
-     * Finalizes the save operation by updating the session and notifying the user.
-     *
-     * @param firstName The user's first name.
-     * @param email The user's email address.
-     * @return void
-     */
-    private void finishSave(String firstName, String email) {
-        setLoading(false);
-
+    private void updateLocalSession(String firstName, String email) {
         User user = UserSession.getInstance().getCurrentUser();
         if (user != null) {
             user.setUsername(firstName);
             user.setEmail(email);
             UserSession.getInstance().setCurrentUser(user);
+            if (getContext() != null) {
+                DeviceLoginStore.rememberUser(getContext(), user);
+            }
         }
-
-        toast(getString(R.string.edit_profile_save_success));
-        NavHostFragment.findNavController(this).popBackStack();
     }
 
-    /**
-     * Sets the loading state of the UI.
-     *
-     * @param loading True to show loading state, false to hide.
-     * @return void
-     */
     private void setLoading(boolean loading) {
-        progressView.setVisibility(loading ? View.VISIBLE : View.GONE);
-        saveButton.setEnabled(!loading);
+        if (progressView != null) progressView.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (saveButton != null) saveButton.setEnabled(!loading);
     }
 
-    /**
-     * Retrieves trimmed text from a TextInputEditText.
-     *
-     * @param input The TextInputEditText to extract text from.
-     * @return The trimmed text as a String.
-     */
     private String textOf(TextInputEditText input) {
         return input.getText() != null ? input.getText().toString().trim() : "";
     }
 
-    /**
-     * Displays a short Toast message.
-     *
-     * @param message The message to display.
-     * @return void
-     */
     private void toast(String message) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+        if (getContext() != null) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
     }
 }
