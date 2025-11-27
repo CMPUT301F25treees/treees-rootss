@@ -35,6 +35,11 @@ public class ExampleInstrumentedTest {
     }
 
 
+    /**
+     * Tests to join the waitlist of an event.
+     *
+     * @throws Exception
+     */
     @Test
     public void testJoinWaitlistDirect() throws Exception {
         String eventId = "Uu8qd4j2Xdo1TyeOFmsy";
@@ -72,6 +77,11 @@ public class ExampleInstrumentedTest {
         assertEquals(beforeSize + (beforeMethod != null && beforeMethod.contains(userId) ? 0 : 1), afterMethod.size());
     }
 
+    /**
+     *  Tests to join the waitlist of an event multiple times.
+     *
+     * @throws Exception
+     */
     @Test
     public void testJoinWaitlistDuplicate() throws Exception {
         String eventId = "Uu8qd4j2Xdo1TyeOFmsy";
@@ -101,6 +111,11 @@ public class ExampleInstrumentedTest {
         assertEquals(1, occurrences);
     }
 
+    /**
+     * Tests to leave the waitlist of an event.
+     *
+     * @throws Exception
+     */
     @Test
     public void testLeaveWaitlist() throws Exception {
         String eventId = "Uu8qd4j2Xdo1TyeOFmsy";

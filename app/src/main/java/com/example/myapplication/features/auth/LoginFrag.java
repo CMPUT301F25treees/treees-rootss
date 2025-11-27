@@ -32,9 +32,18 @@ import io.reactivex.rxjava3.annotations.Nullable;
  */
 public class LoginFrag extends Fragment {
 
+    /**
+     *  Firebase Auth and Firestore instances
+     */
     private FirebaseAuth auth;
+    /**
+     *  Firebase Firestore instance
+     */
     private FirebaseFirestore db;
 
+    /**
+     *  Input fields and progress bar
+     */
     private TextInputLayout tilEmail, tilPassword;
     private TextInputEditText etEmail, etPassword;
     private ProgressBar progress;

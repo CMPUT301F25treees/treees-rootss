@@ -47,6 +47,9 @@ public class UserHomeTest {
     private String testPassword;
     private List<String> createdEventIds;
 
+    /**
+     * @throws Exception
+     */
     @Before
     public void setUp() throws Exception {
         auth = FirebaseAuth.getInstance();
@@ -66,6 +69,9 @@ public class UserHomeTest {
         testUserId = authResult.getUser().getUid();
     }
 
+    /**
+     * @throws Exception
+     */
     @After
     public void tearDown() throws Exception {
         // Clean up: delete all created test events

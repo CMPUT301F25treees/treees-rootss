@@ -1,26 +1,29 @@
 package com.example.myapplication.features.user;
 
 /**
- * Simple view-model representing a single past event item displayed in the UI.
- * <p>
- * This class is typically used by list or adapter components to render
- * information about an event the user has previously attended or interacted with.
+ *  Fragment that allows users to see past event items.
  */
 public class UPastEventItem {
 
-    /** Unique identifier of the event (e.g., Firestore document ID). */
+    /**
+     *  Event item fields.
+     */
     private String eventId;
-
-    /** Display title of the event. */
+    /**
+     *  Title of the event.
+     */
     private String title;
-
-    /** Human-readable price information for the event (e.g., "Free", "$10.00"). */
+    /**
+     *  Price of the event.
+     */
     private String priceDisplay;
-
-    /** Display string for the event date (already formatted for the UI). */
+    /**
+     *  Date of the event.
+     */
     private String date;
-
-    /** Status of the past event (e.g., "Attended", "Cancelled"). */
+    /**
+     *  Status of the event.
+     */
     private String status;
 
     /**
@@ -30,13 +33,11 @@ public class UPastEventItem {
     public UPastEventItem() {}
 
     /**
-     * Creates a new {@code UPastEventItem} with all displayable properties.
-     *
-     * @param eventId      unique identifier of the event
-     * @param title        display title of the event
-     * @param priceDisplay formatted price string for the event
-     * @param date         formatted date string for when the event occurred
-     * @param status       status describing the outcome or state of the event
+     * @param eventId
+     * @param title
+     * @param priceDisplay
+     * @param date
+     * @param status
      */
     public UPastEventItem(String eventId, String title,
                           String priceDisplay, String date, String status) {
@@ -48,37 +49,27 @@ public class UPastEventItem {
     }
 
     /**
-     * Returns the unique identifier for this event.
-     *
-     * @return the event ID
+     * @return
      */
     public String getEventId()      { return eventId; }
 
     /**
-     * Returns the display title of this event.
-     *
-     * @return the title of the event
+     * @return
      */
     public String getTitle()        { return title; }
 
     /**
-     * Returns the formatted price string for this event.
-     *
-     * @return the price display text
+     * @return
      */
     public String getPriceDisplay() { return priceDisplay; }
 
     /**
-     * Returns the formatted date string for when the event occurred.
-     *
-     * @return the event date text
+     * @return
      */
     public String getDate()         { return date; }
 
     /**
-     * Returns the status of this past event (e.g., attended, cancelled).
-     *
-     * @return the status string
+     * @return
      */
     public String getStatus()       { return status; }
 }

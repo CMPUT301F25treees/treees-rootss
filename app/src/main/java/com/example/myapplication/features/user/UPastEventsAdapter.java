@@ -17,17 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RecyclerView adapter for displaying a list of past events for the user.
- * <p>
- * Binds {@link UPastEventItem} instances to {@code item_user_past_event} views,
- * formatting title, price, date, and status, and applying a status-specific
- * background colour to the status card.
+ *  Adapter for Past Events screen
  */
 public class UPastEventsAdapter
         extends RecyclerView.Adapter<UPastEventsAdapter.PastEventViewHolder> {
 
     /**
-     * Backing list of past event items displayed by this adapter.
+     *  List of Past Events
      */
     private final List<UPastEventItem> items = new ArrayList<>();
 

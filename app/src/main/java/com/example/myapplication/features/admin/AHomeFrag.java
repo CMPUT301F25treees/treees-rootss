@@ -32,7 +32,14 @@ import java.util.List;
  */
 public class AHomeFrag extends Fragment {
 
+    /**
+     *  Firestore listener registration and adapter.
+     */
     private ListenerRegistration reg;
+
+    /**
+     *  User event adapter.
+     */
     private UserEventAdapter adapter;
 
     /**

@@ -44,6 +44,9 @@ public class EditEventTest {
     private String testEmail;
     private String testPassword;
 
+    /**
+     * @throws Exception
+     */
     @Before
     public void setUp() throws Exception {
         auth = FirebaseAuth.getInstance();
@@ -62,6 +65,9 @@ public class EditEventTest {
         testUserId = authResult.getUser().getUid();
     }
 
+    /**
+     * @throws Exception
+     */
     @After
     public void tearDown() throws Exception {
         // Clean up: delete test event if created
