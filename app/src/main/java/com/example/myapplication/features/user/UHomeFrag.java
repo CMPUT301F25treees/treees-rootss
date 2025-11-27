@@ -398,6 +398,24 @@ public class UHomeFrag extends Fragment {
         return filtered;
     }
 
+
+    /**
+     * This is a helper method that returns a boolean value based on whether the event
+     * has finished or not
+     *
+     * @param event The event being checked
+     * @param currentMillis the current time
+     * @return boolean value if finished or not
+     */
+    static boolean isUpcomingEvent(@NonNull UserEvent event, long currentMillis){
+        long start = event.getStartTimeMillis();
+        long end = event.getEndTimeMillis();
+        long actualEnd = (end>0) ? end : start;
+
+        return actualEnd >= currentMillis;
+
+    }
+
     /**
      * Filters events based on availability within the specified time range.
      * @param events The list of events to filter.
