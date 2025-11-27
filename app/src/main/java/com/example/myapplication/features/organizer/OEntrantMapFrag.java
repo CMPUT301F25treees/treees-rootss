@@ -23,6 +23,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.List;
 
+/**
+ * Entrant Map Screen. Allows an event organizer to view the the locations
+ * of entrants if they wish to do so.
+ */
 public class OEntrantMapFrag extends Fragment implements OnMapReadyCallback {
 
     private static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
@@ -33,6 +37,16 @@ public class OEntrantMapFrag extends Fragment implements OnMapReadyCallback {
 
     private final FirebaseEventRepository eventRepo = new FirebaseEventRepository();
 
+    /**
+     * @param inflater           The LayoutInflater object that can be used to inflate
+     *                           any views in the fragment,
+     * @param container          If non-null, this is the parent view that the fragment's
+     *                           UI should be attached to.  The fragment should not add the view itself,
+     *                           but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     * @return
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -41,6 +55,11 @@ public class OEntrantMapFrag extends Fragment implements OnMapReadyCallback {
         return inflater.inflate(R.layout.fragment_o_entrant_map, container, false);
     }
 
+    /**
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -62,12 +81,19 @@ public class OEntrantMapFrag extends Fragment implements OnMapReadyCallback {
         mapView.getMapAsync(this);
     }
 
+    /**
+     * @param gMap
+     * The Google Map that's being displayed.
+     */
     @Override
     public void onMapReady(@NonNull GoogleMap gMap) {
         googleMap = gMap;
         loadEntrantLocations();
     }
 
+    /**
+     * Loads the locations of entrants into the map.
+     */
     private void loadEntrantLocations() {
         eventRepo.getWaitlistLocations(eventId, new FirebaseEventRepository.WaitlistLocationCallback() {
             @Override
@@ -107,6 +133,9 @@ public class OEntrantMapFrag extends Fragment implements OnMapReadyCallback {
         });
     }
 
+    /**
+     *  Called when the fragment is visible to the user and actively running.
+     */
     // MapView lifecycle hooks
     @Override
     public void onResume() {
@@ -114,24 +143,36 @@ public class OEntrantMapFrag extends Fragment implements OnMapReadyCallback {
         if (mapView != null) mapView.onResume();
     }
 
+    /**
+     *  Called when the fragment is no longer resumed.
+     */
     @Override
     public void onStart() {
         super.onStart();
         if (mapView != null) mapView.onStart();
     }
 
+    /**
+     *  Called when the fragment is no longer started.
+     */
     @Override
     public void onStop() {
         if (mapView != null) mapView.onStop();
         super.onStop();
     }
 
+    /**
+     *  Called when the fragment is no longer visible to the user.
+     */
     @Override
     public void onPause() {
         if (mapView != null) mapView.onPause();
         super.onPause();
     }
 
+    /**
+     *  Called when the fragment is no longer in the foreground.
+     */
     @Override
     public void onDestroyView() {
         if (mapView != null) mapView.onDestroy();
@@ -144,6 +185,9 @@ public class OEntrantMapFrag extends Fragment implements OnMapReadyCallback {
         if (mapView != null) mapView.onLowMemory();
     }
 
+    /**
+     * @param outState Bundle in which to place your saved state.
+     */
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
