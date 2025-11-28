@@ -22,6 +22,14 @@ public class OHomeController {
     @Nullable
     private String currentUserId;
 
+    /**
+     * Constructs an OHomeController with the specified dependencies.
+     *
+     * @param repository The Firebase repository for event data operations.
+     * @param auth The Firebase authentication instance for user management.
+     * @param model The model that holds the event data for this screen.
+     * @param view The view interface for displaying organizer home screen content.
+     */
     public OHomeController(FirebaseEventRepository repository,
                            FirebaseAuth auth,
                            OHomeModel model,
@@ -41,6 +49,9 @@ public class OHomeController {
 
     /**
      * Loads events owned by the signed-in organizer.
+     * Fetches all events from the repository and filters them to show only events
+     * where the current user is the organizer. Updates the view with the filtered
+     * results or shows an empty state if no events are found.
      */
     public void loadOrganizerEvents() {
         final String userId = resolveUserId();
@@ -84,6 +95,9 @@ public class OHomeController {
 
     /**
      * Updates the search query and reapplies filtering.
+     * Refreshes the view to display events matching the new search criteria.
+     *
+     * @param query The new search query, or null to clear the search.
      */
     public void onSearchQueryChanged(@Nullable String query) {
         searchQuery = query == null ? "" : query;
@@ -94,6 +108,9 @@ public class OHomeController {
 
     /**
      * Handles a filter chip/menu selection.
+     * Notifies the view that a filter option has been selected.
+     *
+     * @param filterLabel The label of the selected filter.
      */
     public void onFilterSelected(String filterLabel) {
         if (view != null) {
@@ -101,6 +118,12 @@ public class OHomeController {
         }
     }
 
+    /**
+     * Resolves and caches the current user's ID from Firebase Authentication.
+     * Returns a cached value if available, otherwise fetches from FirebaseAuth.
+     *
+     * @return The current user's ID, or null if no user is authenticated.
+     */
     @Nullable
     private String resolveUserId() {
         if (currentUserId != null) {
