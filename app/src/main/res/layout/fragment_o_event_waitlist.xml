@@ -38,14 +38,14 @@
         android:layout_width="wrap_content"
         android:layout_height="@dimen/profile_role_button_height"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="240dp"
+        android:layout_marginBottom="16dp"
         android:text="Export"
         android:textAllCaps="false"
         android:textColor="@android:color/white"
         android:textSize="16sp"
         app:backgroundTint="@color/profile_role_rouge"
         app:cornerRadius="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/btnDraw"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.button.MaterialButton
@@ -54,7 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="@dimen/profile_role_button_height"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="184dp"
+        android:layout_marginBottom="24dp"
         android:gravity="center"
         android:insetLeft="0dp"
         android:insetTop="0dp"
@@ -70,7 +70,7 @@
         android:textSize="16sp"
         app:backgroundTint="@color/profile_role_rouge"
         app:cornerRadius="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/statusToggleGroup"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
@@ -110,6 +110,7 @@
             android:backgroundTint="@android:color/white"
             android:textAllCaps="false"
             android:textSize="12sp"
+            app:backgroundTint="@color/dodo_maroon"
             android:textColor="@android:color/black" />
 
         <com.google.android.material.button.MaterialButton
@@ -121,6 +122,7 @@
             android:backgroundTint="@android:color/white"
             android:textAllCaps="false"
             android:textSize="12sp"
+            app:backgroundTint="@color/dodo_maroon"
             android:textColor="@android:color/black" />
 
         <com.google.android.material.button.MaterialButton
@@ -132,6 +134,7 @@
             android:backgroundTint="@android:color/white"
             android:textAllCaps="false"
             android:textSize="12sp"
+            app:backgroundTint="@color/dodo_maroon"
             android:textColor="@android:color/black" />
 
         <com.google.android.material.button.MaterialButton
@@ -143,6 +146,7 @@
             android:backgroundTint="@android:color/white"
             android:textAllCaps="false"
             android:textSize="12sp"
+            app:backgroundTint="@color/dodo_maroon"
             android:textColor="@android:color/black" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
