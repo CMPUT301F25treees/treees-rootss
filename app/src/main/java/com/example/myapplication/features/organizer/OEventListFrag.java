@@ -1,5 +1,6 @@
 package com.example.myapplication.features.organizer;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -196,6 +197,20 @@ public class OEventListFrag extends Fragment {
 
         adapter = new OEventListAdapter();
         waitlistRecycler.setAdapter(adapter);
+
+        adapter.setOnItemLongClickListener(position -> {
+            if(currentMode != ListMode.WAITING) {
+                Toast.makeText(requireContext(), "You can only remove users from the waitlist", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (position<0 || position >=currentUids.size()){
+                return;
+            }
+
+            String uid = currentUids.get(position);
+            String name = nameByUid.getOrDefault(uid, uid);
+            showRemoveFromWaitlistDialog(uid, name, position);
+        });
 
         showEmpty();
 
@@ -519,5 +534,57 @@ public class OEventListFrag extends Fragment {
             }
 
             exportHelper.exportNamesCsv(eventName, modeLabel, displayedNames);
+    }
+
+    /**
+     * This method shows the user a confirmation dialog to confirm the removal of an entrant
+     * from the waitlist
+     *
+     * @param uid the uid of the user being removed
+     * @param name the name of the user
+     * @param position the adapter position of the user
+     */
+    private void showRemoveFromWaitlistDialog(String uid, String name, int position){
+        if(!isAdded()){
+            return;
         }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Remove entrant from waitlist")
+                .setMessage("Are you sure you want to remove " + name )
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Remove",  (dialog, which) ->
+                    removeFromWaitlist(uid, position)).show();
+    }
+
+    /**
+     * This is a helper method that uses the FirebaseEventRepository to remove a user from the
+     * event waitlist and updates the local lists fro the UI on operation succession
+     *
+     * @param uid the uid of the user being removed
+     * @param position the adapter position of the suer in the list.
+     */
+    private void removeFromWaitlist(String uid, int position){
+        if(eventId == null){
+            Toast.makeText(requireContext(), "Event not loaded yet.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        eventRepo.leaveWaitlist(eventId, uid, unused -> {
+            if(position >= 0 && position < currentUids.size()) {
+                currentUids.remove(position);
+            } if (position >= 0 && position < displayedNames.size()){
+                displayedNames.remove(position);
+            }
+
+            adapter.removeAt(position);
+
+            if(currentUids.isEmpty()){
+                showEmpty();
+            }
+
+            Toast.makeText(requireContext(), "Removed from waitlist.", Toast.LENGTH_SHORT).show();
+
+        }, e -> Toast.makeText(requireContext(), "Failed to remove.", Toast.LENGTH_SHORT).show());
+    }
 }
