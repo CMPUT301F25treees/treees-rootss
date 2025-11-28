@@ -101,7 +101,7 @@ public class OProfileFrag extends Fragment {
             cardEditInfo.setOnClickListener(v ->
                     NavHostFragment.findNavController(this)
                             // Organizer edits use the same flow as users
-                            .navigate(R.id.navigation_user_edit_profile));
+                            .navigate(R.id.navigation_u_edit_profile));
         }
 
         if (deleteProfileCard != null) {
