@@ -22,6 +22,30 @@ import java.util.List;
  */
 public class OEventListAdapter extends RecyclerView.Adapter<OEventListAdapter.NameVH> {
 
+    /**
+     * This interface is  a listener for a long-press action on the names in the list
+     */
+    public interface OnItemLongClickListener {
+        /**
+         * This gets called when a list item is long-pressed.
+         *
+         * @param position this is the adapter position of the item that was pressed
+         */
+        void onItemLongLCick(int position);
+    }
+
+    private OnItemLongClickListener longClickListener;
+
+    /**
+     * Sets up a callback listener for the long-press event
+     *
+     * @param listener the listener to be assigned
+     */
+    public void setOnItemLongClickListener(OnItemLongClickListener listener){
+        this.longClickListener = listener;
+    }
+
+
     /** The current list of participant names to display. */
     private final List<String> names = new ArrayList<>();
 
@@ -54,6 +78,7 @@ public class OEventListAdapter extends RecyclerView.Adapter<OEventListAdapter.Na
 
     /**
      * Binds a name to the provided {@link NameVH}.
+     * Attaches a long press listener if it has been set.
      *
      * @param holder   the {@link NameVH} containing the views
      * @param position the current item index
@@ -61,6 +86,16 @@ public class OEventListAdapter extends RecyclerView.Adapter<OEventListAdapter.Na
     @Override
     public void onBindViewHolder(@NonNull NameVH holder, int position) {
         holder.nameText.setText(names.get(position));
+
+        holder.itemView.setOnLongClickListener(v ->{
+            if(longClickListener != null){
+                int position1 = holder.getAdapterPosition();
+                if (position1 != RecyclerView.NO_POSITION){
+                    longClickListener.onItemLongLCick(position1);
+                }
+            }
+            return true;
+        });
     }
 
     /**
@@ -88,5 +123,19 @@ public class OEventListAdapter extends RecyclerView.Adapter<OEventListAdapter.Na
             super(itemView);
             nameText = itemView.findViewById(R.id.nameText);
         }
+    }
+
+    /**
+     * Removes a name at the given adapter position and updates teh RecyclerView.
+     *
+     * @param position this is the index of the item to remove.
+     */
+    public void removeAt(int position){
+        if (position < 0 || position >= names.size()) {
+            return;
+        }
+
+        names.remove(position);
+        notifyItemRemoved(position);
     }
 }
