@@ -134,6 +134,7 @@
             android:layout_height="62dp"
             android:layout_marginStart="36dp"
             android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
             android:backgroundTint="@color/mainButtonColor"
             android:fontFamily="@font/noto_sans_arabic_thin"
             android:text="View Waiting List"
