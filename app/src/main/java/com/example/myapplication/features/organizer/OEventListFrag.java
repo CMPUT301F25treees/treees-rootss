@@ -403,11 +403,24 @@ public class OEventListFrag extends Fragment {
         if (!isAdded()) return;
         waitlistRecycler.setVisibility(View.VISIBLE);
         emptyState.setVisibility(View.VISIBLE);
-        emptyState.setText(
-                (currentMode == ListMode.WAITING)
-                        ? "No one on the waitlist."
-                        : "No one on the final list."
-        );
+
+        String emptyText;
+        switch (currentMode) {
+            case WAITING:
+                emptyText = "No one in the waitlist.";
+                break;
+            case INVITED:
+                emptyText = "No one in the invited list.";
+                break;
+            case CANCELED:
+                emptyText = "No one in the canceled list.";
+                break;
+            case FINAL:
+            default:
+                emptyText = "No one in the final list.";
+                break;
+        }
+        emptyState.setText(emptyText);
         drawBtn.setEnabled(false);
     }
 

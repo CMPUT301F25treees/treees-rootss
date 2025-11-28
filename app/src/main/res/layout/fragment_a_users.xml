@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingTop="42dp"
     android:background="@drawable/bg_login_gradient">
 
     <!-- Search card — same structure/margins as fragment_u_home.xml -->

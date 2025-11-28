@@ -43,6 +43,7 @@ public class OEventDetailFrag extends Fragment {
     private TextView descr;
     private TextView waitingList;
     private ImageView eventImage;
+    private ImageView qrCodeImage;
     private String eventId;
     private final FirebaseEventRepository eventRepository = new FirebaseEventRepository();
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
@@ -81,6 +82,7 @@ public class OEventDetailFrag extends Fragment {
         startDate = view.findViewById(R.id.startDateText);
         descr = view.findViewById(R.id.description);
         eventImage = view.findViewById(R.id.eventImage);
+        qrCodeImage = view.findViewById(R.id.qrCodeImage);
 
         ImageButton backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(x -> {
@@ -143,13 +145,15 @@ public class OEventDetailFrag extends Fragment {
         loadEventImage(event);
 
         // QR Image View
-        ImageView qrImageUrl = requireView().findViewById(R.id.qrCodeImage);
-        String qrUrl = event.getQrData();
-
-        if (qrUrl != null && !qrUrl.isEmpty()) {
-            Glide.with(this)
-                    .load(qrUrl)
-                    .into(qrImageUrl);
+        if (qrCodeImage != null) {
+            String qrUrl = event.getQrData();
+            if (!TextUtils.isEmpty(qrUrl)) {
+                Glide.with(this)
+                        .load(qrUrl)
+                        .into(qrCodeImage);
+            } else {
+                qrCodeImage.setImageDrawable(null);
+            }
         }
     }
 
@@ -163,11 +167,17 @@ public class OEventDetailFrag extends Fragment {
         eventRepository.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
             @Override
             public void onEventFetched(UserEvent event) {
+                if(!isAdded() || getView() == null){
+                    return;
+                }
                 bindEventData(event);
             }
 
             @Override
             public void onError(Exception e) {
+                if(!isAdded()){
+                    return;
+                }
                 Toast.makeText(requireContext(), "Failed to load event", Toast.LENGTH_SHORT).show();
             }
         });

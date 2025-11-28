@@ -6,6 +6,7 @@
     android:background="@drawable/bg_login_gradient"
     android:padding="16dp"
     android:layout_width="match_parent"
+    android:paddingTop="42dp"
     android:layout_height="match_parent">
 
     <ImageView
@@ -15,6 +16,7 @@
         android:layout_gravity="center_horizontal"
         android:background="@drawable/bg_time_chip"
         android:scaleType="centerCrop"
+        android:paddingTop="42dp"
         android:src="@mipmap/ic_launcher_round"/>
 
     <TextView
