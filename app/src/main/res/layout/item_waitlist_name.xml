@@ -3,8 +3,9 @@
     android:id="@+id/nameText"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingVertical="12dp"
     android:paddingHorizontal="8dp"
+    android:paddingVertical="12dp"
     android:text="Attendee Name"
     android:textColor="@android:color/white"
-    android:textSize="16sp" />
+    android:textSize="32sp"
+    android:textStyle="bold" />
