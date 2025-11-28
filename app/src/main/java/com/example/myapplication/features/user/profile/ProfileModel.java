@@ -9,22 +9,40 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.util.Map;
 
+/**
+ * Model class for user profile operations using Firebase Firestore and Authentication.
+ */
 public class ProfileModel {
     private final FirebaseFirestore db;
 
+    /**
+     * Constructor with dependency injection for FirebaseFirestore.
+     */
     public ProfileModel(FirebaseFirestore db) {
         this.db = db;
     }
 
+    /**
+     * Default constructor initializing with the default Firestore instance.
+     */
     public ProfileModel() {
         this(FirebaseFirestore.getInstance());
     }
 
+    /**
+     * Callback interface for asynchronous data operations.
+     */
     public interface DataCallback<T> {
         void onSuccess(T data);
         void onFailure(Exception e);
     }
 
+    /**
+     * Fetches the user profile document from Firestore.
+     *
+     * @param uid      The user ID.
+     * @param callback The callback to handle success or failure.
+     */
     public void fetchUserProfile(String uid, DataCallback<DocumentSnapshot> callback) {
         db.collection("users").document(uid)
                 .get()
