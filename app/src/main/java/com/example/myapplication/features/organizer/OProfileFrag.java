@@ -67,6 +67,7 @@ public class OProfileFrag extends Fragment {
         MaterialButton roleButton = view.findViewById(R.id.btnRole);
         View cardNotifications = view.findViewById(R.id.cardNotifications);
         View cardEditInfo = view.findViewById(R.id.cardEditInfo);
+        View cardLogout = view.findViewById(R.id.cardLogout);
         deleteProfileCard = view.findViewById(R.id.cardDeleteProfile);
         TextView welcomeText = view.findViewById(R.id.tvWelcomeUser);
 
@@ -96,6 +97,14 @@ public class OProfileFrag extends Fragment {
             NavHostFragment.findNavController(this)
                     .navigate(R.id.navigation_organizer_notifications);
         });
+
+        if (cardLogout != null) {
+            cardLogout.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).performLogout();
+                }
+            });
+        }
 
         if (cardEditInfo != null) {
             cardEditInfo.setOnClickListener(v ->
