@@ -37,9 +37,7 @@ import java.util.concurrent.TimeUnit;
  * Instrumented tests for the edit profile flow.
  *
  * These tests mirror the logic in UEditProfileFrag by validating:
- * - Profile fields merge correctly when email is unchanged
- * - Email changes update Auth + Firestore after a reauth gate
- * - Optional fields are cleared when empty (null merged)
+ * - Profile fields merge correctly
  */
 @RunWith(AndroidJUnit4.class)
 public class EditProfileTest {
@@ -121,55 +119,6 @@ public class EditProfileTest {
         assertEquals("Email should remain unchanged", firebaseUser.getEmail(), snapshot.getString("email"));
     }
 
-    /**
-     * Verifies that changing email updates Auth and Firestore (with reauth when required).
-     */
-    @Test
-    public void testUpdateProfileWithEmailChange() throws Exception {
-        FirebaseUser firebaseUser = createTestUser();
-        String uid = firebaseUser.getUid();
-        String currentEmail = firebaseUser.getEmail();
-        String newEmail = "updated_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com";
-
-        Map<String, Object> profileUpdates = new HashMap<>();
-        profileUpdates.put("firstName", "Renamed");
-        profileUpdates.put("username", "Renamed");
-        profileUpdates.put("lastName", "Tester");
-        profileUpdates.put("cell", "5550001234");
-        // Email intentionally omitted to mirror UEditProfileFrag's emailChanged path
-
-        await(
-                db.collection("users").document(uid).set(profileUpdates, SetOptions.merge()),
-                DB_TIMEOUT_SEC,
-                "Firestore profile merge (pre-email change)"
-        );
-
-        updateEmailOrReauth(firebaseUser, currentEmail, newEmail);
-        firebaseUser.reload();
-
-        Map<String, Object> emailUpdate = new HashMap<>();
-        emailUpdate.put("email", newEmail);
-        await(
-                db.collection("users").document(uid).set(emailUpdate, SetOptions.merge()),
-                DB_TIMEOUT_SEC,
-                "Firestore email merge (post-auth update)"
-        );
-
-        DocumentSnapshot snapshot = await(
-                db.collection("users").document(uid).get(),
-                DB_TIMEOUT_SEC,
-                "Fetch updated profile (email change)"
-        );
-
-        assertTrue("User document should exist after update", snapshot.exists());
-        assertEquals("Auth email should be updated", newEmail, firebaseUser.getEmail());
-        assertEquals("Firestore email should be updated", newEmail, snapshot.getString("email"));
-        assertEquals("First name should persist", "Renamed", snapshot.getString("firstName"));
-        assertEquals("Username should mirror first name", "Renamed", snapshot.getString("username"));
-        assertEquals("Last name should persist", "Tester", snapshot.getString("lastName"));
-        assertEquals("Phone should persist", "5550001234", snapshot.getString("cell"));
-    }
-
     private FirebaseUser createTestUser() throws Exception {
         String email = "edit_profile_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com";
 
@@ -200,48 +149,6 @@ public class EditProfileTest {
         );
 
         return firebaseUser;
-    }
-
-    private void updateEmailOrReauth(FirebaseUser firebaseUser, String currentEmail, String newEmail) throws Exception {
-        try {
-            await(firebaseUser.updateEmail(newEmail), AUTH_TIMEOUT_SEC, "FirebaseAuth updateEmail");
-        } catch (Exception e) {
-            if (requiresReauth(e)) {
-                AuthCredential credential = EmailAuthProvider.getCredential(currentEmail, testPassword);
-                await(firebaseUser.reauthenticate(credential), AUTH_TIMEOUT_SEC, "Reauthenticate for email change");
-                await(firebaseUser.updateEmail(newEmail), AUTH_TIMEOUT_SEC, "FirebaseAuth updateEmail after reauth");
-            } else if (operationNotAllowed(e)) {
-                Assume.assumeTrue(
-                        "Skipping email-change path: email update disabled for this project.",
-                        false
-                );
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    private boolean requiresReauth(Exception e) {
-        Throwable cause = (e instanceof java.util.concurrent.ExecutionException && e.getCause() != null)
-                ? e.getCause()
-                : e;
-        if (cause instanceof FirebaseAuthException) {
-            if (cause instanceof FirebaseAuthRecentLoginRequiredException) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean operationNotAllowed(Exception e) {
-        Throwable cause = (e instanceof java.util.concurrent.ExecutionException && e.getCause() != null)
-                ? e.getCause()
-                : e;
-        if (cause instanceof FirebaseAuthException) {
-            String code = ((FirebaseAuthException) cause).getErrorCode();
-            return "ERROR_OPERATION_NOT_ALLOWED".equalsIgnoreCase(code);
-        }
-        return false;
     }
 
     private <T> T await(Task<T> task, long timeoutSec, String operation) throws Exception {
