@@ -48,7 +48,12 @@ public class MainActivity extends AppCompatActivity {
                     || d.getId() == R.id.navigation_user_past_events
                     || d.getId() == R.id.navigation_organizer_event_detail
                     || d.getId() == R.id.navigation_organizer_event_edit
-                    || d.getId() == R.id.navigation_organizer_waitlist;
+                    || d.getId() == R.id.navigation_organizer_waitlist
+                    || d.getId() == R.id.navigation_admin_notifications
+                    || d.getId() == R.id.navigation_admin_event_detail
+                    || d.getId() == R.id.navigation_admin_user_detail
+                    || d.getId() == R.id.navigation_admin_remove_options;
+
             navView.setVisibility(hide ? View.GONE : View.VISIBLE);
             if (!hide) {
                 updateBottomNavMenu();
