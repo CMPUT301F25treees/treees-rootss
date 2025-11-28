@@ -41,6 +41,9 @@ public class UEventDetailFrag extends Fragment {
 
     private TextView title, organizer, location, price, endTime, descr, waitingList;
 
+    private MaterialButton joinWaitlistBtn;
+    private boolean inWaitlist = false;
+
     private String eventId;
 
     // Whether geolocation is required for this event — set when binding event data
@@ -119,8 +122,8 @@ public class UEventDetailFrag extends Fragment {
 
 
         // Join waitlist button
-        MaterialButton joinWaitlistButton = view.findViewById(R.id.joinWaitlist);
-        joinWaitlistButton.setOnClickListener(x -> {
+        joinWaitlistBtn = view.findViewById(R.id.joinWaitlist);
+        joinWaitlistBtn.setOnClickListener(x -> {
 
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             if (user == null) {
@@ -130,15 +133,28 @@ public class UEventDetailFrag extends Fragment {
 
             String uid = user.getUid();
 
-            if (geoRequired && !hasLocationPermission()) {
-                requestPermissions(
-                        new String[]{ Manifest.permission.ACCESS_FINE_LOCATION },
-                        LOCATION_REQUEST_CODE
-                );
-                return;
-            }
+            if (inWaitlist){
+                repo.leaveWaitlist(eventId, uid, v -> {
+                    Toast.makeText(getContext(), "You have left the waitlist.", Toast.LENGTH_SHORT).show();
 
-            captureLocationAndJoin(uid);
+                    inWaitlist = false;
+                    if (joinWaitlistBtn !=null){
+                        joinWaitlistBtn.setText("Join Waitlist");
+                    }
+                    refreshEventDetail(eventId);
+                }, e -> {
+                    Toast.makeText(getContext(), "Could not leave waitlist", Toast.LENGTH_SHORT).show();
+                });
+            } else {
+                if (geoRequired && !hasLocationPermission()) {
+                    requestPermissions(
+                            new String[]{ Manifest.permission.ACCESS_FINE_LOCATION },
+                            LOCATION_REQUEST_CODE
+                    );
+                    return;
+                }
+                captureLocationAndJoin(uid);
+            }
         });
     }
 
@@ -173,6 +189,17 @@ public class UEventDetailFrag extends Fragment {
 
         if (event.getQrData() != null)
             Glide.with(this).load(event.getQrData()).into(qrImageView);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String uid = (user!=null) ? user.getUid() : null;
+
+        if( uid != null && event.getWaitlist() != null && event.getWaitlist().contains(uid)){
+            inWaitlist = true;
+            joinWaitlistBtn.setText("Leave Waitlist");
+        } else {
+            inWaitlist = false;
+            joinWaitlistBtn.setText("Join Waitlist");
+        }
     }
 
 
