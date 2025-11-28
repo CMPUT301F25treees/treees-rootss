@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
+import com.example.myapplication.data.model.User;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.auth.FirebaseAuth;
@@ -351,12 +352,10 @@ public class UHomeFrag extends Fragment {
         }
 
 
-        List<UserEvent> working = new ArrayList<>(allEvents);
+        List<UserEvent> working = new ArrayList<>();
 
         for(UserEvent event : allEvents){
-            if (event == null){
-                continue;
-            } if(isUpcomingEvent(event, now)){
+            if(event != null && isUpcomingEvent(event, now)){
                 working.add(event);
             }
         }
