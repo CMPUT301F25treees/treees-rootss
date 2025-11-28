@@ -34,18 +34,34 @@ public class UEditProfileFrag extends Fragment implements ProfileView {
     private FirebaseAuth testAuth;
     private FirebaseFirestore testDb;
 
+    /**
+     * Default constructor.
+     */
     public UEditProfileFrag() {
         super(R.layout.fragment_u_edit_profile);
     }
 
+    /**
+     * Setter for FirebaseAuth (for testing purposes).
+     * @param auth The FirebaseAuth instance to set.
+     */
     public void setAuth(FirebaseAuth auth) {
         this.testAuth = auth;
     }
 
+    /**
+     * Setter for FirebaseFirestore (for testing purposes).
+     * @param db The FirebaseFirestore instance to set.
+     */
     public void setDb(FirebaseFirestore db) {
         this.testDb = db;
     }
 
+    /**
+     * Called when the fragment's view has been created.
+     * @param view The fragment's root view.
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -59,6 +75,10 @@ public class UEditProfileFrag extends Fragment implements ProfileView {
         controller.loadProfile();
     }
 
+    /**
+     * Initializes the views and sets up event listeners.
+     * @param view The fragment's root view.
+     */
     private void initViews(View view) {
         inputFirstName = view.findViewById(R.id.edit_first_name_input);
         inputLastName = view.findViewById(R.id.edit_last_name_input);
@@ -88,10 +108,19 @@ public class UEditProfileFrag extends Fragment implements ProfileView {
         goBackButton.setOnClickListener(backListener);
     }
 
+    /**
+     * Helper method to get trimmed text from a TextInputEditText.
+     * @param input The TextInputEditText to get text from.
+     * @return The trimmed text.
+     */
     private String textOf(TextInputEditText input) {
         return input.getText() != null ? input.getText().toString().trim() : "";
     }
 
+    /**
+     * Shows or hides the loading indicator.
+     * @param isLoading True to show loading, false to hide.
+     */
     @Override
     public void showLoading(boolean isLoading) {
         if (progressView != null) {
@@ -102,6 +131,13 @@ public class UEditProfileFrag extends Fragment implements ProfileView {
         }
     }
 
+    /**
+     * Displays the user's profile data in the input fields.
+     * @param firstName The user's first name.
+     * @param lastName The user's last name.
+     * @param email The user's email.
+     * @param phone The user's phone number.
+     */
     @Override
     public void showProfileData(String firstName, String lastName, String email, String phone) {
         if (inputFirstName != null) inputFirstName.setText(firstName);
@@ -110,16 +146,28 @@ public class UEditProfileFrag extends Fragment implements ProfileView {
         if (inputPhone != null) inputPhone.setText(phone);
     }
 
+    /**
+     * Displays an error message for the first name input field.
+     * @param error The error message to display.
+     */
     @Override
     public void showFirstNameError(String error) {
         if (tilFirstName != null) tilFirstName.setError(error);
     }
 
+    /**
+     * Displays an error message for the email input field.
+     * @param error The error message to display.
+     */
     @Override
     public void showEmailError(String error) {
         if (tilEmail != null) tilEmail.setError(error);
     }
 
+    /**
+     * Displays a toast message.
+     * @param message The message to display.
+     */
     @Override
     public void showToast(String message) {
         if (getContext() != null) {
@@ -127,11 +175,17 @@ public class UEditProfileFrag extends Fragment implements ProfileView {
         }
     }
 
+    /**
+     * Navigates back to the previous screen.
+     */
     @Override
     public void navigateBack() {
         NavHostFragment.findNavController(this).popBackStack();
     }
 
+    /**
+     * Shows a dialog to input the user's password for re-authentication.
+     */
     @Override
     public void showPasswordDialog() {
         if (getContext() == null) return;
@@ -170,11 +224,20 @@ public class UEditProfileFrag extends Fragment implements ProfileView {
         dialog.show();
     }
 
+    /**
+     * Displays an error message related to re-authentication.
+     * @param error The error message to display.
+     */
     @Override
     public void showReauthError(String error) {
         showToast(error);
     }
 
+    /**
+     * Updates the local user session with new profile data.
+     * @param firstName The updated first name.
+     * @param email The updated email.
+     */
     @Override
     public void updateLocalSession(String firstName, String email) {
         User user = UserSession.getInstance().getCurrentUser();
