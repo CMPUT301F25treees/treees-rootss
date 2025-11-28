@@ -50,6 +50,13 @@ public class ProfileModel {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Updates the user profile document in Firestore with the provided updates.
+     *
+     * @param uid      The user ID.
+     * @param updates  A map of fields to update.
+     * @param callback The callback to handle success or failure.
+     */
     public void updateUserProfile(String uid, Map<String, Object> updates, DataCallback<Void> callback) {
         com.google.firebase.firestore.WriteBatch batch = db.batch();
         batch.set(db.collection("users").document(uid), updates, SetOptions.merge());
@@ -58,6 +65,13 @@ public class ProfileModel {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Updates the user's email address with verification.
+     *
+     * @param user     The FirebaseUser whose email is to be updated.
+     * @param newEmail The new email address.
+     * @param callback The callback to handle success or failure.
+     */
     public void updateEmail(FirebaseUser user, String newEmail, DataCallback<Void> callback) {
         user.verifyBeforeUpdateEmail(newEmail)
                 .addOnSuccessListener(aVoid -> {
@@ -71,6 +85,13 @@ public class ProfileModel {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Reauthenticates the user with the provided password.
+     *
+     * @param user     The FirebaseUser to reauthenticate.
+     * @param password The user's current password.
+     * @param callback The callback to handle success or failure.
+     */
     public void reauthenticate(FirebaseUser user, String password, DataCallback<Void> callback) {
         if (user.getEmail() == null) {
             callback.onFailure(new Exception("No email associated with account"));
