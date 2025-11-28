@@ -90,6 +90,7 @@ public class UProfileFrag extends Fragment {
         View cardPastEvents = view.findViewById(R.id.cardPastEvents);
         View cardNotifications = view.findViewById(R.id.cardNotifications);
         View cardEditInfo = view.findViewById(R.id.cardEditInfo);
+        View cardLogout = view.findViewById(R.id.cardLogout);
         deleteProfileCard = view.findViewById(R.id.cardDeleteProfile);
         TextView welcomeText = view.findViewById(R.id.tvWelcomeUser);
 
@@ -119,6 +120,14 @@ public class UProfileFrag extends Fragment {
             NavHostFragment.findNavController(this)
                     .navigate(R.id.navigation_user_notifications);
         });
+
+        if (cardLogout != null) {
+            cardLogout.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).performLogout();
+                }
+            });
+        }
 
         cardPastEvents.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)

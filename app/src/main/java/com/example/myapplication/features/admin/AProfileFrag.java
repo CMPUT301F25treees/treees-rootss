@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.R;
+import com.example.myapplication.MainActivity;
 
 /**
  * Admin Profile fragment serving as a simple entry point to admin-related sections.
@@ -33,11 +34,20 @@ public class AProfileFrag extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         View cardNotifications = view.findViewById(R.id.cardNotifications);
+        View cardLogout = view.findViewById(R.id.cardLogout);
 
         cardNotifications.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)
                     .navigate(R.id.navigation_admin_notifications);
         });
+
+        if (cardLogout != null) {
+            cardLogout.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).performLogout();
+                }
+            });
+        }
 
     }
 }
