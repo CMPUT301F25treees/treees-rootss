@@ -22,16 +22,29 @@ public class ProfileController {
     private String pendingEmailChange = null;
     private String pendingFirstName = null;
 
+    /**
+     * Constructor with dependency injection.
+     * @param view
+     * @param model
+     * @param auth
+     */
     public ProfileController(ProfileView view, ProfileModel model, FirebaseAuth auth) {
         this.view = view;
         this.model = model;
         this.auth = auth;
     }
 
+    /**
+     * Default constructor initializing with default model and auth instances.
+     * @param view
+     */
     public ProfileController(ProfileView view) {
         this(view, new ProfileModel(), FirebaseAuth.getInstance());
     }
 
+    /**
+     * Loads the user profile data and updates the view.
+     */
     public void loadProfile() {
         FirebaseUser firebaseUser = auth.getCurrentUser();
         if (firebaseUser == null) return;
@@ -66,6 +79,13 @@ public class ProfileController {
         });
     }
 
+    /**
+     * Saves the updated profile data.
+     * @param firstName
+     * @param lastName
+     * @param email
+     * @param phone
+     */
     public void saveProfile(String firstName, String lastName, String email, String phone) {
         if (TextUtils.isEmpty(firstName)) {
             view.showFirstNameError("First name is required");
@@ -107,6 +127,12 @@ public class ProfileController {
         });
     }
 
+    /**
+     * Attempts to change the user's email, handling re-authentication if required.
+     * @param user
+     * @param newEmail
+     * @param firstName
+     */
     private void attemptEmailChange(FirebaseUser user, String newEmail, String firstName) {
         model.updateEmail(user, newEmail, new ProfileModel.DataCallback<Void>() {
             @Override
@@ -148,6 +174,10 @@ public class ProfileController {
         });
     }
 
+    /**
+     * Called when the user has confirmed their password for re-authentication.
+     * @param password
+     */
     public void onPasswordConfirmed(String password) {
         if (pendingEmailChange == null) return;
         
@@ -177,11 +207,19 @@ public class ProfileController {
         });
     }
 
+    /**
+     * Called when the password dialog is cancelled.
+     */
     public void onPasswordDialogCancelled() {
         pendingEmailChange = null;
         pendingFirstName = null;
     }
 
+    /**
+     * Notifies the view of successful profile update.
+     * @param firstName
+     * @param email
+     */
     private void notifySuccess(String firstName, String email) {
         view.updateLocalSession(firstName, email);
         view.showLoading(false);
@@ -189,6 +227,11 @@ public class ProfileController {
         view.navigateBack();
     }
 
+    /**
+     * Updates the local session in the view.
+     * @param firstName
+     * @param email
+     */
     private void updateLocalSessionInView(String firstName, String email) {
         view.updateLocalSession(firstName, email);
     }
