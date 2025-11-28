@@ -25,6 +25,9 @@ import com.google.firebase.firestore.*;
  */
 public class AUserDetailFrag extends Fragment {
 
+    /**
+     *  The user's profile data.
+     */
     private String uid, name, email, role, avatarUrl;
 
     /**

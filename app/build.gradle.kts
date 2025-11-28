@@ -47,7 +47,12 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.firebase.common)
+    implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
+    implementation(libs.fragment.testing)
     testImplementation(libs.junit)
+    testImplementation("org.mockito:mockito-core:5.12.0")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 

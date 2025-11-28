@@ -7,8 +7,6 @@
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/bg_login_gradient">
@@ -146,6 +144,22 @@
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/addressText"
             app:layout_constraintTop_toBottomOf="@+id/rating"
+            app:rippleColor="@color/mainButtonColor" />
+
+        <Button
+            android:id="@+id/viewEntrantMap"
+            android:layout_width="107dp"
+            android:layout_height="62dp"
+            android:layout_marginStart="232dp"
+            android:layout_marginTop="4dp"
+            android:backgroundTint="@color/mainButtonColor"
+            android:fontFamily="@font/noto_sans_arabic_thin"
+            android:text="View Entrant Map"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            app:cornerRadius="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/viewWaitlist"
             app:rippleColor="@color/mainButtonColor" />
 
         <TextView

@@ -111,6 +111,15 @@ public class OEventDetailFrag extends Fragment {
         });
 
         refreshEventDetail(eventId);
+
+        Button viewMapButton = view.findViewById(R.id.viewEntrantMap);
+        viewMapButton.setOnClickListener(btn -> {
+            Bundle args = new Bundle();
+            args.putString("eventId", eventId);
+            Navigation.findNavController(view)
+                    .navigate(R.id.action_navigation_organizer_event_detail_to_navigation_organizer_entrant_map, args);
+        });
+
     }
 
     /**
@@ -166,8 +175,6 @@ public class OEventDetailFrag extends Fragment {
 
     /**
      * This method makes sure that event details are refreshed.
-     *
-     * @param None
      * @return void
      */
     @Override
@@ -181,7 +188,6 @@ public class OEventDetailFrag extends Fragment {
     /**
      * Updates displayed event price or null
      * @param priceText event price
-     *
      * @return void
      */
     private void updatePrice(String priceText) {
