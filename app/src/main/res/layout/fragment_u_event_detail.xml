@@ -72,18 +72,55 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/frameLayout" />
 
-        <TextView
+        <LinearLayout
             android:id="@+id/rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="24dp"
-            android:text="Rating Placeholder"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/frameLayout" />
+            app:layout_constraintTop_toBottomOf="@+id/frameLayout">
+
+            <ImageView
+                android:id="@+id/star1"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="star"
+                android:src="@drawable/star_empty" />
+
+            <ImageView
+                android:id="@+id/star2"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="star"
+                android:src="@drawable/star_empty" />
+
+            <ImageView
+                android:id="@+id/star3"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="star"
+                android:src="@drawable/star_empty" />
+
+            <ImageView
+                android:id="@+id/star4"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="star"
+                android:src="@drawable/star_empty" />
+
+            <ImageView
+                android:id="@+id/star5"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="star"
+                android:src="@drawable/star_empty" />
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/addressButton"
