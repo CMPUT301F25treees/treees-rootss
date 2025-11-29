@@ -10,18 +10,10 @@ import androidx.annotation.*;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import com.example.myapplication.R;
-import com.example.myapplication.core.DeviceLoginStore;
 import com.example.myapplication.data.model.User;
-import com.example.myapplication.core.UserSession;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.annotations.Nullable;
 
 /**
  * This class handles user authentication using Firebase Auth.
@@ -30,20 +22,9 @@ import io.reactivex.rxjava3.annotations.Nullable;
  * the users role will be returned which will help dictate which screen the user gets
  * navigated to.
  */
-public class LoginFrag extends Fragment {
+public class LoginFrag extends Fragment implements AuthenticationController.AuthenticationCallback {
 
-    /**
-     *  Firebase Auth and Firestore instances
-     */
-    private FirebaseAuth auth;
-    /**
-     *  Firebase Firestore instance
-     */
-    private FirebaseFirestore db;
-
-    /**
-     *  Input fields and progress bar
-     */
+    private AuthenticationController controller;
     private TextInputLayout tilEmail, tilPassword;
     private TextInputEditText etEmail, etPassword;
     private ProgressBar progress;
@@ -72,15 +53,14 @@ public class LoginFrag extends Fragment {
     /**
      * This method is called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      *
-     * Initializes FirebaseAuth and Firestore instances. Also initializes input fields
+     * Initializes AuthenticationController. Also initializes input fields
      * and login button listener.
      *
      * @param v The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param b If non-null, this fragment is being re-constructed from a previous saved state as given here.
      */
     @Override public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
-        auth = FirebaseAuth.getInstance();
-        db   = FirebaseFirestore.getInstance();
+        controller = new AuthenticationController(requireContext(), this);
 
         tilEmail = v.findViewById(R.id.tilEmail);
         tilPassword = v.findViewById(R.id.tilPassword);
@@ -109,61 +89,52 @@ public class LoginFrag extends Fragment {
     private void signIn() {
         String email = text(etEmail), pass = text(etPassword);
 
-        if (tryDummyUserLogin(email, pass)) { return; }
-
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) { tilEmail.setError("Enter a valid email"); return; }
         tilEmail.setError(null);
-        if (TextUtils.isEmpty(pass)) { tilPassword.setError("Enter your password"); return; }
         tilPassword.setError(null);
 
-        setLoading(true);
-        auth.signInWithEmailAndPassword(email, pass).addOnCompleteListener(t -> {
-            if (!t.isSuccessful()) {
-                setLoading(false);
-                Toast.makeText(requireContext(),
-                        t.getException() != null ? t.getException().getMessage() : "Login failed",
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
-            String uid = auth.getCurrentUser().getUid();
-            db.collection("users").document(uid).get().addOnCompleteListener(rt -> {
-                setLoading(false);
-                if (!rt.isSuccessful()) { toast("Failed to load role"); return; }
-                DocumentSnapshot d = rt.getResult();
-                String role = null;
-                if (d != null) {
-                    Object roleValue = d.get("role");
-                    if (roleValue != null) {
-                        role = roleValue.toString();
-                    }
-                }
+        // Basic UI validation
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) { tilEmail.setError("Enter a valid email"); return; }
+        if (TextUtils.isEmpty(pass)) { tilPassword.setError("Enter your password"); return; }
 
-                // Create User object from Firebase data
-                User user = new User();
-                user.setUid(uid);
-                user.setEmail(auth.getCurrentUser().getEmail());
-                user.setRole(role != null ? role : "user");
-                if (d != null && d.contains("username")) {
-                    Object username = d.get("username");
-                    if (username != null) {
-                        user.setUsername(username.toString());
-                    }
-                }
+        controller.login(email, pass);
+    }
 
-                // Store in session
-                UserSession.getInstance().setCurrentUser(user);
-                DeviceLoginStore.rememberUser(requireContext(), user);
+    // AuthenticationCallback implementation
 
-                int destination = R.id.navigation_user_home;
-                if ("admin".equalsIgnoreCase(user.getRole())) {
-                    destination = R.id.navigation_admin_home;
-                } else if ("organizer".equalsIgnoreCase(user.getRole())) {
-                    destination = R.id.navigation_organizer_home;
-                }
+    @Override
+    public void onLoginSuccess(User user) {
+        navigateBasedOnRole(user);
+    }
 
-                NavHostFragment.findNavController(this).navigate(destination);
-            });
-        });
+    @Override
+    public void onLoginFailure(String message) {
+        toast(message);
+    }
+
+    @Override
+    public void onNoSavedUser() {
+        // Not applicable for manual login
+    }
+
+    @Override
+    public void onLoading(boolean isLoading) {
+        setLoading(isLoading);
+    }
+
+    /**
+     * Navigates the user to the appropriate home screen based on their role.
+     *
+     * @param user The user whose role determines the navigation destination.
+     * @return: void
+     */
+    private void navigateBasedOnRole(User user) {
+        int destination = R.id.navigation_user_home;
+        if ("admin".equalsIgnoreCase(user.getRole())) {
+            destination = R.id.navigation_admin_home;
+        } else if ("organizer".equalsIgnoreCase(user.getRole())) {
+            destination = R.id.navigation_organizer_home;
+        }
+        NavHostFragment.findNavController(this).navigate(destination);
     }
 
     /**
@@ -180,27 +151,4 @@ public class LoginFrag extends Fragment {
      * @param m message that gets displayed.
      */
     private void toast(String m){ Toast.makeText(requireContext(), m, Toast.LENGTH_SHORT).show(); }
-
-    private boolean tryDummyUserLogin(String email, String pass) {
-        final String dummyEmail = "user@example.com";
-        final String dummyPassword = "password123";
-
-        if (!dummyEmail.equalsIgnoreCase(email) || !dummyPassword.equals(pass)) {
-            return false;
-        }
-
-        User dummyUser = new User();
-        dummyUser.setUid("LOCAL_DUMMY_USER");
-        dummyUser.setEmail(dummyEmail);
-        dummyUser.setUsername("Demo User");
-        dummyUser.setRole("user");
-        dummyUser.setCreatedAt(System.currentTimeMillis());
-
-        UserSession.getInstance().setCurrentUser(dummyUser);
-        DeviceLoginStore.rememberUser(requireContext(), dummyUser);
-        toast("Logged in as demo user");
-
-        NavHostFragment.findNavController(this).navigate(R.id.navigation_user_home);
-        return true;
-    }
 }
