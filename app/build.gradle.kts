@@ -1,3 +1,5 @@
+import org.gradle.external.javadoc.StandardJavadocDocletOptions
+
 plugins {
     alias(libs.plugins.android.application)
 
@@ -88,4 +90,32 @@ dependencies {
     testImplementation("androidx.test:core:1.5.0")
     testImplementation("androidx.fragment:fragment-testing:1.8.4")
     testImplementation("androidx.navigation:navigation-testing:2.7.7")
+}
+
+afterEvaluate {
+    tasks.register<Javadoc>("generateJavadoc") {
+        description = "Generates Javadoc for the main source code."
+        group = "documentation"
+
+        val androidExtension = project.extensions.getByType(com.android.build.gradle.AppExtension::class.java)
+        val variant = androidExtension.applicationVariants.find { it.name == "debug" }
+
+        if (variant != null) {
+            source(variant.sourceSets.flatMap { it.javaDirectories })
+            
+            classpath = files(androidExtension.bootClasspath) + variant.javaCompileProvider.get().classpath
+            
+            options {
+                this as StandardJavadocDocletOptions
+                memberLevel = JavadocMemberLevel.PROTECTED
+                isSplitIndex = true
+                destinationDir = file("${project.rootDir}/javadocs")
+                links("https://developer.android.com/reference")
+                links("https://docs.oracle.com/javase/8/docs/api/")
+                addStringOption("Xdoclint:none", "-quiet")
+            }
+            
+            exclude("**/R.java", "**/BuildConfig.java")
+        }
+    }
 }
