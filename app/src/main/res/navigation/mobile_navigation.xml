@@ -74,12 +74,13 @@
 
         <action
             android:id="@+id/action_user_profile_to_user_edit_profile"
-            app:destination="@id/navigation_user_edit_profile" />
+            app:destination="@id/navigation_u_edit_profile" />
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_user_edit_profile"
-        android:name="com.example.myapplication.features.user.UEditProfileFrag"
+        android:id="@+id/navigation_u_edit_profile"
+        android:name="com.example.myapplication.features.user.profile.UEditProfileFrag"
+        android:label="@string/title_edit_profile"
         tools:layout="@layout/fragment_u_edit_profile" />
 
     <fragment

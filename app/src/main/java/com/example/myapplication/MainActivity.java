@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
                     || d.getId() == R.id.navigation_login
                     || d.getId() == R.id.navigation_register
                     || d.getId() == R.id.navigation_user_event_detail
-                    || d.getId() == R.id.navigation_user_edit_profile
+                    || d.getId() == R.id.navigation_u_edit_profile
                     || d.getId() == R.id.navigation_user_notifications
                     || d.getId() == R.id.navigation_user_past_events
                     || d.getId() == R.id.navigation_organizer_event_detail
@@ -115,10 +115,19 @@ public class MainActivity extends AppCompatActivity {
         navView.setSelectedItemId(destinationId);
     }
 
+    /**
+     * Handles bottom navigation item selection
+     *
+     * @param item the selected menu item
+     * @return true if the selection was handled
+     */
     private boolean handleBottomNavSelection(MenuItem item) {
         return NavigationUI.onNavDestinationSelected(item, navController);
     }
 
+    /**
+     * Performs user logout
+     */
     public void performLogout() {
         FirebaseAuth.getInstance().signOut();
         UserSession.getInstance().clearSession();
