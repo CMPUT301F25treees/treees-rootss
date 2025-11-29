@@ -67,7 +67,6 @@
         android:name="com.example.myapplication.features.user.UProfileFrag"
         tools:layout="@layout/fragment_u_profile">
 
-        <!-- user profile -> user notifications -->
         <action
             android:id="@+id/action_user_profile_to_user_notifications"
             app:destination="@id/navigation_user_notifications" />

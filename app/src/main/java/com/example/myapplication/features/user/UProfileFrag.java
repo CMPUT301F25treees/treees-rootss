@@ -65,7 +65,7 @@ public class UProfileFrag extends Fragment implements DeleteProfileView {
     /**
      * Called when the fragment's view has been created.
      * <p>
-     * Initializes the role switcher, navigation cards (notifications, past events,
+     * Initializes the role switcher, navigation cards (notifications, waitlists, past events,
      * edit profile), delete-profile behaviour, and welcome text based on the
      * currently logged-in user stored in {@link UserSession}.
      *
@@ -79,6 +79,7 @@ public class UProfileFrag extends Fragment implements DeleteProfileView {
 
         MaterialButton roleButton = view.findViewById(R.id.btnRole);
         View cardPastEvents = view.findViewById(R.id.cardPastEvents);
+        View cardWaitlist = view.findViewById(R.id.cardWaitingList);
         View cardNotifications = view.findViewById(R.id.cardNotifications);
         View cardEditInfo = view.findViewById(R.id.cardEditInfo);
         View cardLogout = view.findViewById(R.id.cardLogout);
@@ -124,6 +125,13 @@ public class UProfileFrag extends Fragment implements DeleteProfileView {
             NavHostFragment.findNavController(this)
                     .navigate(R.id.navigation_user_past_events);
         });
+
+        if(cardWaitlist != null){
+            cardWaitlist.setOnClickListener(v->{
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.navigation_user_waitinglist);
+            });
+        }
 
         if (cardEditInfo != null) {
             cardEditInfo.setOnClickListener(v ->
