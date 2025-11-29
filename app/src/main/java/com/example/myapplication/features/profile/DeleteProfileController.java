@@ -10,15 +10,26 @@ public class DeleteProfileController {
     private final DeleteProfileView view;
     private final UserRepository userRepository;
 
+    /**
+     * Constructor for DeleteProfileController.
+     * @param view The view interface for profile deletion.
+     * @param userRepository The user repository for data operations.
+     */
     public DeleteProfileController(DeleteProfileView view, UserRepository userRepository) {
         this.view = view;
         this.userRepository = userRepository;
     }
 
+    /**
+     * Handles the delete profile button click.
+     */
     public void onDeleteProfileClicked() {
         view.showConfirmationDialog();
     }
 
+    /**
+     * Handles the confirmed deletion of the user's profile.
+     */
     public void onDeleteConfirmed() {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) {
@@ -45,6 +56,11 @@ public class DeleteProfileController {
         }, onFailure);
     }
 
+    /**
+     * Handles the confirmed deletion of an admin deleting another user's profile.
+     * @param uid The UID of the user to delete.
+     * @param role The role of the user to delete.
+     */
     public void onAdminDeleteConfirmed(String uid, String role) {
         view.showProgress(true);
 
