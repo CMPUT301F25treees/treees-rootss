@@ -155,6 +155,7 @@ public class UHomeFrag extends Fragment implements UHomeView {
         if (controller.hasAvailabilityFilter()) {
             menu.getMenu().add(getString(R.string.filter_availability_clear_option));
         }
+        menu.getMenu().add(getString(R.string.filter_clear_all_option)); // New item
         menu.setOnMenuItemClickListener(item -> {
             CharSequence title = item.getTitle();
             if (TextUtils.equals(title, getString(R.string.filter_interests_option))) {
@@ -165,6 +166,10 @@ public class UHomeFrag extends Fragment implements UHomeView {
                 return true;
             } else if (TextUtils.equals(title, getString(R.string.filter_availability_clear_option))) {
                 clearAvailabilityFilter();
+                return true;
+            } else if (TextUtils.equals(title, getString(R.string.filter_clear_all_option))) {
+                controller.clearAllFilters();
+                Toast.makeText(requireContext(), R.string.filter_all_cleared_toast, Toast.LENGTH_SHORT).show();
                 return true;
             }
             return false;
