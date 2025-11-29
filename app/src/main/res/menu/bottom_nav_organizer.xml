@@ -17,9 +17,4 @@
         android:iconTint="@null"
         android:title="Create"/>
 
-    <item
-        android:id="@+id/navigation_organizer_waitlist"
-        android:icon="@drawable/ic_waiting_list"
-        android:iconTint="@null"
-        android:title="Waitlist"/>
 </menu>
