@@ -4,36 +4,41 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
+import com.example.myapplication.features.organizer.home.OHomeController;
+import com.example.myapplication.features.organizer.home.OHomeModel;
+import com.example.myapplication.features.organizer.home.OHomeView;
 import com.example.myapplication.features.user.UserEvent;
 import com.example.myapplication.features.user.UserEventAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
- * This calss is for displaying the organizer home frag. The events are fetched
- * and then filtered to only show ones that the current user is an oraganizer for.
- *
- * Also has navigation to the Organizer Profile View and Create Event View.
+ * Organizer home view that delegates data and filtering to the controller/model.
  */
-public class OHomeFrag extends Fragment {
+public class OHomeFrag extends Fragment implements OHomeView {
 
     private UserEventAdapter adapter;
+    private EditText searchInput;
+    private OHomeController controller;
 
     public OHomeFrag() {
         super(R.layout.fragment_o_home);
@@ -46,12 +51,19 @@ public class OHomeFrag extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        EditText searchInput = view.findViewById(R.id.etSearchEvents);
+        searchInput = view.findViewById(R.id.etSearchEvents);
         ImageButton filterButton = view.findViewById(R.id.btnFilter);
         RecyclerView eventsList = view.findViewById(R.id.rvEvents);
 
         adapter = new UserEventAdapter();
         Context context = requireContext();
+
+        controller = new OHomeController(
+                new FirebaseEventRepository(),
+                FirebaseAuth.getInstance(),
+                new OHomeModel(),
+                this
+        );
 
         NavController navController = NavHostFragment.findNavController(this);
 
@@ -76,67 +88,24 @@ public class OHomeFrag extends Fragment {
             return false;
         });
 
-        fetchMyEventsFromFirestore();
+        controller.loadOrganizerEvents();
 
-        searchInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        if (searchInput != null) {
+            searchInput.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                adapter.filter(s != null ? s.toString() : null);
-            }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    controller.onSearchQueryChanged(s != null ? s.toString() : null);
+                }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
 
         filterButton.setOnClickListener(this::showFilterMenu);
-    }
-
-    /**
-     * Loads events from Firestore and keeps only those owned by the signed-in organizer.
-     */
-    private void fetchMyEventsFromFirestore(){
-        FirebaseEventRepository repo = new FirebaseEventRepository();
-
-        String currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance()
-                .getCurrentUser()
-                .getUid();
-
-        repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
-            @Override
-            public void onEventsFetched(List<UserEvent> events) {
-
-                if (events != null) {
-                    List<UserEvent> myEvents = new ArrayList<>();
-
-                    for (UserEvent event : events) {
-                        if (event.getOrganizerID() != null &&
-                                event.getOrganizerID().equals(currentUserId)) {
-                            myEvents.add(event);
-                        }
-                    }
-
-                    if (!myEvents.isEmpty()) {
-                        adapter.submit(myEvents);
-                    } else {
-                        Toast.makeText(requireContext(),
-                                "No events created by you",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                }
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Toast.makeText(requireContext(),
-                        "Failed to fetch: " + e.getMessage(),
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
-        });
     }
 
     /**
@@ -148,12 +117,46 @@ public class OHomeFrag extends Fragment {
         menu.getMenu().add("Drafts");
         menu.getMenu().add("Archived");
         menu.setOnMenuItemClickListener(item -> {
-            Toast.makeText(requireContext(), item.getTitle() + " selected", Toast.LENGTH_SHORT).show();
+            controller.onFilterSelected(item.getTitle().toString());
             return true;
         });
         menu.show();
     }
 
+    @Override
+    public void showEvents(List<UserEvent> events, @Nullable String searchQuery) {
+        adapter.submit(events);
+        String query = searchQuery == null ? "" : searchQuery;
+        if (!TextUtils.isEmpty(query)) {
+            adapter.filter(query);
+        }
+    }
+
+    @Override
+    public void showEmptyState(String message) {
+        adapter.submit(new ArrayList<>());
+        if (!TextUtils.isEmpty(message)) {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void showError(String message) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showInfo(String message) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (controller != null) {
+            controller.detachView();
+        }
+    }
 
     /**
      * Simple spacing decorator that maintains even padding around grid tiles.
