@@ -43,7 +43,6 @@ public class OProfileFrag extends Fragment implements DeleteProfileView {
 
     /**
      * Constructor for OProfileFrag.
-     * @return void
      */
     public OProfileFrag() {
         super(R.layout.fragment_o_profile);
@@ -53,7 +52,6 @@ public class OProfileFrag extends Fragment implements DeleteProfileView {
      * Configures the role selection, navigation cards, and delete profile workflow.
      * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
-     * @return void
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -117,7 +115,6 @@ public class OProfileFrag extends Fragment implements DeleteProfileView {
      * Updates the role button label, user session, and main activity navigation.
      * @param roleLabel The selected role label.
      * @param roleButton The button to update the label on.
-     * @return void
      */
     private void applyRoleSelection(String roleLabel, MaterialButton roleButton) {
         String normalized = "organizer".equalsIgnoreCase(roleLabel) ? "organizer" : "user";

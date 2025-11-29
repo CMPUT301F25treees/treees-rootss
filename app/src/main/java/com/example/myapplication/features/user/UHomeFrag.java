@@ -53,8 +53,6 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Default constructor.
-     * @param None
-     * @return void
      */
     public UHomeFrag() {
         super(R.layout.fragment_u_home);
@@ -63,7 +61,6 @@ public class UHomeFrag extends Fragment {
     /**
      * Sets up the event grid, search/filter controls, and kicks off the initial fetch.
      * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @return void
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -115,8 +112,6 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Loads all events from Firestore and filters out those owned by the current user.
-     * @param None
-     * @return void
      */
     private void fetchEventsFromFirestore(){
         FirebaseEventRepository repo = new FirebaseEventRepository();
@@ -147,7 +142,6 @@ public class UHomeFrag extends Fragment {
     /**
      * Placeholder filter menu that demonstrates how filtering options will surface.
      * @param anchor The view to anchor the popup menu to.
-     * @return void
      */
     private void showFilterMenu(View anchor) {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
@@ -175,8 +169,6 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Shows a multi-choice dialog for selecting event interests to filter by.
-     * @param None
-     * @return void
      */
     private void showInterestsDialog() {
         String[] options = getResources().getStringArray(R.array.event_theme_options);
@@ -226,8 +218,6 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Shows a date range picker for selecting availability dates to filter by.
-     * @param None
-     * @return void
      */
     private void showAvailabilityPicker() {
         MaterialDatePicker.Builder<Pair<Long, Long>> builder =
@@ -257,7 +247,6 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Gets the currently selected availability date range.
-     * @param None
      * @return Pair of start and end millis, or null if not set.
      */
     @Nullable
@@ -270,8 +259,6 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Clears the availability date filter.
-     * @param None
-     * @return void
      */
     private void clearAvailabilityFilter() {
         if (availabilityStartMillis == null && availabilityEndMillis == null) {
@@ -287,7 +274,6 @@ public class UHomeFrag extends Fragment {
 
     /**
      * Summarizes the selected interests as a comma-separated string.
-     * @param None
      * @return Comma-separated list of selected interests.
      */
     private String summarizeInterests() {
@@ -340,8 +326,6 @@ public class UHomeFrag extends Fragment {
      *
      * First applies a filter to hide any events that have finished and then,
      * applies the currently selected filters to the full event list and updates the adapter.
-     * @param None
-     * @return void
      */
     private void applyCurrentFilters() {
 
