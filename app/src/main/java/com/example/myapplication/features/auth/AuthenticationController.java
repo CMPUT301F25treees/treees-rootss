@@ -27,6 +27,12 @@ public class AuthenticationController {
     }
 
 
+    /**
+     * Constructor for AuthenticationController.
+     *
+     * @param context  Application context
+     * @param callback Callback interface for authentication events
+     */
     public AuthenticationController(Context context, AuthenticationCallback callback) {
         this.context = context;
         this.callback = callback;
@@ -101,6 +107,8 @@ public class AuthenticationController {
 
     /**
      * Attempts to log in with email and password.
+     * @param email    User email
+     * @param password User password
      */
     public void login(String email, String password) {
         if (tryDummyUserLogin(email, password)) {
@@ -165,22 +173,43 @@ public class AuthenticationController {
         });
     }
 
+    /**
+     * Logs out the current user.
+     */
     public void logout() {
         DeviceLoginStore.markLoggedOut(context);
         UserSession.getInstance().clearSession();
         auth.signOut();
     }
 
+    /**
+     * Finalizes the login process by setting the user session and persisting the user.
+     *
+     * @param user The logged-in user
+     */
     private void finalizeLogin(User user) {
         UserSession.getInstance().setCurrentUser(user);
         DeviceLoginStore.rememberUser(context, user);
         callback.onLoginSuccess(user);
     }
 
+    /**
+     * Checks if the user is a local dummy user.
+     *
+     * @param user The user to check
+     * @return true if the user is a local dummy user, false otherwise
+     */
     private boolean isLocalUser(User user) {
         return user.getUid() != null && user.getUid().startsWith("LOCAL_");
     }
 
+    /**
+     * Attempts to log in as a dummy user for local testing.
+     *
+     * @param email The email provided
+     * @param pass  The password provided
+     * @return true if dummy login was successful, false otherwise
+     */
     private boolean tryDummyUserLogin(String email, String pass) {
         final String dummyEmail = "user@example.com";
         final String dummyPassword = "password123";
