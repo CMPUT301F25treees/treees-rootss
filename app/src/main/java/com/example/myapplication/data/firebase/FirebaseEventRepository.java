@@ -574,5 +574,44 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    public void leaveInvitedList(String eventId, String userId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure){
+
+        db.collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(x ->{
+                    Runnable removeNotification = () -> db.collection("notifications")
+                            .whereEqualTo("eventId", eventId)
+                            .whereIn("type", java.util.Arrays.asList("lottery_win", "lottery_lost"))
+                            .whereArrayContains("uID", userId)
+                            .get()
+                            .addOnSuccessListener(y -> {
+                                if(!y.isEmpty()){
+                                    for(var notifications : y.getDocuments()) {
+                                        notifications.getReference()
+                                                .update("uID", FieldValue.arrayRemove(userId));
+                                    }
+                                }
+                                onSuccess.onSuccess(null);
+                            })
+                            .addOnFailureListener(onFailure);
+
+                    if(!x.isEmpty()){
+                        var doc = x.getDocuments().get(0);
+                        doc.getReference()
+                                .update(
+                                        "invited", FieldValue.arrayRemove(userId),
+                                        "all", FieldValue.arrayRemove(userId)
+                                )
+                                .addOnSuccessListener(v -> removeNotification.run())
+                                .addOnFailureListener(onFailure);
+                    } else {
+                        removeNotification.run();
+                    }
+                })
+                .addOnFailureListener(onFailure);
+    }
+
 
 }
