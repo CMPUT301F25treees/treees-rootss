@@ -65,6 +65,7 @@
     <fragment
         android:id="@+id/navigation_user_waitlist"
         android:name="com.example.myapplication.features.user.UWaitlistFrag"
+        android:label="Waitlists"
         tools:layout="@layout/fragment_u_waitlist" />
 
     <fragment
@@ -78,7 +79,7 @@
 
         <action
             android:id="@+id/action_user_profile_to_waitlists"
-            app:destination="@+id/navigation_user_waitlists" />
+            app:destination="@+id/navigation_user_waitlist" />
 
         <action
             android:id="@+id/action_user_profile_to_user_edit_profile"

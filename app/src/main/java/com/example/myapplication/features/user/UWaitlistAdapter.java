@@ -55,7 +55,6 @@ public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.View
         UserEvent event = events.get(position);
 
         holder.titleTextView.setText(event.getName());
-        holder.locationTextView.setText(event.getLocation());
 
 
         holder.itemView.setOnClickListener(v -> {

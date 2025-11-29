@@ -29,7 +29,7 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_u_waitlist, container, false);
 
-        recyclerView = view.findViewById(R.id.waitlistRecycler);
+        recyclerView = view.findViewById(R.id.recyclerEvents);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new UWaitlistAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
