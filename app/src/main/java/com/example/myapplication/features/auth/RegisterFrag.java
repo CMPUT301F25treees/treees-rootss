@@ -113,6 +113,7 @@ public class RegisterFrag extends Fragment {
                             userMap.put("role", "User");
                             userMap.put("username", firstName);
                             userMap.put("wantNoti", true);
+                            userMap.put("rating", 0.0);
 
 
                             db.collection("users").document(uid)

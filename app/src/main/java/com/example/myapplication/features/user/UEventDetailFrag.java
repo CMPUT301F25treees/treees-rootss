@@ -27,6 +27,7 @@ import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -199,6 +200,41 @@ public class UEventDetailFrag extends Fragment {
         } else {
             inWaitlist = false;
             joinWaitlistBtn.setText("Join Waitlist");
+        }
+
+        loadOrganizerRating(event.getOrganizerID());
+    }
+
+    private void loadOrganizerRating(String organizerId) {
+        if (TextUtils.isEmpty(organizerId)) return;
+
+        FirebaseFirestore.getInstance().collection("users")
+                .document(organizerId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Double rating = documentSnapshot.getDouble("rating");
+                        if (rating == null) rating = 0.0;
+                        updateStars(rating);
+                    }
+                });
+    }
+
+    private void updateStars(double rating) {
+        if (!isAdded() || getView() == null) return;
+        
+        int ratingInt = (int) Math.round(rating);
+        int[] starIds = {R.id.star1, R.id.star2, R.id.star3, R.id.star4, R.id.star5};
+
+        for (int i = 0; i < starIds.length; i++) {
+            ImageView star = getView().findViewById(starIds[i]);
+            if (star != null) {
+                if (i < ratingInt) {
+                    star.setImageResource(R.drawable.star_filled);
+                } else {
+                    star.setImageResource(R.drawable.star_empty);
+                }
+            }
         }
     }
 

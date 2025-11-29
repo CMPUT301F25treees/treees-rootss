@@ -141,7 +141,7 @@ public class OEventDetailFrag extends Fragment {
         descr.setText(event.getDescr());
         updateStartDate(event.getStartTimeMillis());
         updateWaitingListCount(event);
-        loadOrganizerName(event);
+        loadOrganizerInfo(event);
         loadEventImage(event);
 
         // QR Image View
@@ -235,12 +235,12 @@ public class OEventDetailFrag extends Fragment {
     }
 
     /**
-     * This method retrieves and displays the organizers name.
+     * This method retrieves and displays the organizers name and rating.
      *
      * @param event The specified event the name if from
      * @return void
      */
-    private void loadOrganizerName(UserEvent event) {
+    private void loadOrganizerInfo(UserEvent event) {
         String fallback = extractFirstName(event.getInstructor());
         setOrganizerLabel(fallback);
 
@@ -266,7 +266,29 @@ public class OEventDetailFrag extends Fragment {
                     if (!TextUtils.isEmpty(firstName)) {
                         setOrganizerLabel(firstName);
                     }
+
+                    Double rating = doc.getDouble("rating");
+                    if (rating == null) rating = 0.0;
+                    updateStars(rating);
                 });
+    }
+
+    private void updateStars(double rating) {
+        if (!isAdded() || getView() == null) return;
+
+        int ratingInt = (int) Math.round(rating);
+        int[] starIds = {R.id.star1, R.id.star2, R.id.star3, R.id.star4, R.id.star5};
+
+        for (int i = 0; i < starIds.length; i++) {
+            ImageView star = getView().findViewById(starIds[i]);
+            if (star != null) {
+                if (i < ratingInt) {
+                    star.setImageResource(R.drawable.star_filled);
+                } else {
+                    star.setImageResource(R.drawable.star_empty);
+                }
+            }
+        }
     }
 
     /**
