@@ -31,14 +31,15 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * This class shows the user home screen.
  *
- * From teh home screen the user can click on an event in the lsit of events to
- * got the detailed view of that sepecified event, go to the scan view, user profile
+ * From the home screen the user can click on an event in the list of events to
+ * go to the detailed view of that specified event, go to the scan view, user profile
  * view, or search and filter the events.
  */
 public class UHomeFrag extends Fragment implements UHomeView {
@@ -113,13 +114,6 @@ public class UHomeFrag extends Fragment implements UHomeView {
         filterButton.setOnClickListener(v -> showFilterMenu(v));
     }
 
-    /**
-     * Loads all events from Firestore and filters out those owned by the current user.
-     */
-    private void fetchEventsFromFirestore(){
-        FirebaseEventRepository repo = new FirebaseEventRepository();
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
     @Override
     public void showEvents(List<UserEvent> events, @Nullable String searchQuery) {
         adapter.submit(events);
@@ -150,7 +144,7 @@ public class UHomeFrag extends Fragment implements UHomeView {
         if (controller.hasAvailabilityFilter()) {
             menu.getMenu().add(getString(R.string.filter_availability_clear_option));
         }
-        menu.getMenu().add(getString(R.string.filter_clear_all_option)); // New item
+        menu.getMenu().add(getString(R.string.filter_clear_all_option));
         menu.setOnMenuItemClickListener(item -> {
             CharSequence title = item.getTitle();
             if (TextUtils.equals(title, getString(R.string.filter_interests_option))) {
@@ -324,47 +318,6 @@ public class UHomeFrag extends Fragment implements UHomeView {
     }
 
     /**
-     *
-     * First applies a filter to hide any events that have finished and then,
-     * applies the currently selected filters to the full event list and updates the adapter.
-     */
-    private void applyCurrentFilters() {
-
-        long now = System.currentTimeMillis();
-
-        if (adapter == null) {
-            return;
-        }
-
-
-        List<UserEvent> working = new ArrayList<>();
-
-        for(UserEvent event : allEvents){
-            if(event != null && isUpcomingEvent(event, now)){
-                working.add(event);
-            }
-        }
-
-        if (!selectedInterests.isEmpty()) {
-            working = filterEventsByInterests(working, selectedInterests);
-        }
-        if (availabilityStartMillis != null && availabilityEndMillis != null) {
-            long filterStart = startOfDay(availabilityStartMillis);
-            long filterEnd = endOfDay(availabilityEndMillis);
-            working = filterEventsByAvailability(working, filterStart, filterEnd);
-        }
-
-        adapter.submit(working);
-
-        if (searchInput != null) {
-            CharSequence query = searchInput.getText();
-            if (query != null && query.length() > 0) {
-                adapter.filter(query.toString());
-            }
-        }
-    }
-
-    /**
      * Filters events based on the provided list of interests.
      * @param events The list of events to filter.
      * @param interests The list of interests to filter by.
@@ -397,20 +350,17 @@ public class UHomeFrag extends Fragment implements UHomeView {
         return filtered;
     }
 
-
     /**
      * This is a helper method that returns a boolean value based on whether the event
      * draw date has passed or not
      *
      * @param event The event being checked
      * @param currentMillis the current time
-     * @return boolean value if event draw has occured
+     * @return boolean value if event draw has occurred
      */
-    static boolean isUpcomingEvent(@NonNull UserEvent event, long currentMillis){
+    static boolean isUpcomingEvent(@NonNull UserEvent event, long currentMillis) {
         long draw = event.getSelectionDateMillis();
-
         return draw >= currentMillis;
-
     }
 
     /**
@@ -444,8 +394,6 @@ public class UHomeFrag extends Fragment implements UHomeView {
         return filtered;
     }
 
-
-
     /**
      * Returns a new list that excludes events owned by the provided user ID.
      * @param events The list of events to filter.
@@ -468,8 +416,6 @@ public class UHomeFrag extends Fragment implements UHomeView {
         }
         return filtered;
     }
-
-
 
     /**
      * Simple spacing decorator that keeps the event cards evenly spaced in the grid.
@@ -512,4 +458,3 @@ public class UHomeFrag extends Fragment implements UHomeView {
         }
     }
 }
-
