@@ -16,10 +16,4 @@
         android:icon="@drawable/ic_scan"
         android:iconTint="@null"
         android:title="Scan"/>
-
-    <item
-        android:id="@+id/navigation_logout"
-        android:icon="@drawable/ic_logout"
-        android:iconTint="@null"
-        android:title="Logout"/>
 </menu>

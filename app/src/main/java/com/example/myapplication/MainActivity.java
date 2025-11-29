@@ -122,17 +122,13 @@ public class MainActivity extends AppCompatActivity {
      * @return true if the selection was handled
      */
     private boolean handleBottomNavSelection(MenuItem item) {
-        if (item.getItemId() == R.id.navigation_logout) {
-            performLogout();
-            return true;
-        }
         return NavigationUI.onNavDestinationSelected(item, navController);
     }
 
     /**
      * Performs user logout
      */
-    private void performLogout() {
+    public void performLogout() {
         FirebaseAuth.getInstance().signOut();
         UserSession.getInstance().clearSession();
         DeviceLoginStore.markLoggedOut(getApplicationContext());
