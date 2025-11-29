@@ -574,6 +574,20 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    /**
+     * This method removes users from the invited list for a given event
+     *
+     * The Method performs the following:
+     * - The specified notificationList document is updated to remove the user from
+     * the "invited" and "all" lists.
+     * - Finds any "lottery_win" and "lottery_lost" notifications linked to the specified event
+     * and the user, then removes those notifications.
+     *
+     * @param eventId Id of the specified event
+     * @param userId Id of the user who is getting removed from the invited list
+     * @param onSuccess callback triggered when all updated complete successfully
+     * @param onFailure callback triggered on any failures from Firestore
+     */
     public void leaveInvitedList(String eventId, String userId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure){
 
         db.collection("notificationList")
