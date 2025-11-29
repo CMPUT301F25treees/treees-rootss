@@ -415,18 +415,16 @@ public class UHomeFrag extends Fragment {
 
     /**
      * This is a helper method that returns a boolean value based on whether the event
-     * has finished or not
+     * draw date has passed or not
      *
      * @param event The event being checked
      * @param currentMillis the current time
-     * @return boolean value if finished or not
+     * @return boolean value if event draw has occured
      */
     static boolean isUpcomingEvent(@NonNull UserEvent event, long currentMillis){
-        long start = event.getStartTimeMillis();
-        long end = event.getEndTimeMillis();
-        long actualEnd = (end>0) ? end : start;
+        long draw = event.getSelectionDateMillis();
 
-        return actualEnd >= currentMillis;
+        return draw >= currentMillis;
 
     }
 
