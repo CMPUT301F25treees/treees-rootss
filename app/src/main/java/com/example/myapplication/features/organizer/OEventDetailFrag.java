@@ -1,5 +1,7 @@
 package com.example.myapplication.features.organizer;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -81,7 +83,7 @@ public class OEventDetailFrag extends Fragment {
         startDate = view.findViewById(R.id.startDateText);
         descr = view.findViewById(R.id.description);
         eventImage = view.findViewById(R.id.eventImage);
-        qrCodeImage = view.findViewById(R.id.qrCodeImage);
+
 
         ImageButton backButton = view.findViewById(R.id.bckButton);
         backButton.setOnClickListener(x -> {
@@ -101,6 +103,22 @@ public class OEventDetailFrag extends Fragment {
                 args.putString("eventId", eventId);
                 Navigation.findNavController(view)
                         .navigate(R.id.navigation_organizer_waitlist, args);
+        });
+
+        qrCodeImage = view.findViewById(R.id.qrCodeImage);
+        qrCodeImage.setOnClickListener(v -> {
+            Bitmap bmp = getBitmapFromImageView(qrCodeImage);
+            if (bmp == null) {
+                Toast.makeText(requireContext(), "No QR to save", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Uri uri = saveBitmapToGallery(bmp, "event_" + eventId + "_qr");
+            if (uri != null) {
+                Toast.makeText(requireContext(), "QR saved to Photos", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(requireContext(), "Failed to save QR", Toast.LENGTH_SHORT).show();
+            }
         });
 
         Button editEventButton = view.findViewById(R.id.editEvent);
