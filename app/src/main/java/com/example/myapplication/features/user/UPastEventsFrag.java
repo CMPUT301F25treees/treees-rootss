@@ -116,7 +116,7 @@ public class UPastEventsFrag extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        recycler = view.findViewById(R.id.recyclerPastEvents);
+        recycler = view.findViewById(R.id.recyclerEvents);
         recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         adapter = new UPastEventsAdapter();
