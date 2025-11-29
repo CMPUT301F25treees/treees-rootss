@@ -574,5 +574,58 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    /**
+     * This method removes users from the invited list for a given event
+     *
+     * The Method performs the following:
+     * - The specified notificationList document is updated to remove the user from
+     * the "invited" and "all" lists.
+     * - Finds any "lottery_win" and "lottery_lost" notifications linked to the specified event
+     * and the user, then removes those notifications.
+     *
+     * @param eventId Id of the specified event
+     * @param userId Id of the user who is getting removed from the invited list
+     * @param onSuccess callback triggered when all updated complete successfully
+     * @param onFailure callback triggered on any failures from Firestore
+     */
+    public void leaveInvitedList(String eventId, String userId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure){
+
+        db.collection("notificationList")
+                .whereEqualTo("eventId", eventId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(x ->{
+                    Runnable removeNotification = () -> db.collection("notifications")
+                            .whereEqualTo("eventId", eventId)
+                            .whereIn("type", java.util.Arrays.asList("lottery_win", "lottery_lost"))
+                            .whereArrayContains("uID", userId)
+                            .get()
+                            .addOnSuccessListener(y -> {
+                                if(!y.isEmpty()){
+                                    for(var notifications : y.getDocuments()) {
+                                        notifications.getReference()
+                                                .update("uID", FieldValue.arrayRemove(userId));
+                                    }
+                                }
+                                onSuccess.onSuccess(null);
+                            })
+                            .addOnFailureListener(onFailure);
+
+                    if(!x.isEmpty()){
+                        var doc = x.getDocuments().get(0);
+                        doc.getReference()
+                                .update(
+                                        "invited", FieldValue.arrayRemove(userId),
+                                        "all", FieldValue.arrayRemove(userId)
+                                )
+                                .addOnSuccessListener(v -> removeNotification.run())
+                                .addOnFailureListener(onFailure);
+                    } else {
+                        removeNotification.run();
+                    }
+                })
+                .addOnFailureListener(onFailure);
+    }
+
 
 }

@@ -1,5 +1,6 @@
 package com.example.myapplication.features.organizer;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -196,6 +197,27 @@ public class OEventListFrag extends Fragment {
 
         adapter = new OEventListAdapter();
         waitlistRecycler.setAdapter(adapter);
+
+        adapter.setOnItemLongClickListener(position -> {
+            if (position < 0 || position >= currentUids.size()) {
+                return;
+            }
+
+            String uid = currentUids.get(position);
+            String name = nameByUid.getOrDefault(uid, uid);
+
+            if (currentMode == ListMode.WAITING) {
+                showRemoveFromWaitlistDialog(uid, name, position);
+            } else if (currentMode == ListMode.INVITED) {
+                showRemoveFromInvitedDialog(uid, name, position);
+            } else {
+                Toast.makeText(
+                        requireContext(),
+                        "You can only remove users from the waitlist or invited list.",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
 
         showEmpty();
 
@@ -519,5 +541,109 @@ public class OEventListFrag extends Fragment {
             }
 
             exportHelper.exportNamesCsv(eventName, modeLabel, displayedNames);
+    }
+
+    /**
+     * This method shows the user a confirmation dialog to confirm the removal of an entrant
+     * from the waitlist
+     *
+     * @param uid the uid of the user being removed
+     * @param name the name of the user
+     * @param position the adapter position of the user
+     */
+    private void showRemoveFromWaitlistDialog(String uid, String name, int position){
+        if(!isAdded()){
+            return;
         }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Remove entrant from waitlist")
+                .setMessage("Are you sure you want to remove " + name )
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Remove",  (dialog, which) ->
+                    removeFromWaitlist(uid, position)).show();
+    }
+
+    /**
+     * This method shows a confirmation dialog to remove an entrant from the invited list.
+     *
+     * @param uid      the uid of the user being removed
+     * @param name     the name of the user
+     * @param position the adapter position of the user
+     */
+    private void showRemoveFromInvitedDialog(String uid, String name, int position) {
+        if (!isAdded()) {
+            return;
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Remove entrant from invited list")
+                .setMessage("Are you sure you want to remove " + name + " from the invited list?")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Remove", (dialog, which) ->
+                        removeFromInvited(uid, position))
+                .show();
+    }
+
+    /**
+     * This is a helper method that uses the FirebaseEventRepository to remove a user from the
+     * event waitlist and updates the local lists for the UI on operation succession
+     *
+     * @param uid the uid of the user being removed
+     * @param position the adapter position of the suer in the list.
+     */
+    private void removeFromWaitlist(String uid, int position){
+        if(eventId == null){
+            Toast.makeText(requireContext(), "Event not loaded yet.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        eventRepo.leaveWaitlist(eventId, uid, unused -> {
+            if(position >= 0 && position < currentUids.size()) {
+                currentUids.remove(position);
+            } if (position >= 0 && position < displayedNames.size()){
+                displayedNames.remove(position);
+            }
+
+            adapter.removeAt(position);
+
+            if(currentUids.isEmpty()){
+                showEmpty();
+            }
+
+            Toast.makeText(requireContext(), "Removed from waitlist.", Toast.LENGTH_SHORT).show();
+
+        }, e -> Toast.makeText(requireContext(), "Failed to remove.", Toast.LENGTH_SHORT).show());
+    }
+
+    /**
+     * Helper method that uses the FirebaseEventRepository to remove a user from the
+     * invited list and updates the local lists and UI on success.
+     *
+     * @param uid      the UID of the user being removed
+     * @param position the adapter position of the user in the list
+     */
+    private void removeFromInvited(String uid, int position) {
+        if (eventId == null) {
+            Toast.makeText(requireContext(), "Event not loaded yet.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        eventRepo.leaveInvitedList(eventId, uid, unused -> {
+            if (position >= 0 && position < currentUids.size()) {
+                currentUids.remove(position);
+            }
+            if (position >= 0 && position < displayedNames.size()) {
+                displayedNames.remove(position);
+            }
+
+            adapter.removeAt(position);
+
+            if (currentUids.isEmpty()) {
+                showEmpty();
+            }
+
+            Toast.makeText(requireContext(), "Removed from invited list.", Toast.LENGTH_SHORT).show();
+        }, e -> Toast.makeText(requireContext(), "Failed to remove.", Toast.LENGTH_SHORT).show());
+    }
 }
