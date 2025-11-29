@@ -41,7 +41,7 @@ public class OProfileFragTest {
                     OProfileFrag.class,
                     null,
                     R.style.Theme_MyApplication,
-                    null
+                    (androidx.fragment.app.FragmentFactory) null
             );
 
             scenario.onFragment(fragment -> {
@@ -51,7 +51,7 @@ public class OProfileFragTest {
                 View editCard = fragment.requireView().findViewById(R.id.cardEditInfo);
                 editCard.performClick();
 
-                verify(navController).navigate(R.id.navigation_user_edit_profile);
+                verify(navController).navigate(R.id.navigation_u_edit_profile);
             });
 
             UserSession.getInstance().setCurrentUser(null);

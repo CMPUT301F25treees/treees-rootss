@@ -19,21 +19,15 @@ import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.core.DeviceLoginStore;
 import com.example.myapplication.core.UserSession;
+import com.example.myapplication.data.firebase.FirebaseUserRepository;
 import com.example.myapplication.data.model.User;
+import com.example.myapplication.features.profile.DeleteProfileController;
+import com.example.myapplication.features.profile.DeleteProfileView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Locale;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class is for the organizers profile screen.
@@ -41,10 +35,11 @@ import java.util.List;
  * On this screen users can view and send notifications, edit their info (still to be
  * implemented), switch between User and Organizer, and delete their profile.
  */
-public class OProfileFrag extends Fragment {
-    private FirebaseFirestore firestore;
+public class OProfileFrag extends Fragment implements DeleteProfileView {
+
     private View deleteProfileCard;
     private boolean isDeleting = false;
+    private DeleteProfileController controller;
 
     /**
      * Constructor for OProfileFrag.
@@ -71,7 +66,7 @@ public class OProfileFrag extends Fragment {
         deleteProfileCard = view.findViewById(R.id.cardDeleteProfile);
         TextView welcomeText = view.findViewById(R.id.tvWelcomeUser);
 
-        firestore = FirebaseFirestore.getInstance();
+        controller = new DeleteProfileController(this, new FirebaseUserRepository());
 
         UserSession session = UserSession.getInstance();
         User currentUser = session.getCurrentUser();
@@ -114,7 +109,7 @@ public class OProfileFrag extends Fragment {
         }
 
         if (deleteProfileCard != null) {
-            deleteProfileCard.setOnClickListener(v -> confirmDeleteProfile());
+            deleteProfileCard.setOnClickListener(v -> controller.onDeleteProfileClicked());
         }
     }
 
@@ -166,10 +161,8 @@ public class OProfileFrag extends Fragment {
         return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
     }
 
-    /**
-     * Prompts the organizer to confirm that the profile should be permanently deleted.
-     */
-    private void confirmDeleteProfile() {
+    @Override
+    public void showConfirmationDialog() {
         if (isDeleting) {
             return;
         }
@@ -177,135 +170,36 @@ public class OProfileFrag extends Fragment {
                 .setTitle(R.string.delete_profile_title)
                 .setMessage(R.string.delete_profile_message)
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.delete_profile_confirm, (dialog, which) -> performDeleteProfile())
+                .setPositiveButton(R.string.delete_profile_confirm, (dialog, which) -> controller.onDeleteConfirmed())
                 .show();
     }
 
-    /**
-     * Starts event cleanup and eventually removes the organizer’s auth account.
-     */
-    private void performDeleteProfile() {
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (firebaseUser == null) {
-            showToast(getString(R.string.delete_profile_auth_missing));
-            return;
-        }
-        setDeleting(true);
-        String uid = firebaseUser.getUid();
-        deleteUserEvents(uid,
-                () -> deleteUserDocument(uid, () -> deleteAuthUser(firebaseUser), this::handleDeleteFailure),
-                this::handleDeleteFailure);
-    }
-
-    /**
-     * Deletes every event document owned by the supplied UID before removing the organizer.
-     */
-    private void deleteUserEvents(String uid, Runnable onComplete, OnFailureListener onFailure) {
-        deleteEventsByField("organizerID", uid,
-                () -> deleteEventsByField("organizerId", uid, onComplete, onFailure),
-                onFailure);
-    }
-
-    /**
-     * Queries for event documents using the provided organizer field and removes them.
-     */
-    private void deleteEventsByField(String fieldName, String uid, Runnable onComplete, OnFailureListener onFailure) {
-        firestore.collection("events")
-                .whereEqualTo(fieldName, uid)
-                .get()
-                .addOnSuccessListener(snapshot -> handleEventDeletionResult(snapshot, onComplete, onFailure))
-                .addOnFailureListener(onFailure);
-    }
-
-
-    /**
-     * Deletes the snapshot results and advances once all deletes complete.
-     */
-    private void handleEventDeletionResult(QuerySnapshot snapshot, Runnable onComplete, OnFailureListener onFailure) {
-        if (snapshot == null || snapshot.isEmpty()) {
-            onComplete.run();
-            return;
-        }
-
-        List<Task<Void>> deletions = new ArrayList<>();
-        for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            deletions.add(doc.getReference().delete());
-        }
-
-        Tasks.whenAllComplete(deletions)
-                .addOnSuccessListener(tasks -> onComplete.run())
-                .addOnFailureListener(onFailure);
-    }
-
-    /**
-     * Deletes the Firestore user record for the organizer.
-     */
-    private void deleteUserDocument(String uid, Runnable onComplete, OnFailureListener onFailure) {
-        firestore.collection("users")
-                .document(uid)
-                .delete()
-                .addOnSuccessListener(aVoid -> onComplete.run())
-                .addOnFailureListener(onFailure);
-    }
-
-    /**
-     * Removes the FirebaseAuth account, signs out, and routes back to the welcome screen.
-     */
-    private void deleteAuthUser(FirebaseUser firebaseUser) {
-        firebaseUser.delete()
-                .addOnSuccessListener(aVoid -> {
-                    if (!isAdded()) {
-                        return;
-                    }
-                    showToast(getString(R.string.delete_profile_success));
-                    FirebaseAuth.getInstance().signOut();
-                    DeviceLoginStore.markLoggedOut(requireContext());
-                    UserSession.getInstance().setCurrentUser(null);
-                    setDeleting(false);
-                    navigateToWelcomeScreen();
-                })
-                .addOnFailureListener(this::handleDeleteFailure);
-    }
-
-    /**
-     * Re-enables the delete CTA and surfaces a toast when a step fails.
-     */
-    private void handleDeleteFailure(Exception e) {
-        if (!isAdded()) {
-            return;
-        }
-        setDeleting(false);
-        showToast(getString(R.string.delete_profile_failed, e != null ? e.getMessage() : ""));
-    }
-
-    /**
-     * Prevents duplicate delete requests while the workflow is running.
-     */
-    private void setDeleting(boolean deleting) {
-        isDeleting = deleting;
+    @Override
+    public void showProgress(boolean show) {
+        isDeleting = show;
         if (deleteProfileCard != null) {
-            deleteProfileCard.setEnabled(!deleting);
-            deleteProfileCard.setAlpha(deleting ? 0.5f : 1f);
+            deleteProfileCard.setEnabled(!show);
+            deleteProfileCard.setAlpha(show ? 0.5f : 1f);
         }
     }
 
-    /**
-     * Toast helper that only fires when the fragment is attached.
-     */
-    private void showToast(String message) {
+    @Override
+    public void showToast(String message) {
         if (!isAdded()) {
             return;
         }
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Clears the back stack and navigates to the welcome screen after removal.
-     */
-    private void navigateToWelcomeScreen() {
+    @Override
+    public void navigateOnSuccess() {
         if (!isAdded()) {
             return;
         }
+        FirebaseAuth.getInstance().signOut();
+        DeviceLoginStore.markLoggedOut(requireContext());
+        UserSession.getInstance().setCurrentUser(null);
+
         NavController navController = NavHostFragment.findNavController(this);
         NavOptions options = new NavOptions.Builder()
                 .setPopUpTo(navController.getGraph().getId(), true)
