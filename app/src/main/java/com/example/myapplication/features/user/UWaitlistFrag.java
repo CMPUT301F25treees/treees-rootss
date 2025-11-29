@@ -55,7 +55,7 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
                         waitlistEvents.add(event);
                     }
                 }
-                //Adapter method will go here.
+                adapter.setItems(waitlistEvents);
             }
 
             @Override
@@ -64,5 +64,7 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
             }
         });
     }
+
+
 
 }
