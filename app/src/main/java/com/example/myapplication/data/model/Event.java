@@ -25,7 +25,6 @@ public class Event {
 
     /**
      * Get the QR data associated with the event.
-     * @param None
      * @return the QR data as a String
      */
     public String getQrData() {
@@ -35,7 +34,6 @@ public class Event {
     /**
      * Set the QR data for the event.
      * @param qrData the QR data to set
-     * @return void
      */
     public void setQrData(String qrData) {
         this.qrData = qrData;
@@ -43,8 +41,6 @@ public class Event {
 
     /**
      * Get event id.
-     * @param None
-     * @return void
      */
     public String getEventId() {
         return eventId;
@@ -53,7 +49,6 @@ public class Event {
     /**
      * Set event id.
      * @param id the event id to set
-     * @return void
      */
     public void setEventId(String id) {
         this.eventId = id;
@@ -61,7 +56,6 @@ public class Event {
 
     /**
      * Empty constructor for Firebase
-     * @param None
      * @return title of the event
      */
     public String getTitle() {
@@ -71,7 +65,6 @@ public class Event {
     /**
      * Set title of the event.
      * @param title
-     * @return void
      */
     public void setTitle(String title) {
         this.title = title;
@@ -79,7 +72,6 @@ public class Event {
 
     /**
      * Get address of the event.
-     * @param None
      * @return address of the event
      */
     public String getAddress() {
@@ -89,7 +81,6 @@ public class Event {
     /**
      * Set address of the event.
      * @param address
-     * @return void
      */
     public void setAddress(String address) {
         this.address = address;
@@ -97,7 +88,6 @@ public class Event {
 
     /**
      * Get description of the event.
-     * @param None
      * @return description of the event
      */
     public String getDescr() {
@@ -107,7 +97,6 @@ public class Event {
     /**
      * Set description of the event.
      * @param descr
-     * @return void
      */
     public void setDescr(String descr) {
         this.descr = descr;
@@ -115,7 +104,6 @@ public class Event {
 
     /**
      * Get capacity of the event.
-     * @param None
      * @return capacity of the event
      */
     public int getCapacity() {
@@ -125,7 +113,6 @@ public class Event {
     /**
      * Set capacity of the event.
      * @param capacity
-     * @return void
      */
     public void setCapacity(int capacity) {
         this.capacity = capacity;
@@ -133,7 +120,6 @@ public class Event {
 
     /**
      * Get price of the event.
-     * @param None
      * @return price of the event
      */
     public double getPrice() {
@@ -143,7 +129,6 @@ public class Event {
     /**
      * Set price of the event.
      * @param price
-     * @return void
      */
     public void setPrice(double price) {
         this.price = price;
@@ -151,7 +136,6 @@ public class Event {
 
     /**
      * Get start date in milliseconds.
-     * @param None
      * @return start date in milliseconds
      */
     public long getStartDateMillis() {
@@ -161,7 +145,6 @@ public class Event {
     /**
      * Set start date in milliseconds.
      * @param startDateMillis
-     * @return void
      */
     public void setStartDateMillis(long startDateMillis) {
         this.startDateMillis = startDateMillis;
@@ -169,7 +152,6 @@ public class Event {
 
     /**
      * Get end date in milliseconds.
-     * @param None
      * @return end date in milliseconds
      */
     public long getEndDateMillis() {
@@ -179,7 +161,6 @@ public class Event {
     /**
      * Set end date in milliseconds.
      * @param endDateMillis
-     * @return void
      */
     public void setEndDateMillis(long endDateMillis) {
         this.endDateMillis = endDateMillis;
@@ -187,7 +168,6 @@ public class Event {
 
     /**
      * Get selection date in milliseconds.
-     * @param None
      * @return selection date in milliseconds
      */
     public long getSelectionDateMillis() {
@@ -197,7 +177,6 @@ public class Event {
     /**
      * Set selection date in milliseconds.
      * @param selectionDateMillis
-     * @return void
      */
     public void setSelectionDateMillis(long selectionDateMillis) {
         this.selectionDateMillis = selectionDateMillis;
@@ -205,7 +184,6 @@ public class Event {
 
     /**
      * Get number of entrants to draw.
-     * @param None
      * @return number of entrants to draw
      */
     public int getEntrantsToDraw() {
@@ -215,7 +193,6 @@ public class Event {
     /**
      * Set number of entrants to draw.
      * @param entrantsToDraw
-     * @return void
      */
     public void setEntrantsToDraw(int entrantsToDraw) {
         this.entrantsToDraw = entrantsToDraw;
@@ -223,7 +200,6 @@ public class Event {
 
     /**
      * Check if geo is required.
-     * @param None
      * @return true if geo is required, false otherwise
      */
     public boolean isGeoRequired() {
@@ -233,7 +209,6 @@ public class Event {
     /**
      * Set whether geo is required.
      * @param geoRequired
-     * @return void
      */
     public void setGeoRequired(boolean geoRequired) {
         this.geoRequired = geoRequired;
@@ -241,7 +216,6 @@ public class Event {
 
     /**
      * Get poster URL.
-     * @param None
      * @return poster URL
      */
     public String getPosterUrl() {
@@ -251,7 +225,6 @@ public class Event {
     /**
      * Set poster URL.
      * @param posterUrl
-     * @return void
      */
     public void setPosterUrl(String posterUrl) {
         this.posterUrl = posterUrl;
@@ -259,7 +232,6 @@ public class Event {
 
     /**
      * Get organizer ID.
-     * @param None
      * @return organizer ID
      */
     public String getOrganizerId() {
@@ -269,7 +241,6 @@ public class Event {
     /**
      * Set organizer ID.
      * @param organizerId
-     * @return void
      */
     public void setOrganizerId(String organizerId) {
         this.organizerId = organizerId;
@@ -277,7 +248,6 @@ public class Event {
 
     /**
      * Get theme of the event.
-     * @param None
      * @return theme of the event
      */
     public String getTheme() {
@@ -287,7 +257,6 @@ public class Event {
     /**
      * Set theme of the event.
      * @param theme
-     * @return void
      */
     public void setTheme(String theme) {
         this.theme = theme;
@@ -295,7 +264,6 @@ public class Event {
 
     /**
      * Get waitlist of the event.
-     * @param None
      * @return waitlist of the event
      */
     public List<String> getWaitlist() {
@@ -305,7 +273,6 @@ public class Event {
     /**
      * Set waitlist of the event.
      * @param waitlist
-     * @return void
      */
     public void setWaitlist(List<String> waitlist) {
         this.waitlist = waitlist;
@@ -327,7 +294,6 @@ public class Event {
      * @param qrData
      * @param waitlist
      * @param theme
-     * @return void
      */
     public Event(String title, String address, String descr, int capacity,
                  long startDateMillis, long endDateMillis, long selectionDateMillis,

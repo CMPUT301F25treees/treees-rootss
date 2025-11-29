@@ -7,6 +7,7 @@ import com.example.myapplication.features.user.UserEvent;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -119,6 +120,15 @@ public class UHomeController {
      * Removes any time-based filtering and refreshes the view.
      */
     public void clearAvailability() {
+        model.clearAvailability();
+        applyFiltersInternal(false);
+    }
+
+    /**
+     * Clears all active filters (interests and availability) and reapplies them.
+     */
+    public void clearAllFilters() {
+        model.setSelectedInterests(new ArrayList<>());
         model.clearAvailability();
         applyFiltersInternal(false);
     }

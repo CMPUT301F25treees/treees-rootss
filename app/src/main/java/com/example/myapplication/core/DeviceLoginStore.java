@@ -23,8 +23,6 @@ public class DeviceLoginStore {
     private static final String KEY_LOGGED_OUT = "logged_out";
 
     /** Private constructor to prevent instantiation
-     * @param None
-     * @return void
      * */
     private DeviceLoginStore() {}
 
@@ -32,7 +30,6 @@ public class DeviceLoginStore {
      * Remember the given user as the last signed-in user on this device.
      * @param context The application context
      * @param user The user to remember
-     * @return void
      */
     public static void rememberUser(Context context, User user) {
         if (context == null || user == null || user.getUid() == null) {
@@ -52,7 +49,6 @@ public class DeviceLoginStore {
     /**
      * Marks the user as logged out on this device.
      * @param context The application context
-     * @return void
      */
     public static void markLoggedOut(Context context) {
         if (context == null) {

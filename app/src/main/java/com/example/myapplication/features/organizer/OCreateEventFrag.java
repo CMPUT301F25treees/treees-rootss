@@ -79,8 +79,6 @@ public class OCreateEventFrag extends Fragment {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     /** Default constructor
-     * @param None
-     * @return void
      * */
     public OCreateEventFrag(){}
 
@@ -182,7 +180,6 @@ public class OCreateEventFrag extends Fragment {
      * This method opens a date picker dialog and returns the selected date through a callback.
      *
      * @param callback Receives the selected date.
-     * @return void
      */
     private void pickDate(DateCallback callback) {
         final Calendar calendar = Calendar.getInstance();
@@ -201,8 +198,6 @@ public class OCreateEventFrag extends Fragment {
 
     /**
      * Launches the image picker so the user can select an image to upload.
-     * @param None
-     * @return void
      */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -239,8 +234,6 @@ public class OCreateEventFrag extends Fragment {
      *
      * ImageRepository is used to upload the image.
      *
-     * @param None
-     * @return void
      */
     private void onCreateClicked() {
         Log.d("OCreateEventFrag", "onCreateClicked Called");
@@ -332,7 +325,6 @@ public class OCreateEventFrag extends Fragment {
      * whether saving is successful or not, a message gets displayed.
      *
      * @param event event the event object to be saved.
-     * @return void
      */
     private void saveEvent(UserEvent event) {
         ServiceLocator.getEventRepository().createEvent(
