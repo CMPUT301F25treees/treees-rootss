@@ -129,7 +129,7 @@ public class UProfileFrag extends Fragment implements DeleteProfileView {
         if(cardWaitlist != null){
             cardWaitlist.setOnClickListener(v->{
                 NavHostFragment.findNavController(this)
-                        .navigate(R.id.navigation_user_waitinglist);
+                        .navigate(R.id.action_user_profile_to_waitlists);
             });
         }
 
