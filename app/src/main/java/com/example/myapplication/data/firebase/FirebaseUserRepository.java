@@ -57,7 +57,7 @@ public class FirebaseUserRepository implements UserRepository {
                         return;
                     }
                     WriteBatch batch = firestore.batch();
-                    for (DocumentSnapshot doc : q) {
+                    for (DocumentSnapshot doc : q.getDocuments()) {
                         batch.update(doc.getReference(), "disabled", true);
                     }
                     batch.commit()
