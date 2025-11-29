@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,9 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
+import com.example.myapplication.data.model.Event;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemClickListener{
 
@@ -37,6 +40,29 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
          loadWaitlistEvents();
 
          return view;
+    }
+
+    private void loadWaitlistEvents(){
+        repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
+            @Override
+            public void onEventsFetched(List<UserEvent> events) {
+                List<UserEvent> waitlistEvents = new ArrayList<>();
+
+                for(UserEvent event : events){
+                    List<String> waitlist = event.getWaitlist();
+
+                    if(waitlist != null && waitlist.contains(curentUid)){
+                        waitlistEvents.add(event);
+                    }
+                }
+                //Adapter method will go here.
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(requireContext(), "There was an error loading the events", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 }
