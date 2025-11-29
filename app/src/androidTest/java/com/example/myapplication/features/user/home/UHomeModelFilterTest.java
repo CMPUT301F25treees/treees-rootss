@@ -1,10 +1,12 @@
-package com.example.myapplication.features.user;
+package com.example.myapplication.features.user.home;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.example.myapplication.features.user.UserEvent;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
-public class UHomeFragFilterLogicTest {
+public class UHomeModelFilterTest {
 
     @Test
     public void filterEventsByInterests_matchesCaseInsensitiveThemes() {
@@ -23,7 +25,7 @@ public class UHomeFragFilterLogicTest {
         UserEvent lowerCaseMusic = eventWithTheme("music");
         UserEvent noTheme = eventWithTheme(null);
 
-        List<UserEvent> filtered = UHomeFrag.filterEventsByInterests(
+        List<UserEvent> filtered = UHomeModel.filterEventsByInterests(
                 Arrays.asList(music, sports, lowerCaseMusic, noTheme),
                 Arrays.asList("MUSIC", "art")
         );
@@ -42,7 +44,7 @@ public class UHomeFragFilterLogicTest {
                 eventWithTheme("Sports")
         );
 
-        List<UserEvent> filtered = UHomeFrag.filterEventsByInterests(events, Collections.emptyList());
+        List<UserEvent> filtered = UHomeModel.filterEventsByInterests(events, Collections.emptyList());
 
         assertEquals(events, filtered);
     }
@@ -54,7 +56,7 @@ public class UHomeFragFilterLogicTest {
         UserEvent openEnded = eventWithTimes(2_500L, 0);
         UserEvent late = eventWithTimes(5_000L, 5_500L);
 
-        List<UserEvent> filtered = UHomeFrag.filterEventsByAvailability(
+        List<UserEvent> filtered = UHomeModel.filterEventsByAvailability(
                 Arrays.asList(early, middle, openEnded, late),
                 4_000L,
                 2_000L
@@ -73,7 +75,7 @@ public class UHomeFragFilterLogicTest {
         UserEvent theirs = eventWithOrganizer("user-2");
         UserEvent noOrganizer = eventWithOrganizer(null);
 
-        List<UserEvent> filtered = UHomeFrag.filterEventsForDisplay(
+        List<UserEvent> filtered = UHomeModel.filterEventsForDisplay(
                 Arrays.asList(mine, theirs, null, noOrganizer),
                 "user-1"
         );
@@ -86,9 +88,9 @@ public class UHomeFragFilterLogicTest {
 
     @Test
     public void filterEventsForDisplay_handlesNullInputs() {
-        assertTrue(UHomeFrag.filterEventsForDisplay(null, "user-1").isEmpty());
-        assertTrue(UHomeFrag.filterEventsForDisplay(Collections.emptyList(), "user-1").isEmpty());
-        assertTrue(UHomeFrag.filterEventsForDisplay(Arrays.asList(eventWithOrganizer("user-2")), null).isEmpty());
+        assertTrue(UHomeModel.filterEventsForDisplay(null, "user-1").isEmpty());
+        assertTrue(UHomeModel.filterEventsForDisplay(Collections.emptyList(), "user-1").isEmpty());
+        assertTrue(UHomeModel.filterEventsForDisplay(Arrays.asList(eventWithOrganizer("user-2")), null).isEmpty());
     }
 
     @Test
@@ -98,9 +100,9 @@ public class UHomeFragFilterLogicTest {
         UserEvent ongoingNoEnd = eventWithTimes(11_000L, 0);
         UserEvent past = eventWithTimes(1_000L, 2_000L);
 
-        assertTrue(UHomeFrag.isUpcomingEvent(upcomingWithEnd, now));
-        assertTrue(UHomeFrag.isUpcomingEvent(ongoingNoEnd, now));
-        assertFalse(UHomeFrag.isUpcomingEvent(past, now));
+        assertTrue(UHomeModel.isUpcomingEvent(upcomingWithEnd, now));
+        assertTrue(UHomeModel.isUpcomingEvent(ongoingNoEnd, now));
+        assertFalse(UHomeModel.isUpcomingEvent(past, now));
     }
 
     private static UserEvent eventWithTheme(String theme) {

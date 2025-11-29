@@ -22,14 +22,15 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
-import com.example.myapplication.data.model.User;
+import com.example.myapplication.features.user.home.UHomeController;
+import com.example.myapplication.features.user.home.UHomeModel;
+import com.example.myapplication.features.user.home.UHomeView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,14 +41,11 @@ import java.util.Locale;
  * got the detailed view of that sepecified event, go to the scan view, user profile
  * view, or search and filter the events.
  */
-public class UHomeFrag extends Fragment {
+public class UHomeFrag extends Fragment implements UHomeView {
 
     private UserEventAdapter adapter;
     private EditText searchInput;
-    private final List<UserEvent> allEvents = new ArrayList<>();
-    private final List<String> selectedInterests = new ArrayList<>();
-    private Long availabilityStartMillis;
-    private Long availabilityEndMillis;
+    private UHomeController controller;
     private final SimpleDateFormat availabilityDateFormat =
             new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
 
@@ -84,7 +82,12 @@ public class UHomeFrag extends Fragment {
             return false;
         });
 
-        fetchEventsFromFirestore();
+        UHomeModel model = new UHomeModel();
+        FirebaseEventRepository repo = new FirebaseEventRepository();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        controller = new UHomeController(repo, auth, model, this);
+
+        controller.loadEvents();
 
         adapter.setOnEventClickListener(event -> {
             Bundle bundle = new Bundle();
@@ -100,7 +103,7 @@ public class UHomeFrag extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                adapter.filter(s != null ? s.toString() : null);
+                controller.onSearchQueryChanged(s != null ? s.toString() : null);
             }
 
             @Override
@@ -117,26 +120,23 @@ public class UHomeFrag extends Fragment {
         FirebaseEventRepository repo = new FirebaseEventRepository();
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
-            @Override
-            public void onEventsFetched(List<UserEvent> events){
-                if(events != null && !events.isEmpty()) {
-                    List<UserEvent> displayable = filterEventsForDisplay(events, currentUserId);
-                    allEvents.clear();
-                    allEvents.addAll(displayable);
-                    applyCurrentFilters();
-                } else{
-                    allEvents.clear();
-                    adapter.submit(new ArrayList<>());
-                    Toast.makeText(requireContext(), "No events found", Toast.LENGTH_SHORT).show();
-                }
-            }
+    @Override
+    public void showEvents(List<UserEvent> events, @Nullable String searchQuery) {
+        adapter.submit(events);
+        adapter.filter(searchQuery);
+    }
 
-            @Override
-            public void onError(Exception e){
-                Toast.makeText(requireContext(), "Failed to fetch:" + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    public void showEmptyState(@Nullable String message) {
+        adapter.submit(new ArrayList<>());
+        if (message != null) {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void showError(String message) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -147,9 +147,10 @@ public class UHomeFrag extends Fragment {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
         menu.getMenu().add(getString(R.string.filter_interests_option));
         menu.getMenu().add(getString(R.string.filter_availability_option));
-        if (availabilityStartMillis != null && availabilityEndMillis != null) {
+        if (controller.hasAvailabilityFilter()) {
             menu.getMenu().add(getString(R.string.filter_availability_clear_option));
         }
+        menu.getMenu().add(getString(R.string.filter_clear_all_option)); // New item
         menu.setOnMenuItemClickListener(item -> {
             CharSequence title = item.getTitle();
             if (TextUtils.equals(title, getString(R.string.filter_interests_option))) {
@@ -160,6 +161,10 @@ public class UHomeFrag extends Fragment {
                 return true;
             } else if (TextUtils.equals(title, getString(R.string.filter_availability_clear_option))) {
                 clearAvailabilityFilter();
+                return true;
+            } else if (TextUtils.equals(title, getString(R.string.filter_clear_all_option))) {
+                controller.clearAllFilters();
+                Toast.makeText(requireContext(), R.string.filter_all_cleared_toast, Toast.LENGTH_SHORT).show();
                 return true;
             }
             return false;
@@ -172,12 +177,13 @@ public class UHomeFrag extends Fragment {
      */
     private void showInterestsDialog() {
         String[] options = getResources().getStringArray(R.array.event_theme_options);
+        List<String> currentInterests = controller.getSelectedInterests();
         boolean[] checked = new boolean[options.length];
         for (int i = 0; i < options.length; i++) {
-            checked[i] = selectedInterests.contains(options[i]);
+            checked[i] = currentInterests.contains(options[i]);
         }
 
-        final List<String> pendingSelection = new ArrayList<>(selectedInterests);
+        final List<String> pendingSelection = new ArrayList<>(currentInterests);
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.filter_interests_title)
@@ -192,22 +198,19 @@ public class UHomeFrag extends Fragment {
                     }
                 })
                 .setPositiveButton(R.string.filter_interests_apply, (dialog, which) -> {
-                    selectedInterests.clear();
-                    selectedInterests.addAll(pendingSelection);
-                    applyCurrentFilters();
-                    if (selectedInterests.isEmpty()) {
+                    controller.updateInterests(pendingSelection);
+                    if (pendingSelection.isEmpty()) {
                         Toast.makeText(requireContext(),
                                 R.string.filter_interests_showing_all,
                                 Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(requireContext(),
-                                getString(R.string.filter_interests_applied, summarizeInterests()),
+                                getString(R.string.filter_interests_applied, summarizeInterests(pendingSelection)),
                                 Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNeutralButton(R.string.filter_interests_clear, (dialog, which) -> {
-                    selectedInterests.clear();
-                    applyCurrentFilters();
+                    controller.updateInterests(new ArrayList<>());
                     Toast.makeText(requireContext(),
                             R.string.filter_interests_cleared_toast,
                             Toast.LENGTH_SHORT).show();
@@ -233,13 +236,11 @@ public class UHomeFrag extends Fragment {
             if (result == null || result.first == null || result.second == null) {
                 return;
             }
-            availabilityStartMillis = result.first;
-            availabilityEndMillis = result.second;
-            applyCurrentFilters();
+            controller.updateAvailability(result.first, result.second);
             Toast.makeText(requireContext(),
                     getString(R.string.filter_availability_applied,
-                            formatAvailabilityDate(availabilityStartMillis),
-                            formatAvailabilityDate(availabilityEndMillis)),
+                            formatAvailabilityDate(result.first),
+                            formatAvailabilityDate(result.second)),
                     Toast.LENGTH_SHORT).show();
         });
         picker.show(getParentFragmentManager(), "availability_range_picker");
@@ -251,22 +252,22 @@ public class UHomeFrag extends Fragment {
      */
     @Nullable
     private Pair<Long, Long> getAvailabilitySelection() {
-        if (availabilityStartMillis == null || availabilityEndMillis == null) {
+        Long start = controller.getAvailabilityStartMillis();
+        Long end = controller.getAvailabilityEndMillis();
+        if (start == null || end == null) {
             return null;
         }
-        return new Pair<>(availabilityStartMillis, availabilityEndMillis);
+        return new Pair<>(start, end);
     }
 
     /**
      * Clears the availability date filter.
      */
     private void clearAvailabilityFilter() {
-        if (availabilityStartMillis == null && availabilityEndMillis == null) {
+        if (!controller.hasAvailabilityFilter()) {
             return;
         }
-        availabilityStartMillis = null;
-        availabilityEndMillis = null;
-        applyCurrentFilters();
+        controller.clearAvailability();
         Toast.makeText(requireContext(),
                 R.string.filter_availability_cleared_toast,
                 Toast.LENGTH_SHORT).show();
@@ -276,8 +277,8 @@ public class UHomeFrag extends Fragment {
      * Summarizes the selected interests as a comma-separated string.
      * @return Comma-separated list of selected interests.
      */
-    private String summarizeInterests() {
-        return TextUtils.join(", ", selectedInterests);
+    private String summarizeInterests(List<String> interests) {
+        return TextUtils.join(", ", interests);
     }
 
     /**
@@ -511,3 +512,4 @@ public class UHomeFrag extends Fragment {
         }
     }
 }
+
