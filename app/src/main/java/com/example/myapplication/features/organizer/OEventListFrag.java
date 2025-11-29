@@ -199,17 +199,24 @@ public class OEventListFrag extends Fragment {
         waitlistRecycler.setAdapter(adapter);
 
         adapter.setOnItemLongClickListener(position -> {
-            if(currentMode != ListMode.WAITING) {
-                Toast.makeText(requireContext(), "You can only remove users from the waitlist", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (position<0 || position >=currentUids.size()){
+            if (position < 0 || position >= currentUids.size()) {
                 return;
             }
 
             String uid = currentUids.get(position);
             String name = nameByUid.getOrDefault(uid, uid);
-            showRemoveFromWaitlistDialog(uid, name, position);
+
+            if (currentMode == ListMode.WAITING) {
+                showRemoveFromWaitlistDialog(uid, name, position);
+            } else if (currentMode == ListMode.INVITED) {
+                showRemoveFromInvitedDialog(uid, name, position);
+            } else {
+                Toast.makeText(
+                        requireContext(),
+                        "You can only remove users from the waitlist or invited list.",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
         });
 
         showEmpty();
