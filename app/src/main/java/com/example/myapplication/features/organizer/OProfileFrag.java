@@ -75,16 +75,7 @@ public class OProfileFrag extends Fragment implements DeleteProfileView {
 
         roleButton.setText(formatRoleLabel(currentUser != null ? currentUser.getRole() : null));
 
-        roleButton.setOnClickListener(v -> {
-            PopupMenu menu = new PopupMenu(requireContext(), v);
-            menu.getMenu().add("User");
-            menu.getMenu().add("Organizer");
-            menu.setOnMenuItemClickListener(item -> {
-                applyRoleSelection(item.getTitle().toString(), roleButton);
-                return true;
-            });
-            menu.show();
-        });
+        roleButton.setOnClickListener(v -> roleSwitchDialog(roleButton));
 
         cardNotifications.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)
@@ -156,6 +147,40 @@ public class OProfileFrag extends Fragment implements DeleteProfileView {
         }
         String lower = role.toLowerCase(Locale.getDefault());
         return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
+    }
+
+    /**
+     * Displays the custom-made role switch pop-up dialogue. This lets the users choose between
+     * 'User' and 'Organizer.'
+     *
+     * @param roleButton button on the profile screen that displays the current users role
+     */
+    private void roleSwitchDialog(MaterialButton roleButton) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_role_switch, null);
+
+        View btnUser = dialogView.findViewById(R.id.btnUser);
+        View btnOrganizer = dialogView.findViewById(R.id.btnOrganizer);
+
+        MaterialAlertDialogBuilder builder =
+                new MaterialAlertDialogBuilder(requireContext());
+        builder.setView(dialogView);
+
+        final androidx.appcompat.app.AlertDialog dialog = builder.create();
+        if(dialog.getWindow() != null){
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        btnUser.setOnClickListener(v -> {
+            applyRoleSelection("User", roleButton);
+            dialog.dismiss();
+        });
+
+        btnOrganizer.setOnClickListener(v -> {
+            applyRoleSelection("Organizer", roleButton);
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     @Override
