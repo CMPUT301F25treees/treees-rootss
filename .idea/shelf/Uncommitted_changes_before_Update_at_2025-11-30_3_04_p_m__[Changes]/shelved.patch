@@ -1,0 +1,24 @@
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_11_26_2025_7_15_PM__Changes_.xml
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Update_at_11_26_2025_7_15_PM__Changes_.xml b/.idea/shelf/Uncommitted_changes_before_Update_at_11_26_2025_7_15_PM__Changes_.xml
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Update_at_11_26_2025_7_15_PM__Changes_.xml	(revision f457b6fefd517cb4af261d7826233ae1f7f6c7a2)
++++ /dev/null	(revision f457b6fefd517cb4af261d7826233ae1f7f6c7a2)
+@@ -1,4 +0,0 @@
+-<changelist name="Uncommitted_changes_before_Update_at_11_26_2025_7_15_PM_[Changes]" date="1764209737442" recycled="true" deleted="true">
+-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_11_26_2025_7_15_PM_[Changes]/shelved.patch" />
+-  <option name="DESCRIPTION" value="Uncommitted changes before Update at 11/26/2025 7:15 PM [Changes]" />
+-</changelist>
+\ No newline at end of file
+Index: .idea/shelf/Uncommitted_changes_before_Checkout_at_11_26_2025_7_16_PM__Changes_.xml
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Checkout_at_11_26_2025_7_16_PM__Changes_.xml b/.idea/shelf/Uncommitted_changes_before_Checkout_at_11_26_2025_7_16_PM__Changes_.xml
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Checkout_at_11_26_2025_7_16_PM__Changes_.xml	(revision f457b6fefd517cb4af261d7826233ae1f7f6c7a2)
++++ /dev/null	(revision f457b6fefd517cb4af261d7826233ae1f7f6c7a2)
+@@ -1,4 +0,0 @@
+-<changelist name="Uncommitted_changes_before_Checkout_at_11_26_2025_7_16_PM_[Changes]" date="1764209766636" recycled="true" deleted="true">
+-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_11_26_2025_7_16_PM_[Changes]/shelved.patch" />
+-  <option name="DESCRIPTION" value="Uncommitted changes before Checkout at 11/26/2025 7:16 PM [Changes]" />
+-</changelist>
+\ No newline at end of file
