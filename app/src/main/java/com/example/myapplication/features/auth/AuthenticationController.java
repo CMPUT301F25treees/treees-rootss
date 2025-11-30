@@ -188,9 +188,31 @@ public class AuthenticationController {
      * @param user The logged-in user
      */
     private void finalizeLogin(User user) {
-        UserSession.getInstance().setCurrentUser(user);
-        DeviceLoginStore.rememberUser(context, user);
-        callback.onLoginSuccess(user);
+        if (isLocalUser(user)) {
+            finalizeLoginInternal(user);
+            return;
+        }
+
+        String uid = user.getUid();
+        if (uid == null || uid.isEmpty()) {
+            callback.onLoginFailure("Authentication error. Please try again.");
+            return;
+        }
+
+        db.collection("deletedUsers")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot != null && snapshot.exists()) {
+                        auth.signOut();
+                        callback.onLoginFailure("Your account has been removed by an administrator.");
+                    } else {
+                        finalizeLoginInternal(user);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    callback.onLoginFailure("Unable to verify account status. Please try again later.");
+                });
     }
 
     /**
@@ -201,6 +223,17 @@ public class AuthenticationController {
      */
     private boolean isLocalUser(User user) {
         return user.getUid() != null && user.getUid().startsWith("LOCAL_");
+    }
+
+    /**
+     * Finalizes the login process by setting the user session and persisting the user.
+     *
+     * @param user The logged-in user
+     */
+    private void finalizeLoginInternal(User user) {
+        UserSession.getInstance().setCurrentUser(user);
+        DeviceLoginStore.rememberUser(context, user);
+        callback.onLoginSuccess(user);
     }
 
     /**

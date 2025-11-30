@@ -30,8 +30,8 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.VH> 
         public String id;
         public String name;
         public String email;
-        public String role;       // "User" | "Organizer" | "Admin"
-        public String avatarUrl;  // optional
+        public String role;
+        public String avatarUrl;
     }
 
     /**

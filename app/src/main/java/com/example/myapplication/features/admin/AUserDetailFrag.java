@@ -85,8 +85,8 @@ public class AUserDetailFrag extends Fragment implements DeleteProfileView {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete profile?")
                 .setMessage("This will remove " + who + " from the app. "
-                        + "It deletes their profile document in Firestore. "
-                        + "It does not remove their sign-in account.")
+                        + "It deletes their profile and all events they created, "
+                        + "and prevents them from using this app again.")
                 .setPositiveButton("Delete", (d, w) -> controller.onAdminDeleteConfirmed(uid, role))
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -94,7 +94,6 @@ public class AUserDetailFrag extends Fragment implements DeleteProfileView {
 
     @Override
     public void showProgress(boolean show) {
-        // Optionally show a progress indicator or disable buttons
     }
 
     @Override
