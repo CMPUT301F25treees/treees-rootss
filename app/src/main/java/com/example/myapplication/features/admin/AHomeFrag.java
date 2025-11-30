@@ -4,12 +4,20 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
+import android.graphics.Rect;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,63 +25,51 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.features.user.UserEvent;
 import com.example.myapplication.features.user.UserEventAdapter;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
 import java.util.List;
-import android.widget.ImageButton;
-import android.widget.Toast;
-import androidx.navigation.NavController;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import androidx.appcompat.widget.PopupMenu;
 
-public class AHomeFrag extends Fragment {
+/**
+ * Admin home fragment that displays a grid of events and photos.
+ * <p>
+ * This class implements the view layer of an MVC design for the admin
+ * home screen. It is responsible for configuring the RecyclerView,
+ * handling user interactions with the search bar and mode selector, and
+ * delegating data loading and filtering to {@link AdminHomeController}.
+ * The controller in turn delivers filtered {@link UserEvent} lists to
+ * this fragment via the {@link AdminHomeView} interface.
+ * <p>
+ */
+public class AHomeFrag extends Fragment implements AdminHomeView {
 
-    private ListenerRegistration reg;
-    private UserEventAdapter adapter;
-
-    // Admin-side state
-    private final List<UserEvent> allEvents = new ArrayList<>();
-    private final List<UserEvent> allImageEvents = new ArrayList<>();
-    private final Map<String, DocumentSnapshot> eventDocsById = new HashMap<>();
-    private String currentQuery = "";
-
-    private enum Mode {
-        EVENTS,
-        PHOTOS
-    }
-
-    private Mode currentMode = Mode.EVENTS;
-
+    private RecyclerView rvEvents;
     private EditText etSearchEvents;
     private ImageButton btnFilter;
+
+    private UserEventAdapter adapter;
+    private AdminHomeController controller;
 
     public AHomeFrag() {
         // Required empty public constructor
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         // Admin reuses the user home layout
         return inflater.inflate(R.layout.fragment_u_home, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        RecyclerView rvEvents = view.findViewById(R.id.rvEvents);
+        rvEvents = view.findViewById(R.id.rvEvents);
         etSearchEvents = view.findViewById(R.id.etSearchEvents);
         btnFilter = view.findViewById(R.id.btnFilter);
 
-        // RecyclerView setup (same as before)
+        // Set up RecyclerView with grid layout and spacing
         rvEvents.setLayoutManager(new GridLayoutManager(getContext(), 2));
         rvEvents.addItemDecoration(new SpacingDecoration(dp(12), dp(12), dp(12)));
         rvEvents.setPadding(
@@ -87,16 +83,18 @@ public class AHomeFrag extends Fragment {
         adapter = new UserEventAdapter();
         final NavController navController = NavHostFragment.findNavController(this);
 
-        // Click behavior depends on mode:
-        // - EVENTS mode: go to admin event detail
-        // - PHOTOS mode: go directly to remove-options screen
+        // Click behavior:
+        // - EVENTS mode  -> navigate to admin event detail
+        // - PHOTOS mode -> navigate directly to remove-options screen
         adapter.setOnEventClickListener(event -> {
-            if (event == null || event.getId() == null) {
+            if (event == null || event.getId() == null || controller == null) {
                 return;
             }
             Bundle args = new Bundle();
             args.putString("eventId", event.getId());
-            if (currentMode == Mode.EVENTS) {
+
+            AdminHomeMode mode = controller.getCurrentMode();
+            if (mode == AdminHomeMode.EVENTS) {
                 navController.navigate(R.id.navigation_admin_event_detail, args);
             } else {
                 navController.navigate(R.id.navigation_admin_remove_options, args);
@@ -105,13 +103,13 @@ public class AHomeFrag extends Fragment {
 
         rvEvents.setAdapter(adapter);
 
-        // Initial hint for events mode
-        if (etSearchEvents != null) {
-            etSearchEvents.setHint("Search Events");
-        }
+        // Controller (C in MVC)
+        controller = new AdminHomeController(this);
+        controller.start();
 
-        // Admin search: we now handle filtering in this fragment, not via adapter.filter
+        // Search bar delegates query changes to the controller
         if (etSearchEvents != null) {
+            etSearchEvents.setHint("Search events");
             etSearchEvents.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -120,8 +118,9 @@ public class AHomeFrag extends Fragment {
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    currentQuery = (s == null) ? "" : s.toString();
-                    applyAdminFilter(currentQuery);
+                    if (controller != null) {
+                        controller.onSearchQueryChanged(s != null ? s.toString() : "");
+                    }
                 }
 
                 @Override
@@ -131,75 +130,83 @@ public class AHomeFrag extends Fragment {
             });
         }
 
-        // Filter button -> dropdown menu (Events / Photos)
+        // Filter button shows a simple mode menu (Events / Photos)
         if (btnFilter != null) {
             btnFilter.setOnClickListener(v -> showModeMenu());
         }
-
-        // Firestore subscription: same query, but we cache docs and build two lists
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        reg = db.collection("events")
-                .orderBy("startTimeMillis", Query.Direction.DESCENDING)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        // Optional: log error
-                        return;
-                    }
-
-                    allEvents.clear();
-                    allImageEvents.clear();
-                    eventDocsById.clear();
-
-                    if (value != null) {
-                        for (DocumentSnapshot doc : value.getDocuments()) {
-                            UserEvent event = doc.toObject(UserEvent.class);
-                            if (event == null) {
-                                continue;
-                            }
-                            event.setId(doc.getId());
-                            allEvents.add(event);
-                            eventDocsById.put(event.getId(), doc);
-
-                            String imageUrl = safe(doc.getString("imageUrl"));
-                            String posterUrl = safe(doc.getString("posterUrl"));
-                            if (!imageUrl.isEmpty() || !posterUrl.isEmpty()) {
-                                allImageEvents.add(event);
-                            }
-                        }
-                    }
-
-                    // Apply current search + mode to update the adapter
-                    applyAdminFilter(currentQuery);
-                });
     }
 
     @Override
     public void onDestroyView() {
-        if (reg != null) {
-            reg.remove();
-            reg = null;
+        if (controller != null) {
+            controller.stop();
+            controller = null;
         }
+        rvEvents = null;
+        etSearchEvents = null;
+        btnFilter = null;
+        adapter = null;
         super.onDestroyView();
     }
 
-    // === NEW: show dropdown menu for Events / Photos ===
+    // ---------------------------------------------------------------------
+    // AdminHomeView implementation (View in MVC)
+    // ---------------------------------------------------------------------
+
+    @Override
+    public void showEvents(@NonNull List<UserEvent> events) {
+        if (adapter != null) {
+            adapter.submit(events);
+        }
+    }
+
+    @Override
+    public void showMode(@NonNull AdminHomeMode mode) {
+        if (etSearchEvents != null) {
+            // Reset query text when mode changes to keep behavior predictable
+            etSearchEvents.setText("");
+            if (mode == AdminHomeMode.EVENTS) {
+                etSearchEvents.setHint("Search events");
+            } else {
+                etSearchEvents.setHint("Search photos");
+            }
+        }
+
+        // Inform the admin of the current mode
+        Toast.makeText(
+                requireContext(),
+                (mode == AdminHomeMode.EVENTS) ? "Events mode" : "Photos mode",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    @Override
+    public void showLoading(boolean loading) {
+        // No dedicated progress bar for admin home yet; could be added if needed.
+    }
+
+    @Override
+    public void showError(@NonNull String message) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+    }
+
     private void showModeMenu() {
-        if (btnFilter == null) {
+        if (btnFilter == null || controller == null) {
             return;
         }
 
         PopupMenu popup = new PopupMenu(requireContext(), btnFilter);
-        // Simple IDs: 1 = Events, 2 = Photos
+        // 1 = Events, 2 = Photos
         popup.getMenu().add(0, 1, 0, "Events");
         popup.getMenu().add(0, 2, 1, "Photos");
 
-        popup.setOnMenuItemClickListener(item -> {
+        popup.setOnMenuItemClickListener((MenuItem item) -> {
             int id = item.getItemId();
             if (id == 1) {
-                setMode(Mode.EVENTS);
+                controller.setMode(AdminHomeMode.EVENTS);
                 return true;
             } else if (id == 2) {
-                setMode(Mode.PHOTOS);
+                controller.setMode(AdminHomeMode.PHOTOS);
                 return true;
             }
             return false;
@@ -208,86 +215,14 @@ public class AHomeFrag extends Fragment {
         popup.show();
     }
 
-    // === NEW: apply selected mode, update hint, and re-filter ===
-    private void setMode(Mode mode) {
-        if (currentMode == mode) {
-            return;
-        }
-        currentMode = mode;
-
-        if (etSearchEvents != null) {
-            if (currentMode == Mode.EVENTS) {
-                etSearchEvents.setHint("Search events");
-            } else {
-                etSearchEvents.setHint("Search Photos");
-            }
-            // Reset query when switching modes
-            etSearchEvents.setText("");
-        }
-        currentQuery = "";
-
-        Toast.makeText(
-                requireContext(),
-                (currentMode == Mode.EVENTS) ? "Events mode" : "Photos mode",
-                Toast.LENGTH_SHORT
-        ).show();
-
-        applyAdminFilter(currentQuery);
-    }
-
-    // Central admin filter: uses mode + query
-    private void applyAdminFilter(String query) {
-        List<UserEvent> base = (currentMode == Mode.EVENTS) ? allEvents : allImageEvents;
-
-        if (base == null || base.isEmpty()) {
-            adapter.submit(Collections.emptyList());
-            return;
-        }
-
-        if (query == null || query.trim().isEmpty()) {
-            adapter.submit(new ArrayList<>(base));
-            return;
-        }
-
-        String q = query.trim().toLowerCase(Locale.getDefault());
-        List<UserEvent> filtered = new ArrayList<>();
-
-        for (UserEvent event : base) {
-            DocumentSnapshot doc = eventDocsById.get(event.getId());
-            if (matchesQuery(doc, q)) {
-                filtered.add(event);
-            }
-        }
-
-        adapter.submit(filtered);
-    }
-
-    // Checks whether an event/doc matches the query
-    private boolean matchesQuery(DocumentSnapshot doc, String query) {
-        if (doc == null) {
-            return false;
-        }
-        return contains(doc.getString("name"), query)
-                || contains(doc.getString("location"), query)
-                || contains(doc.getString("descr"), query)
-                || contains(doc.getString("imageUrl"), query)
-                || contains(doc.getString("posterUrl"), query);
-    }
-
-    private boolean contains(String value, String query) {
-        return value != null
-                && value.toLowerCase(Locale.getDefault()).contains(query);
-    }
-
-    private String safe(String s) {
-        return (s == null) ? "" : s;
-    }
-
     private int dp(int value) {
         float density = requireContext().getResources().getDisplayMetrics().density;
         return Math.round(value * density);
     }
 
+    /**
+     * Simple item decoration that applies symmetric spacing for a 2-column grid.
+     */
     private static class SpacingDecoration extends RecyclerView.ItemDecoration {
         private final int horizontal;
         private final int vertical;
@@ -300,7 +235,7 @@ public class AHomeFrag extends Fragment {
         }
 
         @Override
-        public void getItemOffsets(@NonNull android.graphics.Rect outRect,
+        public void getItemOffsets(@NonNull Rect outRect,
                                    @NonNull View view,
                                    @NonNull RecyclerView parent,
                                    @NonNull RecyclerView.State state) {

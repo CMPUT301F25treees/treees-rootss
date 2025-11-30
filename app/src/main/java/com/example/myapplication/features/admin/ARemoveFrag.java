@@ -29,15 +29,13 @@ import com.example.myapplication.core.ImageUtils;
 import com.example.myapplication.data.repo.ImageRepository;
 
 /**
- * Remove Options fragment for administrators.
+ * Admin remove-options fragment for a selected event.
  * <p>
- * Provides three destructive actions for a selected event:
- * <ul>
- *   <li>Remove preview image (clears {@code imageUrl}/{@code posterUrl})</li>
- *   <li>Remove event (deletes {@code /events/{eventId}} and its {@code /images} subcollection,
- *       with best-effort deletion of any referenced storage objects)</li>
- *   <li>Remove organizer (demotes to {@code role="User"} and sets {@code suspended=true})</li>
- * </ul>
+ * Provides destructive admin operations for an event: removing the
+ * preview image, deleting the event document (and associated image
+ * metadata), and demoting the organizer. This fragment is a view that
+ * delegates Firestore and Storage operations to repository-style code.
+ * <p>
  */
 public class ARemoveFrag extends Fragment {
 

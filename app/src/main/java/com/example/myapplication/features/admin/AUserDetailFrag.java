@@ -19,11 +19,13 @@ import com.example.myapplication.features.profile.DeleteProfileView;
 import com.google.android.material.button.MaterialButton;
 
 /**
- * Admin Profile Detail fragment.
+ * Admin user detail fragment that displays profile information for a
+ * single user and exposes a delete action.
  * <p>
- * Displays a read-only view of a user's profile (name, email, role, avatar) with
- * administrative controls to navigate back or delete the user's profile document.
- * If the user is an organizer, related events can be flagged as disabled prior to deletion.
+ * This fragment implements {@link com.example.myapplication.features.profile.DeleteProfileView}
+ * and delegates profile deletion to {@link com.example.myapplication.features.profile.DeleteProfileController},
+ * which performs the actual model updates (user document and events).
+ * <p>
  */
 public class AUserDetailFrag extends Fragment implements DeleteProfileView {
 

@@ -12,8 +12,13 @@ import com.example.myapplication.R;
 import com.example.myapplication.MainActivity;
 
 /**
- * Admin Profile fragment serving as a simple entry point to admin-related sections.
- * Currently provides navigation to the admin notifications screen.
+ * Admin profile fragment that serves as the entry point for admin
+ * options such as notifications and logout.
+ * <p>
+ * This fragment is a simple view that presents a set of cards leading
+ * to other admin features. It relies on {@code MainActivity} to
+ * perform the actual logout operation.
+ * <p>
  */
 public class AProfileFrag extends Fragment {
 
