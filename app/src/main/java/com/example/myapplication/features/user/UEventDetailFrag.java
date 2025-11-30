@@ -5,8 +5,11 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -361,6 +364,28 @@ public class UEventDetailFrag extends Fragment {
         }, e -> Toast.makeText(getContext(),
                 "Could not join waitlist.",
                 Toast.LENGTH_SHORT).show());
+    }
+
+    @Nullable
+    private Bitmap getBitmapFromImageView(@NonNull ImageView imageView) {
+        Drawable drawable = imageView.getDrawable();
+        if (drawable == null) {
+            return null;
+        }
+
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        } else {
+            Bitmap bmp = Bitmap.createBitmap(
+                    imageView.getWidth(),
+                    imageView.getHeight(),
+                    Bitmap.Config.ARGB_8888
+            );
+            Canvas canvas = new Canvas(bmp);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+            return bmp;
+        }
     }
 
     /**
