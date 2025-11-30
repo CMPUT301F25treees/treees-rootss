@@ -146,7 +146,7 @@ public class ARemoveFrag extends Fragment {
                                     FirebaseFirestore.getInstance().collection("events").document(eventId)
                                             .update(
                                                     "imageUrl", secureUrl,
-                                                    "posterUrl", secureUrl // Assuming posterUrl also needs updating
+                                                    "posterUrl", secureUrl
                                             )
                                             .addOnSuccessListener(v1 -> {
                                                 Toast.makeText(requireContext(), "Image replaced with default", Toast.LENGTH_SHORT).show();
