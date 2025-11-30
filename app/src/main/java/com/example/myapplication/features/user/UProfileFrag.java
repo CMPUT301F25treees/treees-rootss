@@ -1,7 +1,11 @@
 package com.example.myapplication.features.user;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -227,12 +231,40 @@ public class UProfileFrag extends Fragment implements DeleteProfileView {
         if (isDeleting) {
             return;
         }
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.delete_profile_title)
-                .setMessage(R.string.delete_profile_message)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.delete_profile_confirm, (dialog, which) -> controller.onDeleteConfirmed())
-                .show();
+
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_delete_profile);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        TextView messageView = dialog.findViewById(R.id.dialogMessage);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnDelete = dialog.findViewById(R.id.btnDelete);
+
+        if (titleView != null) {
+            titleView.setText(getString(R.string.delete_profile_title));
+        }
+        if (messageView != null) {
+            messageView.setText(getString(R.string.delete_profile_message));
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnDelete != null) {
+            btnDelete.setOnClickListener(v -> {
+                controller.onDeleteConfirmed();
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
     }
 
     @Override
