@@ -1,6 +1,9 @@
 package com.example.myapplication.features.admin;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.ImageView;
@@ -81,15 +84,51 @@ public class AUserDetailFrag extends Fragment implements DeleteProfileView {
 
     @Override
     public void showConfirmationDialog() {
+        if (!isAdded()) {
+            return;
+        }
+
         String who = !name.isEmpty() ? name : email;
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Delete profile?")
-                .setMessage("This will remove " + who + " from the app. "
-                        + "It deletes their profile document in Firestore. "
-                        + "It does not remove their sign-in account.")
-                .setPositiveButton("Delete", (d, w) -> controller.onAdminDeleteConfirmed(uid, role))
-                .setNegativeButton("Cancel", null)
-                .show();
+
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_delete_profile);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT)
+            );
+        }
+
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        TextView messageView = dialog.findViewById(R.id.dialogMessage);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnDelete = dialog.findViewById(R.id.btnDelete);
+
+        if (titleView != null) {
+            titleView.setText("Delete profile?");
+        }
+
+        if (messageView != null) {
+            messageView.setText(
+                    "This will remove " + who + " from the app. " +
+                            "It deletes their profile document in Firestore. " +
+                            "It does not remove their sign-in account."
+            );
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnDelete != null) {
+            btnDelete.setOnClickListener(v -> {
+                controller.onAdminDeleteConfirmed(uid, role);
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
     }
 
     @Override
