@@ -57,6 +57,13 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
                 for(UserEvent event : events){
                     List<String> waitlist = event.getWaitlist();
 
+                    long drawDate = event.getSelectionDateMillis();
+                    long current = System.currentTimeMillis();
+
+                    if(drawDate < current){
+                        continue;
+                    }
+
                     if(waitlist != null && waitlist.contains(curentUid)){
                         waitlistEvents.add(event);
                     }
