@@ -342,6 +342,16 @@ public class OEventDetailFrag extends Fragment {
         return spaceIdx > 0 ? trimmed.substring(0, spaceIdx) : trimmed;
     }
 
+    /**
+     * Helper method to extracts a Bitmap from the drawable currently displayed in the specified ImageView.
+     * <p>
+     * If the drawable is already a BitmapDrawable, its bitmap is returned directly.
+     * If the drawable is a vector or another drawable type, it is drawn onto a new
+     * Bitmap using a Canvas.
+     *
+     * @param imageView The ImageView containing the QR code drawable.
+     * @return A Bitmap representation of the ImageView's drawable, or null if no drawable exists.
+     */
     private Bitmap getBitmapFromImageView(ImageView imageView) {
         Drawable drawable = imageView.getDrawable();
         if (drawable == null) {
@@ -363,6 +373,20 @@ public class OEventDetailFrag extends Fragment {
         }
     }
 
+    /**
+     * Helper method that saves a Bitmap image into the user's device gallery using the MediaStore API.
+     * <p>
+     * On Android 10+ (API 29+), the file is saved into:
+     * <b>Pictures/EventLottery/</b>
+     * <br>
+     * On older versions, it is saved into the public images directory.
+     * <p>
+     * The image is saved as a PNG with the provided file name.
+     *
+     * @param bitmap   The Bitmap to save.
+     * @param fileName Desired file name (without extension).
+     * @return A Uri referencing the saved image, or null if saving failed.
+     */
     private Uri saveBitmapToGallery(Bitmap bitmap, String fileName) {
         ContentResolver resolver = requireContext().getContentResolver();
 
