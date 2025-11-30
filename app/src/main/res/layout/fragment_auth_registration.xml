@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_login_gradient">
 
-
     <TextView
         android:id="@+id/registrationTitle"
         android:layout_width="wrap_content"
@@ -31,11 +30,12 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registrationTitle" />
+        app:layout_constraintTop_toBottomOf="@id/registrationTitle" />
 
+    <!-- FIRST NAME -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.MyApplication.TextInputLayout.OutlinedWhite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -45,12 +45,9 @@
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/white"
-        app:boxStrokeWidth="5dp"
-        app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/firstNameTitle">
+        app:layout_constraintTop_toBottomOf="@id/firstNameTitle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/first_name_input"
@@ -61,8 +58,8 @@
             android:inputType="text|textNoSuggestions"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
+            android:backgroundTint="@android:color/transparent"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -77,11 +74,12 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout" />
 
+    <!-- LAST NAME -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout2"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.MyApplication.TextInputLayout.OutlinedWhite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -91,12 +89,9 @@
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/white"
-        app:boxStrokeWidth="5dp"
-        app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lastNameTitle">
+        app:layout_constraintTop_toBottomOf="@id/lastNameTitle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/last_name_input"
@@ -107,8 +102,8 @@
             android:inputType="text|textNoSuggestions"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
+            android:backgroundTint="@android:color/transparent"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -123,11 +118,12 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout2" />
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout2" />
 
+    <!-- EMAIL -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout3"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.MyApplication.TextInputLayout.OutlinedWhite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -137,12 +133,9 @@
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/white"
-        app:boxStrokeWidth="5dp"
-        app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/emailTextTitle">
+        app:layout_constraintTop_toBottomOf="@id/emailTextTitle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email_input"
@@ -153,8 +146,8 @@
             android:inputType="text|textNoSuggestions"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
+            android:backgroundTint="@android:color/transparent"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -169,11 +162,12 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout3" />
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout3" />
 
+    <!-- PHONE -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout4"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.MyApplication.TextInputLayout.OutlinedWhite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -183,12 +177,9 @@
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/white"
-        app:boxStrokeWidth="5dp"
-        app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/phoneTextTitle">
+        app:layout_constraintTop_toBottomOf="@id/phoneTextTitle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/phone_input"
@@ -199,8 +190,8 @@
             android:inputType="phone"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
+            android:backgroundTint="@android:color/transparent"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -215,11 +206,12 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout4" />
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout4" />
 
+    <!-- PASSWORD -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout5"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.MyApplication.TextInputLayout.OutlinedWhite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -229,12 +221,9 @@
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/white"
-        app:boxStrokeWidth="5dp"
-        app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passwordTextTitle">
+        app:layout_constraintTop_toBottomOf="@id/passwordTextTitle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/password_input"
@@ -245,8 +234,8 @@
             android:inputType="text|textNoSuggestions"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
+            android:backgroundTint="@android:color/transparent"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -266,7 +255,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout5" />
-
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

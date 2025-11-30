@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Our custom outlined TextInputLayout with white border + white hint -->
+    <style name="Widget.MyApplication.TextInputLayout.OutlinedWhite"
+        parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <!-- Border color in all states -->
+        <item name="boxStrokeColor">@color/white_stroke</item>
+
+        <!-- Floating hint / label colors -->
+        <item name="hintTextColor">@color/white</item>
+        <item name="android:textColorHint">@color/white</item>
+    </style>
+
+</resources>

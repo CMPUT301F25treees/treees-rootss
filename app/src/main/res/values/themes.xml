@@ -12,5 +12,10 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlActivated">@color/white</item>
+
+        <!-- Forces Outline TextInputLayout stroke to white -->
+        <item name="materialThemeOverlay">@style/WhiteTextInputOverlay</item>
     </style>
 </resources>
