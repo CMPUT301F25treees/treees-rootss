@@ -395,6 +395,15 @@ public class UEventDetailFrag extends Fragment {
         }
     }
 
+    /**
+     * Saves a Bitmap image into the user's device gallery using the MediaStore API.
+     * <p>
+     * The image is saved as a PNG file with the provided base file name.
+     *
+     * @param bitmap   The Bitmap to save.
+     * @param fileName Desired base file name (without extension).
+     * @return A {@link Uri} referencing the saved image, or {@code null} if saving failed.
+     */
     @Nullable
     private Uri saveBitmapToGallery(@NonNull Bitmap bitmap, @NonNull String fileName) {
         ContentResolver resolver = requireContext().getContentResolver();
