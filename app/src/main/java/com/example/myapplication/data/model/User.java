@@ -6,6 +6,7 @@ public class User {
     private String username;
     private String role;
     private long createdAt;
+    private double rating;
 
     /**
      * Empty constructor for user deserialization
@@ -25,6 +26,7 @@ public class User {
         this.username = username;
         this.role = role;
         this.createdAt = System.currentTimeMillis();
+        this.rating = 0.0;
     }
 
     /**
@@ -74,6 +76,20 @@ public class User {
      * @param role Role to set (e.g., "admin", "user")
      */
     public void setRole(String role) { this.role = role; }
+
+    /**
+     * Get rating of the user.
+     * @param None
+     * @return rating as double
+     */
+    public double getRating() { return rating; }
+
+    /**
+     * Set rating of the user.
+     * @param rating Rating to set
+     * @return void
+     */
+    public void setRating(double rating) { this.rating = rating; }
 
     /**
      * Get account creation timestamp.

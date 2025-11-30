@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_login_gradient">
+
+    <TextView
+        android:id="@+id/rateTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Rate the Organizer"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/rateOrganizerName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Organizer: "
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/rateEventTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event: "
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:id="@+id/rateStar1"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/star_empty"
+            android:contentDescription="1 Star"
+            android:layout_marginEnd="4dp"/>
+
+        <ImageView
+            android:id="@+id/rateStar2"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/star_empty"
+            android:contentDescription="2 Stars"
+            android:layout_marginEnd="4dp"/>
+
+        <ImageView
+            android:id="@+id/rateStar3"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/star_empty"
+            android:contentDescription="3 Stars"
+            android:layout_marginEnd="4dp"/>
+
+        <ImageView
+            android:id="@+id/rateStar4"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/star_empty"
+            android:contentDescription="4 Stars"
+            android:layout_marginEnd="4dp"/>
+
+        <ImageView
+            android:id="@+id/rateStar5"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/star_empty"
+            android:contentDescription="5 Stars"/>
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/submitRatingButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit Rating"
+        app:cornerRadius="20dp"
+        android:backgroundTint="@color/mainButtonColor"
+        android:textColor="@color/white"
+        android:enabled="false"/>
+
+</LinearLayout>

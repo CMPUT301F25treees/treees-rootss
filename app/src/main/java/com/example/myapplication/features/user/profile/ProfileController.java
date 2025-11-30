@@ -13,12 +13,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Controller class for managing user profile operations.
+ */
 public class ProfileController {
     private final ProfileView view;
     private final ProfileModel model;
     private final FirebaseAuth auth;
 
-    // State for re-authentication
     private String pendingEmailChange = null;
     private String pendingFirstName = null;
 
