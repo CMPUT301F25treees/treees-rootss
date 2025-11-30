@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
@@ -215,38 +216,47 @@ public class UHomeFrag extends Fragment implements UHomeView {
 
         final List<String> pendingSelection = new ArrayList<>(currentInterests);
 
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.filter_interests_title)
-                .setMultiChoiceItems(options, checked, (dialog, which, isChecked) -> {
-                    String option = options[which];
-                    if (isChecked) {
-                        if (!pendingSelection.contains(option)) {
-                            pendingSelection.add(option);
+        MaterialAlertDialogBuilder builder=
+            new MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_InterestsDialog)
+                    .setTitle(R.string.filter_interests_title)
+                    .setMultiChoiceItems(options, checked, (dialog, which, isChecked) -> {
+                        String option = options[which];
+                        if (isChecked) {
+                            if (!pendingSelection.contains(option)) {
+                                pendingSelection.add(option);
+                            }
+                        } else {
+                            pendingSelection.remove(option);
                         }
-                    } else {
-                        pendingSelection.remove(option);
-                    }
-                })
-                .setPositiveButton(R.string.filter_interests_apply, (dialog, which) -> {
-                    controller.updateInterests(pendingSelection);
-                    if (pendingSelection.isEmpty()) {
+                    })
+                    .setPositiveButton(R.string.filter_interests_apply, (dialog, which) -> {
+                        controller.updateInterests(pendingSelection);
+                        if (pendingSelection.isEmpty()) {
+                            Toast.makeText(requireContext(),
+                                    R.string.filter_interests_showing_all,
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(requireContext(),
+                                    getString(R.string.filter_interests_applied, summarizeInterests(pendingSelection)),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNeutralButton(R.string.filter_interests_clear, (dialog, which) -> {
+                        controller.updateInterests(new ArrayList<>());
                         Toast.makeText(requireContext(),
-                                R.string.filter_interests_showing_all,
+                                R.string.filter_interests_cleared_toast,
                                 Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(requireContext(),
-                                getString(R.string.filter_interests_applied, summarizeInterests(pendingSelection)),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNeutralButton(R.string.filter_interests_clear, (dialog, which) -> {
-                    controller.updateInterests(new ArrayList<>());
-                    Toast.makeText(requireContext(),
-                            R.string.filter_interests_cleared_toast,
-                            Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+                    })
+                    .setNegativeButton(android.R.string.cancel, null);
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(d -> {
+            int black = requireContext().getColor(android.R.color.black);
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setTextColor(black);
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(black);
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEUTRAL).setTextColor(black);
+        });
+        dialog.show();
     }
 
     /**
