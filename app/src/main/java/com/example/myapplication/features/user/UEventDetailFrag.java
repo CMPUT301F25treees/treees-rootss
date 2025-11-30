@@ -429,7 +429,7 @@ public class UEventDetailFrag extends Fragment {
         values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName + ".png");
         values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
 
-        // Save into a custom folder on Android 10+
+        // Save into a custom folder
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/EventLottery");
             values.put(MediaStore.Images.Media.IS_PENDING, 1);
