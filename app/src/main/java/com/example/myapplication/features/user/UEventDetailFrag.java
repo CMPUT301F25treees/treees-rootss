@@ -4,9 +4,11 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -192,8 +194,33 @@ public class UEventDetailFrag extends Fragment {
         if (event.getImageUrl() != null)
             Glide.with(this).load(event.getImageUrl()).into(imageView);
 
-        if (event.getQrData() != null)
-            Glide.with(this).load(event.getQrData()).into(qrImageView);
+        if (qrImageView != null) {
+            if (event.getQrData() != null) {
+                Glide.with(this).load(event.getQrData()).into(qrImageView);
+
+                /**
+                 * Allows the user to save the QR code image by tapping on it.
+                 * The QR drawable inside the ImageView is converted into a Bitmap
+                 * and stored into the device's gallery.
+                 */
+                qrImageView.setOnClickListener(v -> {
+                    Bitmap bmp = getBitmapFromImageView(qrImageView);
+                    if (bmp == null) {
+                        Toast.makeText(requireContext(), "No QR to save.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    Uri uri = saveBitmapToGallery(bmp, "event_" + eventId + "_qr");
+                    if (uri != null) {
+                        Toast.makeText(requireContext(), "QR saved to Photos.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to save QR.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                qrImageView.setOnClickListener(null);
+            }
+        }
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String uid = (user!=null) ? user.getUid() : null;
