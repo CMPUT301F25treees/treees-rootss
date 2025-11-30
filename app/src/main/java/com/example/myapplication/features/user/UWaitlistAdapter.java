@@ -10,8 +10,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.ViewHolder> {
 
@@ -54,7 +57,13 @@ public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         UserEvent event = events.get(position);
 
+        long selectionDate = event.getSelectionDateMillis();
+        Date date = new Date(selectionDate);
+        SimpleDateFormat formattedDate = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        String dateText = "Draw Date: " + formattedDate.format(date);
+
         holder.titleTextView.setText(event.getName());
+        holder.dateTextView.setText(dateText);
 
 
         holder.itemView.setOnClickListener(v -> {
@@ -71,13 +80,13 @@ public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.View
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView titleTextView;
-        TextView locationTextView;
+        TextView dateTextView;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             titleTextView = itemView.findViewById(R.id.tvEventTitle);
-            locationTextView = itemView.findViewById(R.id.tvLocation);
+            dateTextView = itemView.findViewById(R.id.tvDate);
         }
     }
 
