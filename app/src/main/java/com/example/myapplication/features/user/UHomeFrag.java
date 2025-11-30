@@ -116,7 +116,33 @@ public class UHomeFrag extends Fragment implements UHomeView {
 
     @Override
     public void showEvents(List<UserEvent> events, @Nullable String searchQuery) {
-        adapter.submit(events);
+
+        if (events == null){
+            adapter.submit(new ArrayList<>());
+            return;
+        }
+
+        List<UserEvent> filtered = new ArrayList<>(events);
+
+        if(FirebaseAuth.getInstance().getCurrentUser() != null){
+            String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            filtered = filterEventsForDisplay(filtered, currentUid);
+        }
+
+        long currentTime = System.currentTimeMillis();
+        List<UserEvent> upcomingEvents = new ArrayList<>();
+        for(UserEvent event : filtered){
+            if(event!=null && isUpcomingEvent(event, currentTime)){
+                upcomingEvents.add(event);
+            }
+        }
+
+        filtered = upcomingEvents;
+
+
+
+
+        adapter.submit(filtered);
         adapter.filter(searchQuery);
     }
 
