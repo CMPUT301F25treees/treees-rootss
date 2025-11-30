@@ -578,6 +578,14 @@ public class FirebaseEventRepository implements EventRepository {
                 return;
             }
 
+            // Check if event has ended
+            Long endTime = eventDoc.getLong("endTimeMillis");
+            if (endTime == null || endTime > System.currentTimeMillis()) {
+                // Event hasn't ended or no end time set, do not send notifications yet
+                onSuccess.onSuccess(null); 
+                return;
+            }
+
             // Fetch Organizer Name
             db.collection("users").document(finalOrganizerId).get().addOnSuccessListener(organizerDoc -> {
                 String organizerName = organizerDoc.getString("firstName");
