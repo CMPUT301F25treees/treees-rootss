@@ -202,22 +202,18 @@ public class UEventDetailFrag extends Fragment {
             joinWaitlistBtn.setText("Join Waitlist");
         }
 
-        loadOrganizerRating(event.getOrganizerID());
-    }
+        RatingController ratingController = new RatingController();
+        ratingController.fetchOrganizerRating(event.getOrganizerID(), new RatingController.OnRatingFetchedListener() {
+            @Override
+            public void onRatingFetched(double rating) {
+                updateStars(rating);
+            }
 
-    private void loadOrganizerRating(String organizerId) {
-        if (TextUtils.isEmpty(organizerId)) return;
-
-        FirebaseFirestore.getInstance().collection("users")
-                .document(organizerId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        Double rating = documentSnapshot.getDouble("rating");
-                        if (rating == null) rating = 0.0;
-                        updateStars(rating);
-                    }
-                });
+            @Override
+            public void onError(Exception e) {
+                // Optional: handle error or just show empty stars
+            }
+        });
     }
 
     private void updateStars(double rating) {

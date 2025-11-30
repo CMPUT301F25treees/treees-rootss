@@ -118,9 +118,12 @@ public class UNotiFrag extends Fragment {
             if (item == null) return;
 
             boolean isInvitation = "lottery_win".equalsIgnoreCase(item.getType());
+            boolean isRatingRequest = "rating_request".equalsIgnoreCase(item.getType());
 
             if (isInvitation) {
                 checkInvitationStatus(snapshot, item, uid);
+            } else if (isRatingRequest) {
+                showRatingDialog(snapshot, item);
             } else{
                 showOtherOption(snapshot, item);
             }
@@ -135,6 +138,81 @@ public class UNotiFrag extends Fragment {
             adapter.setShowPersonalNoti(isChecked);
         });
 
+    }
+
+    private void showRatingDialog(DocumentSnapshot snapshot, UNotiItem item) {
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_rate_organizer, null);
+
+        TextView tvOrganizer = dialogView.findViewById(R.id.rateOrganizerName);
+        TextView tvEvent = dialogView.findViewById(R.id.rateEventTitle);
+        MaterialButton btnSubmit = dialogView.findViewById(R.id.submitRatingButton);
+
+        tvOrganizer.setText("Organizer: " + item.getFrom());
+        tvEvent.setText("Event: " + item.getEvent());
+
+        final int[] selectedRating = {0};
+        android.widget.ImageView[] stars = {
+                dialogView.findViewById(R.id.rateStar1),
+                dialogView.findViewById(R.id.rateStar2),
+                dialogView.findViewById(R.id.rateStar3),
+                dialogView.findViewById(R.id.rateStar4),
+                dialogView.findViewById(R.id.rateStar5)
+        };
+
+        View.OnClickListener starClickListener = v -> {
+            int index = -1;
+            for (int i = 0; i < stars.length; i++) {
+                if (stars[i] == v) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index != -1) {
+                selectedRating[0] = index + 1;
+                for (int i = 0; i < stars.length; i++) {
+                    if (i <= index) {
+                        stars[i].setImageResource(R.drawable.star_filled);
+                    } else {
+                        stars[i].setImageResource(R.drawable.star_empty);
+                    }
+                }
+                btnSubmit.setEnabled(true);
+            }
+        };
+
+        for (android.widget.ImageView star : stars) {
+            star.setOnClickListener(starClickListener);
+        }
+
+        var dialog = new MaterialAlertDialogBuilder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        btnSubmit.setOnClickListener(v -> {
+            String organizerId = item.getFromId(); 
+            if (organizerId == null) {
+                Toast.makeText(requireContext(), "Error: Missing organizer ID", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            RatingController ratingController = new RatingController();
+            ratingController.submitRating(organizerId, selectedRating[0], snapshot.getId(), () -> {
+                Toast.makeText(requireContext(), "Rating submitted!", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            }, e -> {
+                Toast.makeText(requireContext(), "Failed to submit rating", Toast.LENGTH_SHORT).show();
+            });
+        });
+
+        dialog.show();
+        
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            );
+        }
     }
 
     /**

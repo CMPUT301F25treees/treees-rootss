@@ -9,6 +9,7 @@ import java.util.List;
  */
 public class UNotiItem {
     private String from;
+    private String fromId;
     private String message;
     private String event;
     private String eventId;
@@ -27,6 +28,8 @@ public class UNotiItem {
     public String getFrom() {
         return from;
     }
+
+    public String getFromId() { return fromId; }
 
     public String getMessage() {
         return message;

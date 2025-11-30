@@ -14,6 +14,8 @@ import com.example.myapplication.data.repo.ImageRepository;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -546,6 +548,89 @@ public class FirebaseEventRepository implements EventRepository {
                 .addOnFailureListener(onFailure);
 
 
+    }
+
+    /**
+     * Sends a rating request notification to all users who participated in an event (final list).
+     *
+     * @param eventId The ID of the ended event.
+     * @param onSuccess Callback on success.
+     * @param onFailure Callback on failure.
+     */
+    public void sendRatingRequestNotifications(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        // 1. Fetch the event to get the organizer ID and Event Name
+        db.collection("events").document(eventId).get().addOnSuccessListener(eventDoc -> {
+            if (!eventDoc.exists()) {
+                onFailure.onFailure(new Exception("Event not found"));
+                return;
+            }
+            String organizerId = eventDoc.getString("organizerID"); 
+            if (organizerId == null) organizerId = eventDoc.getString("organizerId");
+            
+            String eventName = eventDoc.getString("title");
+            if (eventName == null) eventName = eventDoc.getString("name");
+            
+            String finalOrganizerId = organizerId;
+            String finalEventName = eventName;
+
+            if (finalOrganizerId == null) {
+                onFailure.onFailure(new Exception("Organizer ID not found on event"));
+                return;
+            }
+
+            // Fetch Organizer Name
+            db.collection("users").document(finalOrganizerId).get().addOnSuccessListener(organizerDoc -> {
+                String organizerName = organizerDoc.getString("firstName");
+                if (organizerName == null || organizerName.isEmpty()) {
+                    organizerName = organizerDoc.getString("username");
+                }
+                if (organizerName == null || organizerName.isEmpty()) {
+                    organizerName = "Organizer";
+                }
+                final String finalOrganizerName = organizerName;
+
+                // 2. Fetch the notificationList to get the "final" entrants
+                db.collection("notificationList").whereEqualTo("eventId", eventId).limit(1).get()
+                        .addOnSuccessListener(notiListQS -> {
+                            if (notiListQS.isEmpty()) {
+                                 onSuccess.onSuccess(null); 
+                                 return;
+                            }
+                            DocumentSnapshot notiDoc = notiListQS.getDocuments().get(0);
+                            List<String> finalists = (List<String>) notiDoc.get("final");
+                            
+                            if (finalists == null || finalists.isEmpty()) {
+                                onSuccess.onSuccess(null);
+                                return;
+                            }
+                            
+                            com.google.firebase.firestore.WriteBatch batch = db.batch();
+                            
+                            for (String userId : finalists) {
+                                String newNotiId = db.collection("notifications").document().getId();
+                                java.util.Map<String, Object> payload = new java.util.HashMap<>();
+                                payload.put("dateMade", com.google.firebase.Timestamp.now());
+                                payload.put("event", finalEventName);
+                                payload.put("eventId", eventId);
+                                payload.put("from", finalOrganizerName); 
+                                payload.put("fromId", finalOrganizerId); 
+                                payload.put("message", "Please rate your experience with " + finalOrganizerName + " for " + finalEventName);
+                                payload.put("type", "rating_request");
+                                payload.put("status", "pending");
+                                payload.put("uID", java.util.Collections.singletonList(userId));
+                                
+                                batch.set(db.collection("notifications").document(newNotiId), payload);
+                            }
+                            
+                            batch.commit()
+                                    .addOnSuccessListener(v -> onSuccess.onSuccess(null))
+                                    .addOnFailureListener(onFailure);
+
+                        })
+                        .addOnFailureListener(onFailure);
+            }).addOnFailureListener(onFailure);
+
+        }).addOnFailureListener(onFailure);
     }
 
     public interface WaitlistLocationCallback {

@@ -82,4 +82,32 @@ public class FirebaseUserRepository implements UserRepository {
                 .addOnSuccessListener(aVoid -> onSuccess.run())
                 .addOnFailureListener(onFailure);
     }
+
+    /**
+     * Updates the organizer's rating in Firestore.
+     * @param organizerId The ID of the organizer to rate.
+     * @param newRating The new rating value (1-5) provided by the entrant.
+     * @param notificationId The ID of the notification that triggered this rating (to delete it).
+     * @param onSuccess Callback for success.
+     * @param onFailure Callback for failure.
+     */
+    public void submitOrganizerRating(String organizerId, int newRating, String notificationId, Runnable onSuccess, OnFailureListener onFailure) {
+        firestore.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(firestore.collection("users").document(organizerId));
+            Double currentRating = snapshot.getDouble("rating");
+            Long countLong = snapshot.getLong("ratingCount");
+            
+            if (currentRating == null) currentRating = 0.0;
+            int currentCount = (countLong == null) ? 0 : countLong.intValue();
+            
+            double newAverage = ((currentRating * currentCount) + newRating) / (currentCount + 1);
+            
+            transaction.update(firestore.collection("users").document(organizerId), "rating", newAverage);
+            transaction.update(firestore.collection("users").document(organizerId), "ratingCount", currentCount + 1);
+            transaction.delete(firestore.collection("notifications").document(notificationId));
+            
+            return null;
+        }).addOnSuccessListener(aVoid -> onSuccess.run())
+          .addOnFailureListener(onFailure);
+    }
 }

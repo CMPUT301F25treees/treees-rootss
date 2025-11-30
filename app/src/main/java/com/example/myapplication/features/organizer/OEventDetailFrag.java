@@ -258,11 +258,19 @@ public class OEventDetailFrag extends Fragment {
                     if (!TextUtils.isEmpty(firstName)) {
                         setOrganizerLabel(firstName);
                     }
-
-                    Double rating = doc.getDouble("rating");
-                    if (rating == null) rating = 0.0;
-                    updateStars(rating);
                 });
+        
+        // Use Controller for Rating
+        com.example.myapplication.features.user.RatingController ratingController = new com.example.myapplication.features.user.RatingController();
+        ratingController.fetchOrganizerRating(organizerId, new com.example.myapplication.features.user.RatingController.OnRatingFetchedListener() {
+            @Override
+            public void onRatingFetched(double rating) {
+                updateStars(rating);
+            }
+
+            @Override
+            public void onError(Exception e) {}
+        });
     }
 
     private void updateStars(double rating) {
