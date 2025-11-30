@@ -30,6 +30,19 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
     private FirebaseEventRepository repo;
     private String curentUid;
 
+    /**
+     * Inflates the waitlist fragment layout, initializes the UI components, the Firebase repo, and
+     * load the user's waitlisted events
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     * @return the root view of the inflated fragment layout
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_u_waitlist, container, false);
@@ -52,6 +65,15 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
          return view;
     }
 
+    /**
+     * This method fetches all the events from Firestore and filters them to include only
+     * the following:
+     * - Events where the current user is in the waitlist for
+     * - Events that have not had their draw date pass yet
+     *
+     * The resulting list is then displayed in the RecyclerView by the adapter, if the fetch fails
+     * then an error toast gets shown
+     */
     private void loadWaitlistEvents(){
         repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
             @Override
@@ -84,8 +106,8 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
 
 
     /**
-     * This method will be used to navigate to the User Detail page of the
-     * specified event.
+     * Handles clicks on an event in the list of events. Navigates the user to the event detail page
+     * for the selected event by passing its event id to the destination fragment
      * @param event the event that was clicked
      */
     @Override
