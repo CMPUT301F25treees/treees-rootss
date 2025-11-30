@@ -1,4 +1,4 @@
-<!-- res/layout/fragment_u_past_events.xml -->
+<!-- res/layout/fragment_u_waitlist.xml -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="42dp"
-        android:text="Past Events"
+        android:text="Waitlist"
         android:textColor="@color/white"
         android:textSize="50sp"
         app:layout_constraintBottom_toTopOf="@+id/recyclerEvents"
