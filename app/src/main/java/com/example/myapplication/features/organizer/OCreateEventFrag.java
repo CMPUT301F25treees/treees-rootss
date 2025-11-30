@@ -37,6 +37,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+import android.graphics.BitmapFactory;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  * This class is for users to be able to create new events when they are in their
  * organizer state. Event details are collected and validated such as: Title, Address,
@@ -300,6 +304,10 @@ public class OCreateEventFrag extends Fragment {
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
         event.setTheme(selectedTheme);
 
+        // If no poster is selected, use the default profile image
+        if (posterUri == null) {
+            posterUri = createDefaultPosterUri();
+        }
 
         if (posterUri != null) {
             imageRepository.uploadImage( posterUri, new ImageRepository.UploadCallback() {
@@ -316,6 +324,27 @@ public class OCreateEventFrag extends Fragment {
             });
         } else {
             saveEvent(event);
+        }
+    }
+
+    private Uri createDefaultPosterUri() {
+        try {
+            // Get the drawable as a Bitmap
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.profile);
+
+            // Create a file in the cache directory
+            File file = new File(requireContext().getCacheDir(), "default_event_poster.png");
+
+            // Write the bitmap to the file
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.flush();
+            fos.close();
+
+            return Uri.fromFile(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
