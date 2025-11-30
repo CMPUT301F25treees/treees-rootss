@@ -255,7 +255,8 @@ public class UHomeFrag extends Fragment implements UHomeView {
     private void showAvailabilityPicker() {
         MaterialDatePicker.Builder<Pair<Long, Long>> builder =
                 MaterialDatePicker.Builder.dateRangePicker()
-                        .setTitleText(R.string.filter_availability_title);
+                        .setTitleText(R.string.filter_availability_title)
+                        .setTheme(R.style.DateRangePicker);
         Pair<Long, Long> selection = getAvailabilitySelection();
         if (selection != null) {
             builder.setSelection(selection);

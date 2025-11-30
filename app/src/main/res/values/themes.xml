@@ -29,4 +29,20 @@
         <item name="materialButtonStyle">@color/black</item>
         <item name="android:textColor">@color/black</item>
     </style>
+
+    <style name="DateRangePicker" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">@color/dodo_maroon</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">@android:color/black</item>
+
+        <item name="colorSecondary">@color/dodo_maroon</item>
+        <item name="colorOnSecondary">@android:color/black</item>
+    </style>
+
+
+
+
+
 </resources>
