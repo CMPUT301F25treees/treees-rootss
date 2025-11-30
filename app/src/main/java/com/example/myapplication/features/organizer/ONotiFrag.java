@@ -1,11 +1,17 @@
 package com.example.myapplication.features.organizer;
 
+import android.app.Dialog;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -162,29 +168,62 @@ public class ONotiFrag extends Fragment {
      * @param eventId the event id of the Firestore Id of the specified event
      */
     private void promptAndSendCustomPush(String eventId) {
-        final android.widget.EditText input = new android.widget.EditText(requireContext());
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint("Message...");
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_custom_notification);
 
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
 
-        final CharSequence[] audiences = {"Invited", "Waiting", "ALL", "CANCELLED"};
-        final int[] chosen = {0};
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        EditText inputMessage = dialog.findViewById(R.id.inputMessage);
+        RadioGroup audienceGroup = dialog.findViewById(R.id.audienceGroup);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnSend = dialog.findViewById(R.id.btnSend);
 
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Custom Notification")
-                .setSingleChoiceItems(audiences, 0, (d, which) -> chosen[0] = which)
-                .setView(input)
-                .setPositiveButton("Send", (d, w) -> {
-                    String msg = input.getText().toString().trim();
-                    if (msg.isEmpty()) { toast("Message is empty."); return; }
-                    Audience a = (chosen[0] == 0) ? Audience.INVITED
-                            : (chosen[0] == 1) ? Audience.WAITING
-                            : (chosen[0] == 2) ? Audience.ALL
-                            : Audience.CANCELLED;
-                    sendCustomPush(eventId, msg, a);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        if (titleView != null) {
+            titleView.setText("Custom notification");
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnSend != null) {
+            btnSend.setOnClickListener(v -> {
+                String msg = (inputMessage != null)
+                        ? inputMessage.getText().toString().trim()
+                        : "";
+
+                if (msg.isEmpty()) {
+                    toast("Message is empty.");
+                    return;
+                }
+
+                Audience audience;
+                if (audienceGroup == null) {
+                    audience = Audience.ALL;
+                } else {
+                    int checkedId = audienceGroup.getCheckedRadioButtonId();
+                    if (checkedId == R.id.rbInvited) {
+                        audience = Audience.INVITED;
+                    } else if (checkedId == R.id.rbWaiting) {
+                        audience = Audience.WAITING;
+                    } else if (checkedId == R.id.rbCancelled) {
+                        audience = Audience.CANCELLED;
+                    } else {
+                        audience = Audience.ALL;
+                    }
+                }
+
+                sendCustomPush(eventId, msg, audience);
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
     }
 
     /**
