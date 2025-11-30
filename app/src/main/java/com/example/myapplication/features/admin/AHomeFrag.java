@@ -4,13 +4,20 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
+import android.graphics.Rect;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,176 +25,227 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.features.user.UserEvent;
 import com.example.myapplication.features.user.UserEventAdapter;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Admin Home fragment that lists events and routes to administrative actions.
- * Reuses the user home layout and subscribes to {@code /events} updates.
+ * Admin home fragment that displays a grid of events and photos.
+ * <p>
+ * This class implements the view layer of an MVC design for the admin
+ * home screen. It is responsible for configuring the RecyclerView,
+ * handling user interactions with the search bar and mode selector, and
+ * delegating data loading and filtering to {@link AdminHomeController}.
+ * The controller in turn delivers filtered {@link UserEvent} lists to
+ * this fragment via the {@link AdminHomeView} interface.
+ * <p>
  */
-public class AHomeFrag extends Fragment {
+public class AHomeFrag extends Fragment implements AdminHomeView {
 
-    /**
-     *  Firestore listener registration and adapter.
-     */
-    private ListenerRegistration reg;
+    private RecyclerView rvEvents;
+    private EditText etSearchEvents;
+    private ImageButton btnFilter;
 
-    /**
-     *  User event adapter.
-     */
     private UserEventAdapter adapter;
+    private AdminHomeController controller;
 
-    /**
-     * Default constructor.
-     */
-    public AHomeFrag() {}
+    public AHomeFrag() {
+        // Required empty public constructor
+    }
 
-    /**
-     * Inflates the user home layout for consistent UI between user and admin views.
-     *
-     * @param inflater           layout inflater
-     * @param container          parent container
-     * @param savedInstanceState saved state, if any
-     * @return the inflated root view
-     */
-    @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        // Admin reuses the user home layout
         return inflater.inflate(R.layout.fragment_u_home, container, false);
     }
 
-    /**
-     * Initializes RecyclerView, search handling, and Firestore snapshot subscription.
-     *
-     * @param v                  root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
-     * @param savedInstanceState saved state, if any
-     */
     @Override
-    public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(v, savedInstanceState);
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        RecyclerView rv = v.findViewById(R.id.rvEvents);
-        EditText search = v.findViewById(R.id.etSearchEvents);
-        rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
-        rv.addItemDecoration(new SpacingDecoration(dp(12)));
+        rvEvents = view.findViewById(R.id.rvEvents);
+        etSearchEvents = view.findViewById(R.id.etSearchEvents);
+        btnFilter = view.findViewById(R.id.btnFilter);
+
+        // Set up RecyclerView with grid layout and spacing
+        rvEvents.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        rvEvents.addItemDecoration(new SpacingDecoration(dp(12), dp(12), dp(12)));
+        rvEvents.setPadding(
+                rvEvents.getPaddingLeft(),
+                rvEvents.getPaddingTop(),
+                rvEvents.getPaddingRight(),
+                dp(72)
+        );
+        rvEvents.setClipToPadding(false);
 
         adapter = new UserEventAdapter();
+        final NavController navController = NavHostFragment.findNavController(this);
+
+        // Click behavior:
+        // - EVENTS mode  -> navigate to admin event detail
+        // - PHOTOS mode -> navigate directly to remove-options screen
         adapter.setOnEventClickListener(event -> {
+            if (event == null || event.getId() == null || controller == null) {
+                return;
+            }
             Bundle args = new Bundle();
             args.putString("eventId", event.getId());
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.navigation_admin_event_detail, args);
+
+            AdminHomeMode mode = controller.getCurrentMode();
+            if (mode == AdminHomeMode.EVENTS) {
+                navController.navigate(R.id.navigation_admin_event_detail, args);
+            } else {
+                navController.navigate(R.id.navigation_admin_remove_options, args);
+            }
         });
-        rv.setAdapter(adapter);
 
-        if (search != null) {
-            search.addTextChangedListener(new TextWatcher() {
-                /**
-                 * No-op before text changes.
-                 *
-                 * @param s     text before change
-                 * @param start start index
-                 * @param count number of characters before change
-                 * @param after number of characters that will be added
-                 */
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        rvEvents.setAdapter(adapter);
 
-                /**
-                 * Filters the event list as the user types.
-                 *
-                 * @param s       current text
-                 * @param start   start index
-                 * @param before  number of characters replaced
-                 * @param count   number of characters added
-                 */
-                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    adapter.filter(s == null ? "" : s.toString());
+        // Controller (C in MVC)
+        controller = new AdminHomeController(this);
+        controller.start();
+
+        // Search bar delegates query changes to the controller
+        if (etSearchEvents != null) {
+            etSearchEvents.setHint("Search events");
+            etSearchEvents.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    // no-op
                 }
 
-                /**
-                 * No-op after text changes.
-                 *
-                 * @param s editable text after change
-                 */
-                @Override public void afterTextChanged(Editable s) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (controller != null) {
+                        controller.onSearchQueryChanged(s != null ? s.toString() : "");
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    // no-op
+                }
             });
         }
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        reg = db.collection("events")
-                .orderBy("startTimeMillis", Query.Direction.DESCENDING)
-                .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) return;
-                    List<UserEvent> list = new ArrayList<>();
-                    for (DocumentSnapshot d : snap.getDocuments()) {
-                        UserEvent e = d.toObject(UserEvent.class);
-                        if (e != null) {
-                            try { e.setId(d.getId()); } catch (Exception ignored) {}
-                            list.add(e);
-                        }
-                    }
-                    adapter.submit(list);
-                });
+        // Filter button shows a simple mode menu (Events / Photos)
+        if (btnFilter != null) {
+            btnFilter.setOnClickListener(v -> showModeMenu());
+        }
     }
 
-    /**
-     * Cleans up resources tied to the fragment view lifecycle.
-     * Removes the Firestore listener when the view is destroyed.
-     */
     @Override
     public void onDestroyView() {
+        if (controller != null) {
+            controller.stop();
+            controller = null;
+        }
+        rvEvents = null;
+        etSearchEvents = null;
+        btnFilter = null;
+        adapter = null;
         super.onDestroyView();
-        if (reg != null) reg.remove();
     }
 
-    /**
-     * Converts density-independent pixels to raw pixels.
-     *
-     * @param dp value in dp
-     * @return pixel value rounded to the nearest integer
-     */
-    private int dp(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return (int) (dp * density + 0.5f);
+    // ---------------------------------------------------------------------
+    // AdminHomeView implementation (View in MVC)
+    // ---------------------------------------------------------------------
+
+    @Override
+    public void showEvents(@NonNull List<UserEvent> events) {
+        if (adapter != null) {
+            adapter.submit(events);
+        }
     }
 
-    /**
-     * ItemDecoration that adds symmetric spacing between grid items.
-     */
-    static class SpacingDecoration extends RecyclerView.ItemDecoration {
-        private final int space;
-
-        /**
-         * Creates a spacing decoration.
-         *
-         * @param space spacing in pixels
-         */
-        SpacingDecoration(int space) { this.space = space; }
-
-        /**
-         * Applies spacing offsets to each item.
-         *
-         * @param outRect output rectangle to receive the offsets
-         * @param view    child view
-         * @param parent  RecyclerView containing the item
-         * @param state   current RecyclerView state
-         */
-        @Override
-        public void getItemOffsets(@NonNull android.graphics.Rect outRect, @NonNull View view,
-                                   @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-            outRect.left = space / 2;
-            outRect.right = space / 2;
-            outRect.bottom = space;
-            if (parent.getChildAdapterPosition(view) < 2) {
-                outRect.top = space;
+    @Override
+    public void showMode(@NonNull AdminHomeMode mode) {
+        if (etSearchEvents != null) {
+            // Reset query text when mode changes to keep behavior predictable
+            etSearchEvents.setText("");
+            if (mode == AdminHomeMode.EVENTS) {
+                etSearchEvents.setHint("Search events");
+            } else {
+                etSearchEvents.setHint("Search photos");
             }
+        }
+
+        // Inform the admin of the current mode
+        Toast.makeText(
+                requireContext(),
+                (mode == AdminHomeMode.EVENTS) ? "Events mode" : "Photos mode",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    @Override
+    public void showLoading(boolean loading) {
+        // No dedicated progress bar for admin home yet; could be added if needed.
+    }
+
+    @Override
+    public void showError(@NonNull String message) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void showModeMenu() {
+        if (btnFilter == null || controller == null) {
+            return;
+        }
+
+        PopupMenu popup = new PopupMenu(requireContext(), btnFilter);
+        // 1 = Events, 2 = Photos
+        popup.getMenu().add(0, 1, 0, "Events");
+        popup.getMenu().add(0, 2, 1, "Photos");
+
+        popup.setOnMenuItemClickListener((MenuItem item) -> {
+            int id = item.getItemId();
+            if (id == 1) {
+                controller.setMode(AdminHomeMode.EVENTS);
+                return true;
+            } else if (id == 2) {
+                controller.setMode(AdminHomeMode.PHOTOS);
+                return true;
+            }
+            return false;
+        });
+
+        popup.show();
+    }
+
+    private int dp(int value) {
+        float density = requireContext().getResources().getDisplayMetrics().density;
+        return Math.round(value * density);
+    }
+
+    /**
+     * Simple item decoration that applies symmetric spacing for a 2-column grid.
+     */
+    private static class SpacingDecoration extends RecyclerView.ItemDecoration {
+        private final int horizontal;
+        private final int vertical;
+        private final int top;
+
+        SpacingDecoration(int horizontal, int vertical, int top) {
+            this.horizontal = horizontal;
+            this.vertical = vertical;
+            this.top = top;
+        }
+
+        @Override
+        public void getItemOffsets(@NonNull Rect outRect,
+                                   @NonNull View view,
+                                   @NonNull RecyclerView parent,
+                                   @NonNull RecyclerView.State state) {
+            int position = parent.getChildAdapterPosition(view);
+            int spanIndex = position % 2;
+
+            outRect.top = (position < 2) ? top : vertical;
+            outRect.left = (spanIndex == 0) ? horizontal : horizontal / 2;
+            outRect.right = (spanIndex == 1) ? horizontal : horizontal / 2;
+            outRect.bottom = vertical;
         }
     }
 }

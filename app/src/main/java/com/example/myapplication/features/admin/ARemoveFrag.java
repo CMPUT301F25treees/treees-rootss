@@ -17,6 +17,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.bumptech.glide.Glide;
@@ -24,7 +25,6 @@ import com.example.myapplication.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.WriteBatch;
@@ -32,19 +32,20 @@ import com.google.firebase.storage.FirebaseStorage;
 
 import com.example.myapplication.core.ImageUtils;
 import com.example.myapplication.data.repo.ImageRepository;
+import com.example.myapplication.data.firebase.FirebaseUserRepository;
+import com.example.myapplication.features.profile.DeleteProfileController;
+import com.example.myapplication.features.profile.DeleteProfileView;
 
 /**
- * Remove Options fragment for administrators.
+ * Admin remove-options fragment for a selected event.
  * <p>
- * Provides three destructive actions for a selected event:
- * <ul>
- *   <li>Remove preview image (clears {@code imageUrl}/{@code posterUrl})</li>
- *   <li>Remove event (deletes {@code /events/{eventId}} and its {@code /images} subcollection,
- *       with best-effort deletion of any referenced storage objects)</li>
- *   <li>Remove organizer (demotes to {@code role="User"} and sets {@code suspended=true})</li>
- * </ul>
+ * Provides destructive admin operations for an event: removing the
+ * preview image, deleting the event document (and associated image
+ * metadata), and demoting the organizer. This fragment is a view that
+ * delegates Firestore and Storage operations to repository-style code.
+ * <p>
  */
-public class ARemoveFrag extends Fragment {
+public class ARemoveFrag extends Fragment implements DeleteProfileView {
 
     /**
      *  Event ID of the event to remove.
@@ -65,6 +66,7 @@ public class ARemoveFrag extends Fragment {
      *  Event organizer ID.
      */
     private String organizerId = "";
+    private DeleteProfileController deleteController;
 
     /**
      * Default no-argument constructor.
@@ -103,6 +105,8 @@ public class ARemoveFrag extends Fragment {
 
         btnImage.setEnabled(false);
         btnImage.setAlpha(0.55f);
+
+        deleteController = new DeleteProfileController(this, new FirebaseUserRepository());
 
         FirebaseFirestore.getInstance().collection("events").document(eventId).get()
                 .addOnSuccessListener(d -> {
@@ -156,12 +160,10 @@ public class ARemoveFrag extends Fragment {
 
         eventRef.collection("images").orderBy("createdAt", Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(q -> {
-                    // Try to delete storage files if storagePath exists
                     for (DocumentSnapshot d : q) {
                         String sp = d.getString("storagePath");
                         if (sp != null && !sp.isEmpty()) FirebaseStorage.getInstance().getReference(sp).delete();
                     }
-                    // Batch delete image docs
                     WriteBatch batch = db.batch();
                     for (DocumentSnapshot d : q) batch.delete(d.getReference());
                     batch.commit()
@@ -179,30 +181,91 @@ public class ARemoveFrag extends Fragment {
      */
     private void deleteEventDoc(DocumentReference eventRef) {
         eventRef.delete()
-                .addOnSuccessListener(v ->
-                {
-                    Toast.makeText(requireContext(), "Event deleted", Toast.LENGTH_SHORT).show();
-                    NavHostFragment.findNavController(ARemoveFrag.this).navigateUp();
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(requireContext(),
+                            "Event removed", Toast.LENGTH_SHORT).show();
+                    navigateToAdminHome();
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    String msg = "Failed to delete event";
+                    if (e != null && e.getMessage() != null) {
+                        msg += ": " + e.getMessage();
+                    }
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
+                });
     }
 
     /**
-     * Demotes the event’s organizer to {@code role="User"} and sets {@code suspended=true}.
-     * Shows a message if the organizer id is unavailable or on failure.
+     * Navigates back to the admin home screen after a destructive action.
+     * <p>
+     * This pops the back stack up to (but not including) the admin home
+     * destination, leaving the admin home as the visible screen.
      */
-    private void removeOrganizerForEvent() {
-        if (organizerId.isEmpty()) {
+    private void navigateToAdminHome() {
+        NavController navController = NavHostFragment.findNavController(this);
+        navController.popBackStack(R.id.navigation_admin_home, false);
+    }
+
+    /**
+     * Handles the "Remove Organizer" button click.
+     * Delegates to {@link DeleteProfileController} to show a confirmation
+     * dialog and, on confirmation, delete the organizer's profile and
+     * all of their events.
+     */
+    private void onRemoveOrganizerClicked() {
+        if (organizerId == null || organizerId.isEmpty()) {
             Toast.makeText(requireContext(), "No organizer ID on event", Toast.LENGTH_SHORT).show();
             return;
         }
-        FirebaseFirestore.getInstance().collection("users").document(organizerId)
-                .update("role", "User", "suspended", true)
-                .addOnSuccessListener(v ->
-                        Toast.makeText(requireContext(), "Organizer removed", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        if (deleteController != null) {
+            deleteController.onDeleteProfileClicked();
+        }
+    }
+
+    /**
+     * Deletes the organizer's profile and all events they created via
+     * {@link DeleteProfileController}. This is invoked after the user
+     * confirms deletion in {@link #showConfirmationDialog()}.
+     */
+    private void removeOrganizerForEvent() {
+        if (organizerId == null || organizerId.isEmpty()) {
+            Toast.makeText(requireContext(), "No organizer ID on event", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (deleteController != null) {
+            deleteController.onAdminDeleteConfirmed(organizerId, "User");
+        }
+    }
+
+    @Override
+    public void showConfirmationDialog() {
+        String who = eventName.isEmpty()
+                ? "this organizer"
+                : "the organizer of " + eventName;
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete organizer profile?")
+                .setMessage("This will delete " + who + " from the app. "
+                        + "It deletes their profile and all events they created, "
+                        + "and prevents them from using this app again.")
+                .setPositiveButton("Delete", (d, w) -> removeOrganizerForEvent())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    @Override
+    public void showProgress(boolean show) {
+    }
+
+    @Override
+    public void showToast(String message) {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void navigateOnSuccess() {
+        navigateToAdminHome();
     }
 
     /**

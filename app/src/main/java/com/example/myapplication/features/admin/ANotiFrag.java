@@ -28,11 +28,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 /**
- * Administrative notifications/logs fragment.
+ * Admin notifications fragment that lists system notifications and
+ * allows soft deletion by administrators.
  * <p>
- * Displays a list of notification items from {@code /notifications} using
- * {@link UNotiAdapter} backed by {@link FirestoreRecyclerOptions}. Provides an
- * admin dialog to delete individual notifications.
+ * Reuses the user notifications layout and adapter while adding an
+ * admin-only dialog that marks notifications as "deleted by the
+ * system" without removing the underlying document.
+ * <p>
  */
 public class ANotiFrag extends Fragment {
 

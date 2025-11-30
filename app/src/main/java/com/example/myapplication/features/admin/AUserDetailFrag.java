@@ -22,11 +22,13 @@ import com.example.myapplication.features.profile.DeleteProfileView;
 import com.google.android.material.button.MaterialButton;
 
 /**
- * Admin Profile Detail fragment.
+ * Admin user detail fragment that displays profile information for a
+ * single user and exposes a delete action.
  * <p>
- * Displays a read-only view of a user's profile (name, email, role, avatar) with
- * administrative controls to navigate back or delete the user's profile document.
- * If the user is an organizer, related events can be flagged as disabled prior to deletion.
+ * This fragment implements {@link com.example.myapplication.features.profile.DeleteProfileView}
+ * and delegates profile deletion to {@link com.example.myapplication.features.profile.DeleteProfileController},
+ * which performs the actual model updates (user document and events).
+ * <p>
  */
 public class AUserDetailFrag extends Fragment implements DeleteProfileView {
 
@@ -89,51 +91,18 @@ public class AUserDetailFrag extends Fragment implements DeleteProfileView {
         }
 
         String who = !name.isEmpty() ? name : email;
-
-        Dialog dialog = new Dialog(requireContext());
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_delete_profile);
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(
-                    new ColorDrawable(Color.TRANSPARENT)
-            );
-        }
-
-        TextView titleView = dialog.findViewById(R.id.dialogTitle);
-        TextView messageView = dialog.findViewById(R.id.dialogMessage);
-        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
-        MaterialButton btnDelete = dialog.findViewById(R.id.btnDelete);
-
-        if (titleView != null) {
-            titleView.setText("Delete profile?");
-        }
-
-        if (messageView != null) {
-            messageView.setText(
-                    "This will remove " + who + " from the app. " +
-                            "It deletes their profile document in Firestore. " +
-                            "It does not remove their sign-in account."
-            );
-        }
-
-        if (btnCancel != null) {
-            btnCancel.setOnClickListener(v -> dialog.dismiss());
-        }
-
-        if (btnDelete != null) {
-            btnDelete.setOnClickListener(v -> {
-                controller.onAdminDeleteConfirmed(uid, role);
-                dialog.dismiss();
-            });
-        }
-
-        dialog.show();
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete profile?")
+                .setMessage("This will remove " + who + " from the app. "
+                        + "It deletes their profile and all events they created, "
+                        + "and prevents them from using this app again.")
+                .setPositiveButton("Delete", (d, w) -> controller.onAdminDeleteConfirmed(uid, role))
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     @Override
     public void showProgress(boolean show) {
-        // Optionally show a progress indicator or disable buttons
     }
 
     @Override

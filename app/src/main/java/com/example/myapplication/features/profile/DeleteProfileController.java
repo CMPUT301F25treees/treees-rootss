@@ -4,6 +4,11 @@ import com.example.myapplication.data.repo.UserRepository;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DeleteProfileController {
 
@@ -69,16 +74,26 @@ public class DeleteProfileController {
             view.showToast("Failed: " + (e != null ? e.getMessage() : "Unknown error"));
         };
 
-        Runnable deleteDoc = () -> userRepository.deleteUserDocument(uid, () -> {
+        Runnable deleteUserDoc = () -> userRepository.deleteUserDocument(uid, () -> {
             view.showProgress(false);
             view.showToast("Profile deleted");
             view.navigateOnSuccess();
         }, onFailure);
 
-        if ("organizer".equalsIgnoreCase(role)) {
-            userRepository.disableEventsForUser(uid, deleteDoc, onFailure);
-        } else {
-            deleteDoc.run();
-        }
+        Runnable deleteEvents = () -> userRepository.deleteEventsForUser(uid, deleteUserDoc, onFailure);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> data = new HashMap<>();
+        data.put("uid", uid);
+        data.put("role", role);
+        data.put("deletedAt", FieldValue.serverTimestamp());
+
+        db.collection("deletedUsers")
+                .document(uid)
+                .set(data)
+                .addOnSuccessListener(aVoid -> {
+                    deleteEvents.run();
+                })
+                .addOnFailureListener(onFailure);
     }
 }

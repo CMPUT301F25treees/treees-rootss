@@ -18,20 +18,27 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * RecyclerView adapter for the admin profiles list (User/Organizer/Admin).
- * Supports text filtering and exposes callbacks for opening a profile and requesting an inline removal/demotion.
+ * RecyclerView adapter for the admin "Browse Profiles" list.
+ * <p>
+ * This adapter renders {@link UserRow} items for regular users and
+ * organizers, including an inline action for organizer demotion. It
+ * is used by {@link AUsersFrag} as the view layer in the admin MVC
+ * design, while {@link AdminUsersController} provides the underlying
+ * data and filtering.
+ * <p>
  */
 public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.VH> {
 
     /**
-     * Lightweight row model mapped from /users (id, name, email, role, avatarUrl).
+     * Lightweight view model representing a user row in the admin
+     * browse-users list.
      */
     public static class UserRow {
         public String id;
         public String name;
         public String email;
-        public String role;       // "User" | "Organizer" | "Admin"
-        public String avatarUrl;  // optional
+        public String role;
+        public String avatarUrl;
     }
 
     /**

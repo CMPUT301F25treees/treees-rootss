@@ -24,10 +24,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
 
 /**
- * Admin Event Detail screen that reuses the user-facing event detail layout but replaces
- * the primary action with an administrative “Remove” button that navigates to the
- * Remove Options screen. Binds event data (title, image, location, price, etc.) from
- * {@code /events/{eventId}} to the UI.
+ * Admin event detail fragment that displays information about a single event.
+ * <p>
+ * This fragment acts as the view for an event selected from the admin
+ * home screen. It reuses the user event detail layout and replaces
+ * the primary call-to-action with a "Remove" button that routes to
+ * the admin remove-options screen.
+ * <p>
  */
 public class AEventDetailFrag extends Fragment {
 

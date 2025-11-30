@@ -1,5 +1,6 @@
 package com.example.myapplication.features.admin;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -7,207 +8,191 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
 
-import java.util.ArrayList;
 import java.util.List;
+
 /**
- * Admin “Browse Profiles” fragment.
- * <p>Shows a searchable list of non-admin users (User/Organizer), opens profile detail on tap,
- * and supports inline organizer demotion via a confirmation dialog.</p>
+ * Admin "Browse Profiles" fragment that lists non-admin users.
+ * <p>
+ * This fragment acts as the view in an MVC design for the admin user
+ * management screen. It configures the RecyclerView, handles navigation
+ * to user detail screens, and delegates data loading and organizer
+ * demotion to {@link AdminUsersController}. The controller delivers
+ * filtered {@link AdminUserAdapter.UserRow} items through the
+ * {@link AdminUsersView} interface.
+ * <p>
  */
-public class AUsersFrag extends Fragment {
+public class AUsersFrag extends Fragment implements AdminUsersView {
 
-    /**
-     *  Firestore snapshot listener registration.
-     */
-    private ListenerRegistration reg;
+    private RecyclerView rvUsers;
+    private TextView emptyView;
+    private EditText etSearchUsers;
 
-    /**
-     *  List adapter.
-     */
     private AdminUserAdapter adapter;
+    private AdminUsersController controller;
 
-    /** Default no-argument constructor. */
-    public AUsersFrag() {}
-
-    /**
-     * Inflates the admin users layout.
-     *
-     * @param i  layout inflater
-     * @param c  optional parent container
-     * @param b  saved instance state, if any
-     * @return   the inflated root view
-     */
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater i, @Nullable ViewGroup c, @Nullable Bundle b) {
-        return i.inflate(R.layout.fragment_a_users, c, false);
+    public AUsersFrag() {
+        // Required empty public constructor
     }
 
-    /**
-     * Initializes list, search behavior, and Firestore snapshot subscription.
-     *
-     * @param v root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
-     * @param b saved instance state, if any
-     */
     @Override
-    public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
-        RecyclerView rv = v.findViewById(R.id.rvUsers);
-        EditText search  = v.findViewById(R.id.etSearchUsers);
-        View empty       = v.findViewById(R.id.empty);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_a_users, container, false);
+    }
 
-        // Vertical list (matches your reference)
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        rv.addItemDecoration(new SpacingDecoration(dp(12)));
-        rv.setClipToPadding(false);
-        rv.setPadding(rv.getPaddingLeft(), rv.getPaddingTop(), rv.getPaddingRight(), dp(88));
+    @Override
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        rvUsers = view.findViewById(R.id.rvUsers);
+        emptyView = view.findViewById(R.id.empty);
+        etSearchUsers = view.findViewById(R.id.etSearchUsers);
+        ImageButton btnFilter = view.findViewById(R.id.btnFilter); // currently unused, reserved for future filters
+
+        rvUsers.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new AdminUserAdapter();
+        final NavController navController = NavHostFragment.findNavController(this);
 
-        // open detail
-        adapter.setOnUserClick(u -> {
+        // Navigate to admin user detail on row click
+        adapter.setOnUserClick(userRow -> {
+            if (userRow == null || userRow.id == null) {
+                return;
+            }
             Bundle args = new Bundle();
-            args.putString("uid", u.id);
-            args.putString("name", u.name);
-            args.putString("email", u.email);
-            args.putString("role", u.role);
-            args.putString("avatarUrl", u.avatarUrl);
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.navigation_admin_user_detail, args);
+            args.putString("uid", userRow.id);
+            args.putString("name", userRow.name);
+            args.putString("email", userRow.email);
+            args.putString("role", userRow.role);
+            args.putString("avatarUrl", userRow.avatarUrl);
+            navController.navigate(R.id.navigation_admin_user_detail, args);
         });
 
-        // remove organizer
-        adapter.setOnRemoveClick(u -> new android.app.AlertDialog.Builder(requireContext())
-                .setTitle("Remove organizer?")
-                .setMessage("This will revoke organizer permissions for " +
-                        (u.name == null || u.name.isEmpty() ? u.email : u.name) + ".")
-                .setPositiveButton("Remove", (d, w) -> demoteOrganizer(u.id))
-                .setNegativeButton("Cancel", null)
-                .show());
+        // Demote organizer from inline "remove" action
+        adapter.setOnRemoveClick(userRow -> {
+            if (userRow == null) {
+                return;
+            }
+            showDemoteConfirmation(userRow);
+        });
 
-        rv.setAdapter(adapter);
+        rvUsers.setAdapter(adapter);
 
-        if (search != null) {
-            search.addTextChangedListener(new TextWatcher() {
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    adapter.filter(s == null ? "" : s.toString());
-                    empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+        // Controller (C in MVC)
+        controller = new AdminUsersController(this);
+        controller.start();
+
+        // Search bar delegates query changes to the controller
+        if (etSearchUsers != null) {
+            etSearchUsers.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    // no-op
                 }
-                @Override public void afterTextChanged(Editable s) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (controller != null) {
+                        controller.onSearchQueryChanged(s != null ? s.toString() : "");
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    // no-op
+                }
             });
         }
 
-        // Firestore: read /users and adapt your schema (firstName, lastName, role)
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        reg = db.collection("users")
-                .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) return;
-                    List<AdminUserAdapter.UserRow> list = new ArrayList<>();
-                    for (DocumentSnapshot d : snap.getDocuments()) {
-                        String role = safe(d.getString("role"));  // "User" | "Organizer" | "Admin"
-                        String r = role.toLowerCase();
-                        if (!(r.equals("user") || r.equals("organizer"))) {
-                            // only browse entrant/organizer
-                            continue;
-                        }
-                        String first = safe(d.getString("firstName"));
-                        String last  = safe(d.getString("lastName"));
-                        String name  = (first + " " + last).trim();
-                        if (name.isEmpty()) name = safe(d.getString("name")); // fallback
-
-                        AdminUserAdapter.UserRow u = new AdminUserAdapter.UserRow();
-                        u.id        = d.getId();
-                        u.name      = name;
-                        u.email     = safe(d.getString("email"));
-                        u.role      = role;
-                        String avatar = d.getString("avatarUrl");
-                        if (avatar == null) avatar = d.getString("photoUrl");
-                        u.avatarUrl = safe(avatar);
-
-                        list.add(u);
-                    }
-                    adapter.submit(list);
-                    empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
-                });
+//        if (btnFilter != null) {
+//            btnFilter.setOnClickListener(v -> {
+//                Toast.makeText(requireContext(),
+//                        "Additional filters not implemented yet.",
+//                        Toast.LENGTH_SHORT).show();
+//            });
+//        }
     }
 
-    /**
-     * Demotes an organizer to {@code role="User"} and sets {@code suspended=true}.
-     *
-     * @param uid user document id
-     */
-    private void demoteOrganizer(String uid){
-        FirebaseFirestore.getInstance().collection("users").document(uid)
-                .update("role", "User", "suspended", true)
-                .addOnSuccessListener(x -> android.widget.Toast.makeText(requireContext(),
-                        "Organizer removed", android.widget.Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> android.widget.Toast.makeText(requireContext(),
-                        "Failed: " + e.getMessage(), android.widget.Toast.LENGTH_SHORT).show());
-    }
-
-    /** Removes the Firestore snapshot listener when the view is destroyed. */
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
-        if (reg != null) reg.remove();
-    }
-
-    /**
-     * Null-safe helper for optional strings.
-     *
-     * @param s input string (may be {@code null})
-     * @return empty string if {@code s} is null; otherwise {@code s}
-     */
-    private static String safe(String s){ return s == null ? "" : s; }
-
-    /**
-     * Converts density-independent pixels to raw pixels.
-     *
-     * @param dp value in dp
-     * @return pixel value rounded to the nearest integer
-     */
-    private int dp(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return (int)(dp * density + 0.5f);
-    }
-
-    /** ItemDecoration that adds symmetrical spacing between list items. */
-    static class SpacingDecoration extends RecyclerView.ItemDecoration {
-        private final int space;
-        /**
-         * Creates a spacing decoration.
-         *
-         * @param space spacing in pixels
-         */
-        SpacingDecoration(int space){ this.space = space; }
-        /**
-         * Applies spacing offsets to each item.
-         *
-         * @param outRect output rectangle to receive offsets
-         * @param view    child view
-         * @param parent  RecyclerView containing the item
-         * @param state   current RecyclerView state
-         */
-        @Override
-        public void getItemOffsets(@NonNull android.graphics.Rect outRect, @NonNull View view,
-                                   @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-            outRect.left = space/2;
-            outRect.right = space/2;
-            outRect.bottom = space;
-            if (parent.getChildAdapterPosition(view) == 0) outRect.top = space;
+        if (controller != null) {
+            controller.stop();
+            controller = null;
         }
+        rvUsers = null;
+        emptyView = null;
+        etSearchUsers = null;
+        adapter = null;
+        super.onDestroyView();
+    }
+
+    // ---------------------------------------------------------------------
+    // AdminUsersView implementation (View in MVC)
+    // ---------------------------------------------------------------------
+
+    @Override
+    public void showUsers(@NonNull List<AdminUserAdapter.UserRow> users) {
+        if (adapter != null) {
+            adapter.submit(users);
+        }
+        // empty state is also updated via showEmptyState, but we keep this safe
+        if (emptyView != null) {
+            emptyView.setVisibility(users.isEmpty() ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    @Override
+    public void showEmptyState(boolean showEmpty) {
+        if (emptyView != null) {
+            emptyView.setVisibility(showEmpty ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    @Override
+    public void showLoading(boolean loading) {
+        // Could hook into a ProgressBar or SwipeRefreshLayout if desired.
+    }
+
+    @Override
+    public void showMessage(@NonNull String message) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    // ---------------------------------------------------------------------
+    // Private helpers
+    // ---------------------------------------------------------------------
+
+    private void showDemoteConfirmation(@NonNull AdminUserAdapter.UserRow userRow) {
+        String name = (userRow.name != null && !userRow.name.isEmpty())
+                ? userRow.name
+                : userRow.email;
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Demote organizer?")
+                .setMessage("This will demote " + name + " to a regular user "
+                        + "and mark their account as suspended.")
+                .setPositiveButton("Demote", (d, w) -> {
+                    if (controller != null) {
+                        controller.onDemoteOrganizerRequested(userRow);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }
