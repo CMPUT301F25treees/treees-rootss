@@ -38,14 +38,14 @@ public class RatingSystemTest {
     private String testNotificationId;
     private String testEventId;
     private String testEntrantId;
-    private RatingController ratingController; // Use Controller
+    private RatingController ratingController;
     private FirebaseEventRepository eventRepository;
 
     @Before
     public void setUp() {
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
-        ratingController = new RatingController(); // Initialize Controller
+        ratingController = new RatingController();
         eventRepository = new FirebaseEventRepository();
         
         // Generate unique IDs
@@ -65,16 +65,12 @@ public class RatingSystemTest {
                 Tasks.await(db.collection("events").document(testEventId).delete(), 5, TimeUnit.SECONDS);
                 Tasks.await(db.collection("notificationList").document(testEventId).delete(), 5, TimeUnit.SECONDS);
             }
-            // Clean up notifications created by the send request
-            // This is harder as IDs are random. In a real test env we'd query and delete.
         } catch (Exception e) {
-            // Ignore
         }
     }
 
     @Test
     public void testSubmitFirstRating() throws Exception {
-        // 1. Create a dummy organizer
         Map<String, Object> organizerMap = new HashMap<>();
         organizerMap.put("firstName", "Test Organizer");
         organizerMap.put("rating", 0.0);
@@ -82,12 +78,11 @@ public class RatingSystemTest {
 
         Tasks.await(db.collection("users").document(testOrganizerId).set(organizerMap), 10, TimeUnit.SECONDS);
 
-        // 2. Create a dummy notification to be deleted
         Map<String, Object> notiMap = new HashMap<>();
         notiMap.put("type", "rating_request");
         Tasks.await(db.collection("notifications").document(testNotificationId).set(notiMap), 10, TimeUnit.SECONDS);
 
-        // 3. Submit a 5-star rating via Controller
+        // Submit a 5-star rating via Controller
         final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         final boolean[] success = {false};
 
@@ -119,19 +114,15 @@ public class RatingSystemTest {
 
     @Test
     public void testAverageRatingCalculation() throws Exception {
-        // 1. Create a dummy organizer with existing rating
-        // Say: 1 rating of 5 stars.
+        // 1 rating of 5 stars.
         Map<String, Object> organizerMap = new HashMap<>();
         organizerMap.put("firstName", "Test Organizer");
         organizerMap.put("rating", 5.0);
         organizerMap.put("ratingCount", 1);
 
         Tasks.await(db.collection("users").document(testOrganizerId).set(organizerMap), 10, TimeUnit.SECONDS);
-
-        // 2. Create dummy notification
         Tasks.await(db.collection("notifications").document(testNotificationId).set(new HashMap<>()), 10, TimeUnit.SECONDS);
 
-        // 3. Submit a 3-star rating via Controller
         final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         
         ratingController.submitRating(testOrganizerId, 3, testNotificationId, 
@@ -153,7 +144,7 @@ public class RatingSystemTest {
     
     @Test
     public void testFetchOrganizerRating() throws Exception {
-        // 1. Create a dummy organizer with rating 4.2
+        // Create a dummy organizer with rating 4.2
         Map<String, Object> organizerMap = new HashMap<>();
         organizerMap.put("firstName", "Fetch Test");
         organizerMap.put("rating", 4.2);
@@ -161,7 +152,7 @@ public class RatingSystemTest {
 
         Tasks.await(db.collection("users").document(testOrganizerId).set(organizerMap), 10, TimeUnit.SECONDS);
         
-        // 2. Fetch using Controller
+        //  Fetch using Controller
         final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         final double[] fetchedRating = {-1.0};
         
@@ -184,25 +175,25 @@ public class RatingSystemTest {
 
     @Test
     public void testSendRatingRequestNotifications() throws Exception {
-        // 1. Create Organizer
+        // Create Organizer
         Map<String, Object> organizerMap = new HashMap<>();
         organizerMap.put("firstName", "Big Boss");
         Tasks.await(db.collection("users").document(testOrganizerId).set(organizerMap), 10, TimeUnit.SECONDS);
 
-        // 2. Create Event (Ended in the past)
+        //  Create Event (Ended in the past)
         Map<String, Object> eventMap = new HashMap<>();
         eventMap.put("organizerID", testOrganizerId);
         eventMap.put("title", "Super Event");
         eventMap.put("endTimeMillis", System.currentTimeMillis() - 10000); // 10 seconds ago
         Tasks.await(db.collection("events").document(testEventId).set(eventMap), 10, TimeUnit.SECONDS);
 
-        // 3. Create NotificationList with entrant in 'final'
+        //  Create NotificationList with entrant in 'final'
         Map<String, Object> notiListMap = new HashMap<>();
         notiListMap.put("eventId", testEventId);
         notiListMap.put("final", Arrays.asList(testEntrantId));
         Tasks.await(db.collection("notificationList").document(testEventId).set(notiListMap), 10, TimeUnit.SECONDS);
 
-        // 4. Send Request
+        // Send Request
         final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         final boolean[] success = {false};
 
@@ -217,7 +208,7 @@ public class RatingSystemTest {
         latch.await(10, TimeUnit.SECONDS);
         assertTrue("Send notification should succeed", success[0]);
 
-        // 5. Verify Notification Created
+        //  Verify Notification Created
         QuerySnapshot qs = Tasks.await(
             db.collection("notifications")
               .whereEqualTo("eventId", testEventId)
@@ -235,31 +226,31 @@ public class RatingSystemTest {
 
     @Test
     public void testSendRatingRequestNotifications_EventNotEnded() throws Exception {
-        // 1. Create Organizer
+        //  Create Organizer
         Map<String, Object> organizerMap = new HashMap<>();
         organizerMap.put("firstName", "Big Boss");
         Tasks.await(db.collection("users").document(testOrganizerId).set(organizerMap), 10, TimeUnit.SECONDS);
 
-        // 2. Create Event (Ends in future)
+        //  Create Event (Ends in future)
         Map<String, Object> eventMap = new HashMap<>();
         eventMap.put("organizerID", testOrganizerId);
         eventMap.put("title", "Future Event");
         eventMap.put("endTimeMillis", System.currentTimeMillis() + 100000); // In future
         Tasks.await(db.collection("events").document(testEventId).set(eventMap), 10, TimeUnit.SECONDS);
 
-        // 3. Create NotificationList
+        // Create NotificationList
         Map<String, Object> notiListMap = new HashMap<>();
         notiListMap.put("eventId", testEventId);
         notiListMap.put("final", Arrays.asList(testEntrantId));
         Tasks.await(db.collection("notificationList").document(testEventId).set(notiListMap), 10, TimeUnit.SECONDS);
 
-        // 4. Send Request
+        // Send Request
         final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         final boolean[] success = {false};
 
         eventRepository.sendRatingRequestNotifications(testEventId, 
             v -> {
-                success[0] = true; // Method returns success but does nothing
+                success[0] = true;
                 latch.countDown();
             },
             e -> latch.countDown()
@@ -268,7 +259,7 @@ public class RatingSystemTest {
         latch.await(10, TimeUnit.SECONDS);
         assertTrue("Method call should succeed (graceful exit)", success[0]);
 
-        // 5. Verify NO Notification Created
+        //  Verify no Notification Created
         QuerySnapshot qs = Tasks.await(
             db.collection("notifications")
               .whereEqualTo("eventId", testEventId)
@@ -277,6 +268,6 @@ public class RatingSystemTest {
             10, TimeUnit.SECONDS
         );
 
-        assertTrue("Should NOT find any notifications", qs.isEmpty());
+        assertTrue("Should not find any notifications", qs.isEmpty());
     }
 }
