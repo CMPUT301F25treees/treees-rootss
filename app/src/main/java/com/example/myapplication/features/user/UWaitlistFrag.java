@@ -20,6 +20,13 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This is a fragment that displays all the events that the logged-in user has joined the waitlist for.
+ *
+ * This fragment queries Firestore for all events, filters the ones where the user's id appears in the
+ * waitlist, while also making sure that only future events are shown. If the user clicks on an event
+ * it will take them to the detailed event page.
+ */
 public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemClickListener{
 
     private RecyclerView recyclerView;
@@ -27,6 +34,19 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
     private FirebaseEventRepository repo;
     private String curentUid;
 
+    /**
+     * Inflates the waitlist fragment layout, initializes the UI components, the Firebase repo, and
+     * load the user's waitlisted events
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     * @return the root view of the inflated fragment layout
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_u_waitlist, container, false);
