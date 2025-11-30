@@ -117,7 +117,7 @@ public class UserEventAdapter extends RecyclerView.Adapter<UserEventAdapter.Even
         holder.instructor.setText(TextUtils.isEmpty(instr)
                 ? "" : String.format(Locale.getDefault(), "With %s", instr));
 
-        holder.timeRemaining.setText(formatTimeRemaining(event.getEndTimeMillis()));
+        holder.timeRemaining.setText(formatTimeRemaining(event.getSelectionDateMillis()));
         bindBannerImage(event, holder);
 
         holder.itemView.setOnClickListener(x -> {

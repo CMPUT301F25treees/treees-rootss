@@ -77,11 +77,7 @@ public class OHomeController {
                     }
                 }
                 model.setEvents(mine);
-                if (mine.isEmpty()) {
-                    view.showEmptyState("No events created by you");
-                } else {
-                    view.showEvents(model.getEvents(), searchQuery);
-                }
+                refreshView();
             }
 
             @Override
@@ -101,9 +97,7 @@ public class OHomeController {
      */
     public void onSearchQueryChanged(@Nullable String query) {
         searchQuery = query == null ? "" : query;
-        if (view != null) {
-            view.showEvents(model.getEvents(), searchQuery);
-        }
+        refreshView();
     }
 
     /**
@@ -113,8 +107,31 @@ public class OHomeController {
      * @param filterLabel The label of the selected filter.
      */
     public void onFilterSelected(String filterLabel) {
+        if (filterLabel.equalsIgnoreCase("Past Events") || filterLabel.equalsIgnoreCase("Past")) {
+            model.setFilter(OHomeModel.FilterType.PAST);
+        } else if (filterLabel.equalsIgnoreCase("Clear Filter")) {
+            model.setFilter(OHomeModel.FilterType.UPCOMING); // Reset to default
+        } else {
+            model.setFilter(OHomeModel.FilterType.UPCOMING); // Default for "Upcoming" or unknown
+        }
+        
         if (view != null) {
             view.showInfo(filterLabel + " selected");
+        }
+        refreshView();
+    }
+
+    private void refreshView() {
+        if (view == null) {
+            return;
+        }
+        List<UserEvent> events = model.getEvents();
+        if (events.isEmpty()) {
+            // We check if the raw list is empty to distinguish "no events at all" vs "no events matching filter"
+            // But for now, let's just show the empty state if the filtered result is empty
+            view.showEmptyState("No " + (model.getFilter() == OHomeModel.FilterType.UPCOMING ? "upcoming" : "past") + " events found");
+        } else {
+            view.showEvents(events, searchQuery);
         }
     }
 

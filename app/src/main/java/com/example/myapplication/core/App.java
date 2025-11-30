@@ -22,8 +22,6 @@ public class App extends Application {
 
     /**
      * This method initializes the cloudinary SDK.
-     * @param None
-     * @return void
      */
     private void initCloudinary(){
 

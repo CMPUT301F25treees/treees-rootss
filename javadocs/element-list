@@ -1,0 +1,13 @@
+com.example.myapplication
+com.example.myapplication.core
+com.example.myapplication.data.firebase
+com.example.myapplication.data.model
+com.example.myapplication.data.repo
+com.example.myapplication.features.admin
+com.example.myapplication.features.auth
+com.example.myapplication.features.organizer
+com.example.myapplication.features.organizer.home
+com.example.myapplication.features.profile
+com.example.myapplication.features.user
+com.example.myapplication.features.user.home
+com.example.myapplication.features.user.profile

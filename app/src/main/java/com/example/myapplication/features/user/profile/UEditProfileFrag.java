@@ -24,6 +24,9 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * Fragment for editing user profile information.
+ */
 public class UEditProfileFrag extends Fragment implements ProfileView {
     private TextInputEditText inputFirstName, inputLastName, inputEmail, inputPhone;
     private TextInputLayout tilFirstName, tilEmail;

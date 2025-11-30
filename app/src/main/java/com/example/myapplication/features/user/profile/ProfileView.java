@@ -1,5 +1,8 @@
 package com.example.myapplication.features.user.profile;
 
+/**
+ * View interface for user profile operations.
+ */
 public interface ProfileView {
     void showLoading(boolean isLoading);
     void showProfileData(String firstName, String lastName, String email, String phone);

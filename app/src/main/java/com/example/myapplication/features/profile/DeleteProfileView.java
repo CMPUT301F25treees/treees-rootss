@@ -1,5 +1,8 @@
 package com.example.myapplication.features.profile;
 
+/**
+ * View interface for profile deletion operations.
+ */
 public interface DeleteProfileView {
     void showConfirmationDialog();
     void showProgress(boolean show);

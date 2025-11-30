@@ -444,15 +444,13 @@ public class EditEventTest {
         UserEvent fakeEvent = createTestEvent("Fake Event", "Fake Location", 10.0);
         fakeEvent.setId(fakeEventId);
 
-        // Try to update non-existent event - this will create it instead
-        // In a real scenario, you'd want to check if it exists first
         Tasks.await(
             db.collection("events").document(fakeEventId).set(fakeEvent),
             10,
             TimeUnit.SECONDS
         );
 
-        // Verify it was created (Firestore doesn't error on set for non-existent docs)
+        // Verify it was created
         DocumentSnapshot snapshot = Tasks.await(
             db.collection("events").document(fakeEventId).get(),
             10,
@@ -461,13 +459,11 @@ public class EditEventTest {
 
         assertTrue("Document should be created", snapshot.exists());
 
-        // Clean up
         Tasks.await(db.collection("events").document(fakeEventId).delete(), 10, TimeUnit.SECONDS);
 
         System.out.println("Non-existent event update test passed");
     }
 
-    // ==================== Helper Methods ====================
 
     /**
      * Creates a test UserEvent object with the given parameters.

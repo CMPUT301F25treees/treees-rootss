@@ -41,6 +41,8 @@
     <string name="filter_interests_showing_all">Showing all events</string>
     <string name="filter_interests_applied">Filtering by %1$s</string>
     <string name="filter_interests_cleared_toast">Interest filters cleared</string>
+    <string name="filter_clear_all_option">Clear all filters</string>
+    <string name="filter_all_cleared_toast">All filters cleared</string>
     <string name="edit_profile_title_text">Edit Profile</string>
     <string name="edit_profile_save_button">Save Changes</string>
     <string name="edit_profile_back_button">Back</string>

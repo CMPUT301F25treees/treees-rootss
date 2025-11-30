@@ -6,11 +6,10 @@ public class User {
     private String username;
     private String role;
     private long createdAt;
+    private double rating;
 
     /**
      * Empty constructor for user deserialization
-     * @param None
-     * @return void
      */
     public User() {}
 
@@ -20,7 +19,6 @@ public class User {
      * @param email Email address of the user
      * @param username Display name of the user
      * @param role Role of the user (e.g., "admin", "user")
-     * @return void
      */
     public User(String uid, String email, String username, String role) {
         this.uid = uid;
@@ -28,11 +26,11 @@ public class User {
         this.username = username;
         this.role = role;
         this.createdAt = System.currentTimeMillis();
+        this.rating = 0.0;
     }
 
     /**
      * Get uid of the user.
-     * @param None
      * @return uid as String
      */
     public String getUid() { return uid; }
@@ -40,13 +38,11 @@ public class User {
     /**
      * Set uid of the user.
      * @param uid Unique identifier to set
-     * @return void
      */
     public void setUid(String uid) { this.uid = uid; }
 
     /**
      * Get email of the user.
-     * @param None
      * @return email as String
      */
     public String getEmail() { return email; }
@@ -54,13 +50,11 @@ public class User {
     /**
      * Set email of the user.
      * @param email Email address to set
-     * @return void
      */
     public void setEmail(String email) { this.email = email; }
 
     /**
      * Get username of the user.
-     * @param None
      * @return username as String
      */
     public String getUsername() { return username; }
@@ -68,13 +62,11 @@ public class User {
     /**
      * Set username of the user.
      * @param username Display name to set
-     * @return void
      */
     public void setUsername(String username) { this.username = username; }
 
     /**
      * Get role of the user.
-     * @param None
      * @return role as String
      */
     public String getRole() { return role; }
@@ -82,13 +74,25 @@ public class User {
     /**
      * Set role of the user.
      * @param role Role to set (e.g., "admin", "user")
-     * @return void
      */
     public void setRole(String role) { this.role = role; }
 
     /**
-     * Get account creation timestamp.
+     * Get rating of the user.
      * @param None
+     * @return rating as double
+     */
+    public double getRating() { return rating; }
+
+    /**
+     * Set rating of the user.
+     * @param rating Rating to set
+     * @return void
+     */
+    public void setRating(double rating) { this.rating = rating; }
+
+    /**
+     * Get account creation timestamp.
      * @return createdAt as long
      */
     public long getCreatedAt() { return createdAt; }
@@ -96,13 +100,11 @@ public class User {
     /**
      * Set account creation timestamp.
      * @param createdAt Timestamp to set
-     * @return void
      */
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 
     /**
      * Check if the user has admin role.
-     * @param None
      * @return true if user is admin, false otherwise
      */
     public boolean isAdmin() {
@@ -111,7 +113,6 @@ public class User {
 
     /**
      * String representation of the User object.
-     * @param None
      * @return String describing the user
      */
     @Override

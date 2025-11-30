@@ -87,7 +87,6 @@ public class OEditEventFrag extends Fragment {
      * Wires view references, loads the target event, and prepares all listeners.
      * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
-     * @return void
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -118,7 +117,6 @@ public class OEditEventFrag extends Fragment {
     /**
      * Caches view references for all edit inputs and buttons.
      * @param view The root view of the fragment layout.
-     * @return void
      */
     private void bindViews(View view) {
         titleInput = view.findViewById(R.id.etTitle);
@@ -140,8 +138,6 @@ public class OEditEventFrag extends Fragment {
 
     /**
      * Configures click listeners for date pickers, poster selector, navigation, and update flow.
-     * @param None
-     * @return void
      */
     private void setupInteractions() {
         startDateButton.setOnClickListener(v -> pickDate(millis -> {
@@ -175,7 +171,6 @@ public class OEditEventFrag extends Fragment {
     /**
      * Launches a date picker and returns the chosen date in epoch millis to the supplied callback.
      * @param callback Callback to receive the chosen date in millis.
-     * @return void
      */
     private void pickDate(DateCallback callback) {
         final Calendar calendar = Calendar.getInstance();
@@ -197,7 +192,6 @@ public class OEditEventFrag extends Fragment {
      * @param requestCode The integer request code originally supplied to startActivityForResult(), allowing you to identify who this result came from.
      * @param resultCode The integer result code returned by the child activity through its setResult().
      * @param data An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
-     * @return void
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -212,8 +206,6 @@ public class OEditEventFrag extends Fragment {
 
     /**
      * Fetches the latest copy of the event from Firestore before letting the user edit it.
-     * @param None
-     * @return void
      */
     private void loadEvent() {
         firebaseEventRepository.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
@@ -221,7 +213,6 @@ public class OEditEventFrag extends Fragment {
             /**
              * Called when the event is successfully fetched from Firestore.
              * @param event The fetched UserEvent object.
-             * @return void
              */
             @Override
             public void onEventFetched(UserEvent event) {
@@ -240,7 +231,6 @@ public class OEditEventFrag extends Fragment {
             /**
              * Called when there is an error fetching the event from Firestore.
              * @param e The exception that occurred during fetching.
-             * @return void
              */
             @Override
             public void onError(Exception e) {
@@ -256,7 +246,6 @@ public class OEditEventFrag extends Fragment {
     /**
      * Populates the edit form with the current event metadata.
      * @param event The UserEvent object containing event details.
-     * @return void
      */
     private void populateForm(UserEvent event) {
         titleInput.setText(event.getName());
@@ -306,8 +295,6 @@ public class OEditEventFrag extends Fragment {
 
     /**
      * Validates input, uploads a new poster if needed, and triggers persistence to Firestore.
-     * @param None
-     * @return void
      */
     private void onUpdateClicked() {
         if (currentEvent == null) {
@@ -394,8 +381,6 @@ public class OEditEventFrag extends Fragment {
 
     /**
      * Persists the in-memory event back to Firestore and navigates away on success.
-     * @param None
-     * @return void
      */
     private void persistChanges() {
         eventRepository.updateEvent(eventId, currentEvent, aVoid -> {

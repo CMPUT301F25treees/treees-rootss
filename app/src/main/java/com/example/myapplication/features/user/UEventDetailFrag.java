@@ -27,6 +27,7 @@ import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -200,6 +201,37 @@ public class UEventDetailFrag extends Fragment {
             inWaitlist = false;
             joinWaitlistBtn.setText("Join Waitlist");
         }
+
+        RatingController ratingController = new RatingController();
+        ratingController.fetchOrganizerRating(event.getOrganizerID(), new RatingController.OnRatingFetchedListener() {
+            @Override
+            public void onRatingFetched(double rating) {
+                updateStars(rating);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                // Optional: handle error or just show empty stars
+            }
+        });
+    }
+
+    private void updateStars(double rating) {
+        if (!isAdded() || getView() == null) return;
+        
+        int ratingInt = (int) Math.round(rating);
+        int[] starIds = {R.id.star1, R.id.star2, R.id.star3, R.id.star4, R.id.star5};
+
+        for (int i = 0; i < starIds.length; i++) {
+            ImageView star = getView().findViewById(starIds[i]);
+            if (star != null) {
+                if (i < ratingInt) {
+                    star.setImageResource(R.drawable.star_filled);
+                } else {
+                    star.setImageResource(R.drawable.star_empty);
+                }
+            }
+        }
     }
 
 
@@ -266,6 +298,7 @@ public class UEventDetailFrag extends Fragment {
 
 
     /**
+     * Joins the waitlist with optional location data.
      * @param repo
      * @param uid
      * @param lat

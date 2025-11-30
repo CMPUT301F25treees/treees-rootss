@@ -12,14 +12,11 @@ public class UserSession {
 
     /**
      * Private constructor to prevent instantiation
-     * @param None
-     * @return void
      */
     private UserSession() {}
 
     /**
      * Get the singleton instance of UserSession
-     * @param None
      * @return UserSession instance
      */
     public static UserSession getInstance() {
@@ -32,7 +29,6 @@ public class UserSession {
     /**
      * Set the current logged-in user
      * @param user The User object representing the logged-in user
-     * @return void
      */
     public void setCurrentUser(User user) {
         this.currentUser = user;
@@ -48,7 +44,6 @@ public class UserSession {
 
     /**
      * Check if a user is currently logged in
-     * @param None
      * @return true if a user is logged in, false otherwise
      */
     public boolean isLoggedIn() {
@@ -57,8 +52,6 @@ public class UserSession {
 
     /**
      * Clear the current user session (logout)
-     * @param None
-     * @return void
      */
     public void clearSession() {
         this.currentUser = null;

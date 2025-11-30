@@ -114,8 +114,8 @@ public class OHomeFrag extends Fragment implements OHomeView {
     private void showFilterMenu(View anchor) {
         androidx.appcompat.widget.PopupMenu menu = new androidx.appcompat.widget.PopupMenu(requireContext(), anchor);
         menu.getMenu().add("Upcoming");
-        menu.getMenu().add("Drafts");
-        menu.getMenu().add("Archived");
+        menu.getMenu().add("Past Events");
+        menu.getMenu().add("Clear Filter"); // New item
         menu.setOnMenuItemClickListener(item -> {
             controller.onFilterSelected(item.getTitle().toString());
             return true;

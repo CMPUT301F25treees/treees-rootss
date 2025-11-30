@@ -21,11 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This is a fragment that displays all the events that the logged-in user has joined the waitlist for.
- *
- * This fragment queries Firestore for all events, filters the ones where the user's id appears in the
- * waitlist, while also making sure that only future events are shown. If the user clicks on an event
- * it will take them to the detailed event page.
+ * Fragment that displays the user's waitlisted events.
  */
 public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemClickListener{
 
