@@ -10,8 +10,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
@@ -87,63 +90,67 @@ public class ONotiFrag extends Fragment {
     }
 
     /**
-     * Opens a picker with a list of the Users events which they can select.
+     * Opens a custom picker with a list of the Users events which they can select.
      */
-    private void openEventPicker(){
-        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
-        if (uid == null) return;
+    private void openEventPicker() {
 
         repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
             @Override
-            public void onEventsFetched(List<UserEvent> events) {
-                if (events == null || events.isEmpty()) {
-                    toast("No events.");
-                    return;
-                }
-
+            public void onEventsFetched(List<UserEvent> allEvents) {
+                String uid = FirebaseAuth.getInstance().getUid();
                 List<UserEvent> myEvents = new ArrayList<>();
-                for (UserEvent event : events) {
+                for (UserEvent event : allEvents) {
                     if (event != null && uid.equals(event.getOrganizerID())) {
                         myEvents.add(event);
                     }
                 }
-                if (myEvents.isEmpty()) { toast("No events created by you."); return; }
 
-                CharSequence[] eventNames = new CharSequence[myEvents.size()];
-                for (int i = 0; i < myEvents.size(); i++) {
-                    String name = myEvents.get(i).getName();
-                    eventNames[i] = name != null ? name : "(unnamed)";;
+                if (myEvents.isEmpty()) {
+                    Toast.makeText(requireContext(), "No events found.", Toast.LENGTH_SHORT).show();
+                    return;
                 }
 
-                int checked = -1;
-                if (selectedEventId != null) {
-                    for (int i = 0; i < myEvents.size(); i++) {
-                        if (selectedEventId.equals(myEvents.get(i).getId())) {
-                            checked = i;
-                            break;
-                        }
-                    }
-                }
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Select Event")
-                        .setSingleChoiceItems(eventNames, checked, null)
+                View view = LayoutInflater.from(requireContext())
+                        .inflate(R.layout.dialog_select_event, null);
+
+                RecyclerView rv = view.findViewById(R.id.rvEvents);
+                rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+                final int[] selected = {-1};
+
+                OEventSelectAdapter adapter =
+                        new OEventSelectAdapter(myEvents, -1, pos -> selected[0] = pos);
+
+                rv.setAdapter(adapter);
+
+                AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                        .setView(view)
                         .setPositiveButton("Select", (d, w) -> {
-                            androidx.appcompat.app.AlertDialog ad = (androidx.appcompat.app.AlertDialog) d;
-                            int idx = ad.getListView().getCheckedItemPosition();
-                            if (idx >= 0) {
-                                UserEvent chosen = myEvents.get(idx);
-                                selectedEventId = chosen.getId();
-                                selectedEventName = chosen.getName() != null ? chosen.getName() : "(unnamed)";
+                            if (selected[0] >= 0) {
+                                UserEvent event = myEvents.get(selected[0]);
+                                selectedEventId = event.getId();
+                                selectedEventName = event.getName();
                                 btnEvent.setText(selectedEventName);
                             }
-                            d.dismiss();
                         })
                         .setNegativeButton("Cancel", null)
-                        .show();
+                        .create();
+
+                dialog.setOnShowListener(dlg -> {
+                    dialog.getWindow().setBackgroundDrawableResource(R.drawable.bg_role_switch_card);
+
+                    int white = requireContext().getColor(android.R.color.white);
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(white);
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(white);
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTypeface(null, android.graphics.Typeface.BOLD);
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTypeface(null, android.graphics.Typeface.BOLD);
+                });
+
+                dialog.show();
             }
-            @Override public void onError(Exception e) {
-                toast("Failed to fetch: " + e.getMessage());
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
