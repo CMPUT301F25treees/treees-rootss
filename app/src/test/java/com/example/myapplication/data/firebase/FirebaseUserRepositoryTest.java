@@ -54,13 +54,10 @@ public class FirebaseUserRepositoryTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
-        // We need to mock static FirebaseFirestore.getInstance() because the constructor calls it.
         try (MockedStatic<FirebaseFirestore> mockedFirestore = mockStatic(FirebaseFirestore.class)) {
             mockedFirestore.when(FirebaseFirestore::getInstance).thenReturn(firestore);
             repository = new FirebaseUserRepository();
         }
-        // Re-inject the mock firestore just in case, although the constructor should have picked it up if we keep the mock open.
-        // But since the mock block is closed, let's use reflection to be sure we have our mock instance.
         injectFirestore(repository, firestore);
     }
 
@@ -73,8 +70,7 @@ public class FirebaseUserRepositoryTest {
     @Test
     public void deleteEventsForUser_deletesBothFields() {
         String uid = "test-uid";
-        
-        // Mock chain for query
+
         when(firestore.collection("events")).thenReturn(collectionReference);
         Query query = mock(Query.class);
         when(collectionReference.whereEqualTo(anyString(), eq(uid))).thenReturn(query);
@@ -82,7 +78,6 @@ public class FirebaseUserRepositoryTest {
         Task<QuerySnapshot> queryTask = mock(Task.class);
         when(query.get()).thenReturn(queryTask);
 
-        // Mock successful empty snapshot for the first call (organizerID) to trigger the second call
         QuerySnapshot emptySnapshot = mock(QuerySnapshot.class);
         when(emptySnapshot.isEmpty()).thenReturn(true);
         
@@ -98,9 +93,6 @@ public class FirebaseUserRepositoryTest {
         
         repository.deleteEventsForUser(uid, () -> completed.set(true), e -> {});
 
-        // Should verify two queries (one for organizerID, one for organizerId)
-        // Note: In the actual code, the second query happens inside the success listener of the first.
-        // Since we mocked the first one to return empty, it proceeds to the second.
         verify(collectionReference).whereEqualTo("organizerID", uid);
         verify(collectionReference).whereEqualTo("organizerId", uid);
         assertTrue(completed.get());
@@ -179,8 +171,7 @@ public class FirebaseUserRepositoryTest {
         
         doAnswer(invocation -> {
             OnSuccessListener<Void> listener = invocation.getArgument(0);
-            listener.onSuccess(null); // Assuming OnCompleteListener is used in code, but usually we check success
-            // The code uses addOnSuccessListener for batch.commit()
+            listener.onSuccess(null);
             listener.onSuccess(null);
             return batchTask;
         }).when(batchTask).addOnSuccessListener(any());

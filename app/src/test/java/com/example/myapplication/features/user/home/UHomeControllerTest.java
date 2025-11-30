@@ -43,16 +43,13 @@ public class UHomeControllerTest {
 
     @Test
     public void clearAllFilters_clearsInterestsAndAvailabilityAndRefreshesView() {
-        // Arrange
         List<String> interests = Arrays.asList("Music", "Art");
         controller.updateInterests(interests); // Set some interests
 
         controller.updateAvailability(100L, 200L); // Set some availability
 
-        // Act
         controller.clearAllFilters();
 
-        // Assert
         verify(mockModel).setSelectedInterests(new ArrayList<>());
         verify(mockModel).clearAvailability();
         // Verify that applyFiltersInternal was called, which leads to showEvents/showEmptyState
@@ -61,68 +58,53 @@ public class UHomeControllerTest {
 
     @Test
     public void loadEvents_setsEventsAndRefreshesView() {
-        // Arrange
         List<UserEvent> fetchedEvents = Arrays.asList(new UserEvent(), new UserEvent());
         ArgumentCaptor<FirebaseEventRepository.EventListCallback> callbackCaptor =
                 ArgumentCaptor.forClass(FirebaseEventRepository.EventListCallback.class);
 
-        // Act
         controller.loadEvents();
 
-        // Simulate repository returning events
         verify(mockRepository).getAllEvents(callbackCaptor.capture());
         callbackCaptor.getValue().onEventsFetched(fetchedEvents);
 
-        // Assert
         verify(mockModel).setEvents(UHomeModel.filterEventsForDisplay(fetchedEvents, "testUserId"));
         verify(mockView).showEvents(mockModel.buildDisplayEvents(), "");
     }
 
     @Test
     public void onSearchQueryChanged_updatesSearchQueryAndRefreshesView() {
-        // Arrange
         String newQuery = "concert";
 
-        // Act
         controller.onSearchQueryChanged(newQuery);
 
-        // Assert
         verify(mockView).showEvents(mockModel.buildDisplayEvents(), newQuery);
     }
 
     @Test
     public void updateInterests_updatesModelAndRefreshesView() {
-        // Arrange
         List<String> newInterests = Arrays.asList("Sports");
 
-        // Act
         controller.updateInterests(newInterests);
 
-        // Assert
         verify(mockModel).setSelectedInterests(newInterests);
         verify(mockView).showEvents(mockModel.buildDisplayEvents(), "");
     }
 
     @Test
     public void updateAvailability_updatesModelAndRefreshesView() {
-        // Arrange
         Long start = 1000L;
         Long end = 2000L;
 
-        // Act
         controller.updateAvailability(start, end);
 
-        // Assert
         verify(mockModel).setAvailabilityRange(start, end);
         verify(mockView).showEvents(mockModel.buildDisplayEvents(), "");
     }
 
     @Test
     public void clearAvailability_clearsModelAndRefreshesView() {
-        // Act
         controller.clearAvailability();
 
-        // Assert
         verify(mockModel).clearAvailability();
         verify(mockView).showEvents(mockModel.buildDisplayEvents(), "");
     }
