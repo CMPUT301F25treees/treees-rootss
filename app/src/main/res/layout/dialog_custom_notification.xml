@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_role_switch_card">
+
+    <TextView
+        android:id="@+id/dialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Custom notification"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center_horizontal" />
+
+    <EditText
+        android:id="@+id/inputMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Message..."
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/darker_gray"
+        android:inputType="textMultiLine"
+        android:minLines="3"
+        android:gravity="top|start" />
+
+    <TextView
+        android:id="@+id/audienceLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Send to:"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/audienceGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/rbInvited"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Invited"
+            android:textColor="@android:color/white"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/rbWaiting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Waiting"
+            android:textColor="@android:color/white" />
+
+        <RadioButton
+            android:id="@+id/rbAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ALL"
+            android:textColor="@android:color/white" />
+
+        <RadioButton
+            android:id="@+id/rbCancelled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CANCELLED"
+            android:textColor="@android:color/white" />
+    </RadioGroup>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="24dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.2"
+            android:text="Cancel"
+            android:backgroundTint="@android:color/transparent"
+            android:textColor="@android:color/white"
+            app:cornerRadius="30dp"
+            app:strokeColor="@android:color/white"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSend"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.8"
+            android:layout_marginStart="12dp"
+            android:text="Send"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/dodo_maroon"
+            app:cornerRadius="30dp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_role_switch_card">
+
+    <TextView
+        android:id="@+id/switchText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_horizontal"
+        android:text="Switch Role To"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnUser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="User"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_marginBottom="12dp"
+        android:gravity="center_horizontal"
+        android:backgroundTint="@color/dodo_maroon"
+        app:cornerRadius="30dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOrganizer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Organizer"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_marginBottom="12dp"
+        android:gravity="center_horizontal"
+        android:backgroundTint="@color/dodo_maroon"
+        app:cornerRadius="30dp"/>
+
+</LinearLayout>

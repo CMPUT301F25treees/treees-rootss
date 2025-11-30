@@ -1,7 +1,11 @@
 package com.example.myapplication.features.user;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -97,16 +101,7 @@ public class UProfileFrag extends Fragment implements DeleteProfileView {
 
         roleButton.setText(formatRoleLabel(currentUser != null ? currentUser.getRole() : null));
 
-        roleButton.setOnClickListener(v -> {
-            PopupMenu menu = new PopupMenu(requireContext(), v);
-            menu.getMenu().add("User");
-            menu.getMenu().add("Organizer");
-            menu.setOnMenuItemClickListener(item -> {
-                applyRoleSelection(item.getTitle().toString(), roleButton);
-                return true;
-            });
-            menu.show();
-        });
+        roleButton.setOnClickListener(v -> roleSwitchDialog(roleButton));
 
         cardNotifications.setOnClickListener(v -> {
             NavHostFragment.findNavController(this)
@@ -197,17 +192,79 @@ public class UProfileFrag extends Fragment implements DeleteProfileView {
         return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
     }
 
+    /**
+     * Displays the custom-made role switch pop-up dialogue. This lets the users choose between
+     * 'User' and 'Organizer.'
+     *
+     * @param roleButton button on the profile screen that displays the current users role
+     */
+    private void roleSwitchDialog(MaterialButton roleButton) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_role_switch, null);
+
+        View btnUser = dialogView.findViewById(R.id.btnUser);
+        View btnOrganizer = dialogView.findViewById(R.id.btnOrganizer);
+
+        MaterialAlertDialogBuilder builder =
+                new MaterialAlertDialogBuilder(requireContext());
+        builder.setView(dialogView);
+
+        final androidx.appcompat.app.AlertDialog dialog = builder.create();
+        if(dialog.getWindow() != null){
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        btnUser.setOnClickListener(v -> {
+            applyRoleSelection("User", roleButton);
+            dialog.dismiss();
+        });
+
+        btnOrganizer.setOnClickListener(v -> {
+            applyRoleSelection("Organizer", roleButton);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
     @Override
     public void showConfirmationDialog() {
         if (isDeleting) {
             return;
         }
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.delete_profile_title)
-                .setMessage(R.string.delete_profile_message)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.delete_profile_confirm, (dialog, which) -> controller.onDeleteConfirmed())
-                .show();
+
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_delete_profile);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        TextView messageView = dialog.findViewById(R.id.dialogMessage);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnDelete = dialog.findViewById(R.id.btnDelete);
+
+        if (titleView != null) {
+            titleView.setText(getString(R.string.delete_profile_title));
+        }
+        if (messageView != null) {
+            messageView.setText(getString(R.string.delete_profile_message));
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnDelete != null) {
+            btnDelete.setOnClickListener(v -> {
+                controller.onDeleteConfirmed();
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
     }
 
     @Override

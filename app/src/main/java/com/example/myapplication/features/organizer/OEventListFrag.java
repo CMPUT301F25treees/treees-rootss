@@ -1,10 +1,14 @@
 package com.example.myapplication.features.organizer;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -544,45 +548,87 @@ public class OEventListFrag extends Fragment {
     }
 
     /**
-     * This method shows the user a confirmation dialog to confirm the removal of an entrant
-     * from the waitlist
+     * Calls the remove dialog for the waitlist
      *
      * @param uid the uid of the user being removed
      * @param name the name of the user
      * @param position the adapter position of the user
      */
-    private void showRemoveFromWaitlistDialog(String uid, String name, int position){
-        if(!isAdded()){
-            return;
-        }
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Remove entrant from waitlist")
-                .setMessage("Are you sure you want to remove " + name )
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Remove",  (dialog, which) ->
-                    removeFromWaitlist(uid, position)).show();
+    private void showRemoveFromWaitlistDialog(String uid, String name, int position) {
+        showRemoveDialog(uid, name, position, false);
     }
 
     /**
-     * This method shows a confirmation dialog to remove an entrant from the invited list.
+     * Calls the remove dialog for the invited list.
      *
      * @param uid      the uid of the user being removed
      * @param name     the name of the user
      * @param position the adapter position of the user
      */
     private void showRemoveFromInvitedDialog(String uid, String name, int position) {
+        showRemoveDialog(uid, name, position, true);
+    }
+
+    /**
+     * Shows the confirmation dialog that matches the application theme.
+     *
+     * This dialog gets updated based on whether it is being called for removing from the
+     * invited list or from the waitlist.
+     *
+     * @param uid the uid of the user being removed
+     * @param name the name of the user
+     * @param position the adapter position of the user
+     * @param isInvited if true remove from the invited list, if false remove from the waitlist
+     */
+    private void showRemoveDialog(String uid, String name, int position, boolean isInvited) {
         if (!isAdded()) {
             return;
         }
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Remove entrant from invited list")
-                .setMessage("Are you sure you want to remove " + name + " from the invited list?")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Remove", (dialog, which) ->
-                        removeFromInvited(uid, position))
-                .show();
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_remove_entrant);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        TextView messageView = dialog.findViewById(R.id.dialogMessage);
+        MaterialButton cancelButton = dialog.findViewById(R.id.btnCancel);
+        MaterialButton removeButton = dialog.findViewById(R.id.btnRemove);
+
+        String title = isInvited
+                ? "Remove entrant from invited list"
+                : "Remove entrant from waitlist";
+
+        String msg = isInvited
+                ? "Are you sure you want to remove " + name + " from the invited list?"
+                : "Are you sure you want to remove " + name + "?";
+
+        if (titleView != null) {
+            titleView.setText(title);
+        }
+        if (messageView != null) {
+            messageView.setText(msg);
+        }
+
+        if (cancelButton != null) {
+            cancelButton.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (removeButton != null) {
+            removeButton.setOnClickListener(v -> {
+                if (isInvited) {
+                    removeFromInvited(uid, position);
+                } else {
+                    removeFromWaitlist(uid, position);
+                }
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
     }
 
     /**

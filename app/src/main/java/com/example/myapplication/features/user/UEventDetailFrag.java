@@ -2,13 +2,17 @@ package com.example.myapplication.features.user;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -314,11 +318,7 @@ public class UEventDetailFrag extends Fragment {
             repo.fetchEventById(eventId, new FirebaseEventRepository.SingleEventCallback() {
                 @Override
                 public void onEventFetched(UserEvent event) {
-                    new AlertDialog.Builder(requireContext())
-                            .setTitle("You have joined the waitlist!")
-                            .setMessage("You have been added successfully.")
-                            .setPositiveButton("Okay", (dialog, i) -> dialog.dismiss())
-                            .show();
+                    showWaitlistInfoDialog(event.getEntrantsToDraw());
                 }
 
                 @Override
@@ -334,6 +334,35 @@ public class UEventDetailFrag extends Fragment {
         }, e -> Toast.makeText(getContext(),
                 "Could not join waitlist.",
                 Toast.LENGTH_SHORT).show());
+    }
+
+    /**
+     * Displays the custom dialog pop up with the details of the draw for teh
+     * specified event.
+     *
+     * @param entrantsToDraw the number of people to be drawn
+     */
+    private void showWaitlistInfoDialog(int entrantsToDraw) {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_waitlist_info);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT)
+            );
+        }
+
+        TextView infoText = dialog.findViewById(R.id.infoText);
+        MaterialButton okButton = dialog.findViewById(R.id.okButton);
+
+        String message = "Thank you for joining the waitlist.\n" + entrantsToDraw + " entrants will be selected at random " + "from the total pool.";
+
+        infoText.setText(message);
+
+        okButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
 

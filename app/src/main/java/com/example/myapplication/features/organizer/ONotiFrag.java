@@ -1,17 +1,26 @@
 package com.example.myapplication.features.organizer;
 
+import android.app.Dialog;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.data.firebase.FirebaseEventRepository;
@@ -87,63 +96,67 @@ public class ONotiFrag extends Fragment {
     }
 
     /**
-     * Opens a picker with a list of the Users events which they can select.
+     * Opens a custom picker with a list of the Users events which they can select.
      */
-    private void openEventPicker(){
-        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
-        if (uid == null) return;
+    private void openEventPicker() {
 
         repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
             @Override
-            public void onEventsFetched(List<UserEvent> events) {
-                if (events == null || events.isEmpty()) {
-                    toast("No events.");
-                    return;
-                }
-
+            public void onEventsFetched(List<UserEvent> allEvents) {
+                String uid = FirebaseAuth.getInstance().getUid();
                 List<UserEvent> myEvents = new ArrayList<>();
-                for (UserEvent event : events) {
+                for (UserEvent event : allEvents) {
                     if (event != null && uid.equals(event.getOrganizerID())) {
                         myEvents.add(event);
                     }
                 }
-                if (myEvents.isEmpty()) { toast("No events created by you."); return; }
 
-                CharSequence[] eventNames = new CharSequence[myEvents.size()];
-                for (int i = 0; i < myEvents.size(); i++) {
-                    String name = myEvents.get(i).getName();
-                    eventNames[i] = name != null ? name : "(unnamed)";;
+                if (myEvents.isEmpty()) {
+                    Toast.makeText(requireContext(), "No events found.", Toast.LENGTH_SHORT).show();
+                    return;
                 }
 
-                int checked = -1;
-                if (selectedEventId != null) {
-                    for (int i = 0; i < myEvents.size(); i++) {
-                        if (selectedEventId.equals(myEvents.get(i).getId())) {
-                            checked = i;
-                            break;
-                        }
-                    }
-                }
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Select Event")
-                        .setSingleChoiceItems(eventNames, checked, null)
+                View view = LayoutInflater.from(requireContext())
+                        .inflate(R.layout.dialog_select_event, null);
+
+                RecyclerView rv = view.findViewById(R.id.rvEvents);
+                rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+                final int[] selected = {-1};
+
+                OEventSelectAdapter adapter =
+                        new OEventSelectAdapter(myEvents, -1, pos -> selected[0] = pos);
+
+                rv.setAdapter(adapter);
+
+                AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
+                        .setView(view)
                         .setPositiveButton("Select", (d, w) -> {
-                            androidx.appcompat.app.AlertDialog ad = (androidx.appcompat.app.AlertDialog) d;
-                            int idx = ad.getListView().getCheckedItemPosition();
-                            if (idx >= 0) {
-                                UserEvent chosen = myEvents.get(idx);
-                                selectedEventId = chosen.getId();
-                                selectedEventName = chosen.getName() != null ? chosen.getName() : "(unnamed)";
+                            if (selected[0] >= 0) {
+                                UserEvent event = myEvents.get(selected[0]);
+                                selectedEventId = event.getId();
+                                selectedEventName = event.getName();
                                 btnEvent.setText(selectedEventName);
                             }
-                            d.dismiss();
                         })
                         .setNegativeButton("Cancel", null)
-                        .show();
+                        .create();
+
+                dialog.setOnShowListener(dlg -> {
+                    dialog.getWindow().setBackgroundDrawableResource(R.drawable.bg_role_switch_card);
+
+                    int white = requireContext().getColor(android.R.color.white);
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(white);
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(white);
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTypeface(null, android.graphics.Typeface.BOLD);
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTypeface(null, android.graphics.Typeface.BOLD);
+                });
+
+                dialog.show();
             }
-            @Override public void onError(Exception e) {
-                toast("Failed to fetch: " + e.getMessage());
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -155,29 +168,62 @@ public class ONotiFrag extends Fragment {
      * @param eventId the event id of the Firestore Id of the specified event
      */
     private void promptAndSendCustomPush(String eventId) {
-        final android.widget.EditText input = new android.widget.EditText(requireContext());
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint("Message...");
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_custom_notification);
 
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
 
-        final CharSequence[] audiences = {"Invited", "Waiting", "ALL", "CANCELLED"};
-        final int[] chosen = {0};
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        EditText inputMessage = dialog.findViewById(R.id.inputMessage);
+        RadioGroup audienceGroup = dialog.findViewById(R.id.audienceGroup);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnSend = dialog.findViewById(R.id.btnSend);
 
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Custom Notification")
-                .setSingleChoiceItems(audiences, 0, (d, which) -> chosen[0] = which)
-                .setView(input)
-                .setPositiveButton("Send", (d, w) -> {
-                    String msg = input.getText().toString().trim();
-                    if (msg.isEmpty()) { toast("Message is empty."); return; }
-                    Audience a = (chosen[0] == 0) ? Audience.INVITED
-                            : (chosen[0] == 1) ? Audience.WAITING
-                            : (chosen[0] == 2) ? Audience.ALL
-                            : Audience.CANCELLED;
-                    sendCustomPush(eventId, msg, a);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        if (titleView != null) {
+            titleView.setText("Custom notification");
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnSend != null) {
+            btnSend.setOnClickListener(v -> {
+                String msg = (inputMessage != null)
+                        ? inputMessage.getText().toString().trim()
+                        : "";
+
+                if (msg.isEmpty()) {
+                    toast("Message is empty.");
+                    return;
+                }
+
+                Audience audience;
+                if (audienceGroup == null) {
+                    audience = Audience.ALL;
+                } else {
+                    int checkedId = audienceGroup.getCheckedRadioButtonId();
+                    if (checkedId == R.id.rbInvited) {
+                        audience = Audience.INVITED;
+                    } else if (checkedId == R.id.rbWaiting) {
+                        audience = Audience.WAITING;
+                    } else if (checkedId == R.id.rbCancelled) {
+                        audience = Audience.CANCELLED;
+                    } else {
+                        audience = Audience.ALL;
+                    }
+                }
+
+                sendCustomPush(eventId, msg, audience);
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
     }
 
     /**
@@ -316,17 +362,48 @@ public class ONotiFrag extends Fragment {
                 if (numToDraw <= 0) numToDraw = event.getWaitlist().size();
 
                 int finalNumToDraw = numToDraw;
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Run Lottery")
-                        .setMessage("Draw " + finalNumToDraw + " winners from " +
-                                event.getWaitlist().size() + " entrants?")
-                        .setPositiveButton("Run Lottery", (d, w) -> {
-                            repo.runLottery(eventId, event.getName(), event.getWaitlist(), finalNumToDraw,
-                                    numWinners -> toast(numWinners + " winners selected and notified!"),
-                                    e -> toast("Error: " + e.getMessage()));
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
+
+                Dialog dialog = new Dialog(requireContext());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setContentView(R.layout.dialog_run_lottery);
+
+                if (dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(
+                            new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                }
+
+                TextView titleView = dialog.findViewById(R.id.dialogTitle);
+                TextView messageView = dialog.findViewById(R.id.dialogMessage);
+                MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+                MaterialButton btnRun = dialog.findViewById(R.id.btnRun);
+
+                if (titleView != null) {
+                    titleView.setText("Run lottery");
+                }
+
+                if (messageView != null) {
+                    String msg = "Draw " + finalNumToDraw + " winners from "
+                            + event.getWaitlist().size() + " entrants?";
+                    messageView.setText(msg);
+                }
+
+                if (btnCancel != null) {
+                    btnCancel.setOnClickListener(v -> dialog.dismiss());
+                }
+
+                if (btnRun != null) {
+                    btnRun.setOnClickListener(v -> {
+                        repo.runLottery(eventId,
+                                event.getName(),
+                                event.getWaitlist(),
+                                finalNumToDraw,
+                                numWinners -> toast(numWinners + " winners selected and notified!"),
+                                e -> toast("Error: " + e.getMessage()));
+                        dialog.dismiss();
+                    });
+                }
+
+                dialog.show();
             }
 
             @Override

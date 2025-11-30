@@ -187,6 +187,7 @@ public class OCreateEventFrag extends Fragment {
         final Calendar calendar = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(
                 requireContext(),
+                R.style.MyDatePickerTheme,
                 (DatePicker dp, int year, int month, int dayOfMonth) -> {
                     calendar.set(year, month, dayOfMonth, 0, 0, 0);
                     callback.onDateChosen(calendar.getTimeInMillis());
