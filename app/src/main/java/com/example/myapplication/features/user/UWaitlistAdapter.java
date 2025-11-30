@@ -25,7 +25,9 @@ import java.util.Locale;
  */
 public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.ViewHolder> {
 
-
+    /**
+     * Listener interface for receiving callbacks when a waitlist event item is clicked
+     */
     public interface OnItemClickListener{
         void onEventClick(UserEvent event);
     }
@@ -33,6 +35,12 @@ public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.View
     private List<UserEvent> events;
     private final OnItemClickListener listener;
 
+    /**
+     * Creates a new adapter instance for displaying waitlisted events
+     *
+     * @param items initial list of waitlist events
+     * @param listener Callback gets invoked when a waitlist event is clicked
+     */
     public UWaitlistAdapter(List<UserEvent> items, OnItemClickListener listener){
         if(items == null){
             events = new ArrayList<>();
@@ -43,6 +51,11 @@ public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.View
         this.listener = listener;
     }
 
+    /**
+     * Replaces the current event list with a new set of items and refreshes the RecyclerView
+     *
+     * @param newItems the new list of events
+     */
     public void setItems(List<UserEvent> newItems) {
         if (newItems == null) {
             events= new ArrayList<>();
@@ -53,6 +66,14 @@ public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.View
     }
 
 
+    /**
+     * Inflates the waitlist event item layout and creates a ViewHolder to represent it
+     *
+     * @param parent   The ViewGroup into which the new View will be added after it is bound to
+     *                 an adapter position.
+     * @param viewType The view type of the new View.
+     * @return a new ViewHolder containing the inflated item view
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -61,6 +82,13 @@ public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.View
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds event data to the ViewHolder at the given adapter position, formats the draw date and sets up
+     * the click listener for the item
+     *
+     * @param holder the ViewHolder to update
+     * @param position the position of the event
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         UserEvent event = events.get(position);
@@ -81,11 +109,20 @@ public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.View
         });
     }
 
+    /**
+     * Returns the number of waitlist events currently stored in the adapter
+     *
+     * @return the total number of items
+     */
     @Override
     public int getItemCount() {
         return events != null ? events.size() : 0;
     }
 
+    /**
+     * ViewHolder that stores references to UI components for a single waitlist event item,
+     * holds the event title and formatted draw date text views
+     */
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView titleTextView;
         TextView dateTextView;
