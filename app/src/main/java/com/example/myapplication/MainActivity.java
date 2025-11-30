@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
                     || d.getId() == R.id.navigation_organizer_event_detail
                     || d.getId() == R.id.navigation_organizer_event_edit
                     || d.getId() == R.id.navigation_organizer_waitlist
+                    || d.getId() == R.id.navigation_organizer_entrant_map
+                    || d.getId() == R.id.navigation_organizer_notifications
                     || d.getId() == R.id.navigation_admin_notifications
                     || d.getId() == R.id.navigation_admin_event_detail
                     || d.getId() == R.id.navigation_admin_user_detail
