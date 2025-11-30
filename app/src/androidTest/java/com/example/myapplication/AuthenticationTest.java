@@ -89,7 +89,7 @@ public class AuthenticationTest {
         String lastName = "User";
         String phone = "1234567890";
 
-        // Step 1: Create user with Firebase Auth
+        // Create user with Firebase Auth
         AuthResult authResult = Tasks.await(
             auth.createUserWithEmailAndPassword(testEmail, testPassword),
             30,
@@ -104,7 +104,7 @@ public class AuthenticationTest {
         assertNotNull("User ID should not be null", testUserId);
         assertEquals("Email should match", testEmail, firebaseUser.getEmail());
 
-        // Step 2: Create user document in Firestore
+        // Create user document in Firestore
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("firstName", firstName);
         userMap.put("lastName", lastName);
@@ -149,7 +149,7 @@ public class AuthenticationTest {
         String firstName = "Login";
         String lastName = "Test";
 
-        // Step 1: Create a test user first
+        //  Create a test user first
         AuthResult registerResult = Tasks.await(
             auth.createUserWithEmailAndPassword(testEmail, testPassword),
             30,
@@ -171,7 +171,7 @@ public class AuthenticationTest {
             TimeUnit.SECONDS
         );
 
-        // Step 2: Sign out
+        //  Sign out
         auth.signOut();
         assertNull("User should be signed out", auth.getCurrentUser());
 
@@ -188,7 +188,7 @@ public class AuthenticationTest {
         assertEquals("User ID should match", testUserId, loggedInUser.getUid());
         assertEquals("Email should match", testEmail, loggedInUser.getEmail());
 
-        // Step 4: Verify we can retrieve user data from Firestore
+        //  Verify we can retrieve user data from Firestore
         DocumentSnapshot userDoc = Tasks.await(
             db.collection("users").document(testUserId).get(),
             10,

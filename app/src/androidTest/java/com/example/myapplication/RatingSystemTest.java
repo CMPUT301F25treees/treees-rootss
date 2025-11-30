@@ -57,7 +57,6 @@ public class RatingSystemTest {
 
     @After
     public void tearDown() {
-        // Clean up
         try {
             if (testOrganizerId != null) Tasks.await(db.collection("users").document(testOrganizerId).delete(), 5, TimeUnit.SECONDS);
             if (testNotificationId != null) Tasks.await(db.collection("notifications").document(testNotificationId).delete(), 5, TimeUnit.SECONDS);
@@ -99,7 +98,7 @@ public class RatingSystemTest {
         latch.await(10, TimeUnit.SECONDS);
         assertTrue("Rating submission should succeed", success[0]);
 
-        // 4. Verify Firestore Update
+        // Verify Firestore Update
         DocumentSnapshot snapshot = Tasks.await(db.collection("users").document(testOrganizerId).get(), 10, TimeUnit.SECONDS);
         assertTrue(snapshot.exists());
         
@@ -132,7 +131,7 @@ public class RatingSystemTest {
 
         latch.await(10, TimeUnit.SECONDS);
 
-        // 4. Verify: (5 + 3) / 2 = 4.0
+        //  Verify: (5 + 3) / 2 = 4.0
         DocumentSnapshot snapshot = Tasks.await(db.collection("users").document(testOrganizerId).get(), 10, TimeUnit.SECONDS);
         
         Double rating = snapshot.getDouble("rating");

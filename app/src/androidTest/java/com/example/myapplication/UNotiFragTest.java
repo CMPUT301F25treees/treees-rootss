@@ -81,7 +81,6 @@ public class UNotiFragTest {
 
     @After
     public void tearDown() throws Exception {
-        // Clean up notifications created for this test user
         if (testUserId != null) {
             try {
                 QuerySnapshot snapshot = Tasks.await(
@@ -97,7 +96,6 @@ public class UNotiFragTest {
             }
         }
 
-        // Sign out (we don't try to delete the auth user; same style as AuthenticationTest)
         if (auth.getCurrentUser() != null) {
             auth.signOut();
         }
@@ -111,7 +109,7 @@ public class UNotiFragTest {
 
         Map<String, Object> data = new HashMap<>();
         data.put("uID", Arrays.asList(testUserId));
-        data.put("type", "custom"); // non-invitation
+        data.put("type", "custom");
         data.put("eventId", eventId);
         data.put("event", "Test Event");
         data.put("message", message);
@@ -133,11 +131,8 @@ public class UNotiFragTest {
 
         String uniqueMessage = "Test personal notification " + UUID.randomUUID().toString().substring(0, 4);
 
-        // Create a personal notification for this user
         createPersonalNotification(uniqueMessage, new Date());
 
-        // Run the same query as in UNotiFrag:
-        // .whereArrayContains("uID", uid).orderBy("dateMade", DESC)
         Query query = notificationsRef
                 .whereArrayContains("uID", testUserId)
                 .orderBy("dateMade", Query.Direction.DESCENDING);

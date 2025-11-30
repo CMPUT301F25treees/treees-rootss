@@ -148,7 +148,6 @@ public class UserHomeTest {
         String paidEventId = createTestEvent("Paid Event", "Paid Location", 49.99);
         String expensiveEventId = createTestEvent("Expensive Event", "Expensive Location", 199.50);
 
-        // Fetch events directly from Firestore
         DocumentSnapshot freeEvent = Tasks.await(
             db.collection("events").document(freeEventId).get(),
             10,
