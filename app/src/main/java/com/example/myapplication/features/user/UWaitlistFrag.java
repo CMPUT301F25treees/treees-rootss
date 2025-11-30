@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,6 +29,11 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_u_waitlist, container, false);
+
+        View backButton = view.findViewById(R.id.bckButton);
+        backButton.setOnClickListener(v->{
+            Navigation.findNavController(view).navigateUp();
+        });
 
         recyclerView = view.findViewById(R.id.recyclerEvents);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
