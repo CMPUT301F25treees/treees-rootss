@@ -1,6 +1,9 @@
 package com.example.myapplication.features.admin;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.ImageView;
@@ -83,6 +86,10 @@ public class AUserDetailFrag extends Fragment implements DeleteProfileView {
 
     @Override
     public void showConfirmationDialog() {
+        if (!isAdded()) {
+            return;
+        }
+
         String who = !name.isEmpty() ? name : email;
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete profile?")
