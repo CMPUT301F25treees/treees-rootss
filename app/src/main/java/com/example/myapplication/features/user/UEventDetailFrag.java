@@ -373,6 +373,16 @@ public class UEventDetailFrag extends Fragment {
                 Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Extracts a Bitmap from the drawable currently displayed in the specified ImageView.
+     * <p>
+     * If the drawable is already a BitmapDrawable, its bitmap is returned directly.
+     * If the drawable is a vector or another type of drawable, it is drawn onto a newly
+     * created Bitmap using a Canvas.
+     *
+     * @param imageView The ImageView containing the QR code drawable.
+     * @return A Bitmap representation of the ImageView's drawable, or {@code null} if no drawable exists.
+     */
     @Nullable
     private Bitmap getBitmapFromImageView(@NonNull ImageView imageView) {
         Drawable drawable = imageView.getDrawable();
