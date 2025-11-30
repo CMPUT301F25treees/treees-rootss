@@ -110,8 +110,8 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
 
 
     /**
-     * This method will be used to navigate to the User Detail page of the
-     * specified event.
+     * Handles clicks on an event in the list of events. Navigates the user to the event detail page
+     * for the selected event by passing its event id to the destination fragment
      * @param event the event that was clicked
      */
     @Override
