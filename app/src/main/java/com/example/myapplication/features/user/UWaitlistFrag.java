@@ -69,6 +69,15 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
          return view;
     }
 
+    /**
+     * This method fetches all the events from Firestore and filters them to include only
+     * the following:
+     * - Events where the current user is in the waitlist for
+     * - Events that have not had their draw date pass yet
+     *
+     * The resulting list is then displayed in the RecyclerView by the adapter, if the fetch fails
+     * then an error toast gets shown
+     */
     private void loadWaitlistEvents(){
         repo.getAllEvents(new FirebaseEventRepository.EventListCallback() {
             @Override
