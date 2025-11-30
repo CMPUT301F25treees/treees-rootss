@@ -362,17 +362,48 @@ public class ONotiFrag extends Fragment {
                 if (numToDraw <= 0) numToDraw = event.getWaitlist().size();
 
                 int finalNumToDraw = numToDraw;
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Run Lottery")
-                        .setMessage("Draw " + finalNumToDraw + " winners from " +
-                                event.getWaitlist().size() + " entrants?")
-                        .setPositiveButton("Run Lottery", (d, w) -> {
-                            repo.runLottery(eventId, event.getName(), event.getWaitlist(), finalNumToDraw,
-                                    numWinners -> toast(numWinners + " winners selected and notified!"),
-                                    e -> toast("Error: " + e.getMessage()));
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
+
+                Dialog dialog = new Dialog(requireContext());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setContentView(R.layout.dialog_run_lottery);
+
+                if (dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(
+                            new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                }
+
+                TextView titleView = dialog.findViewById(R.id.dialogTitle);
+                TextView messageView = dialog.findViewById(R.id.dialogMessage);
+                MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+                MaterialButton btnRun = dialog.findViewById(R.id.btnRun);
+
+                if (titleView != null) {
+                    titleView.setText("Run lottery");
+                }
+
+                if (messageView != null) {
+                    String msg = "Draw " + finalNumToDraw + " winners from "
+                            + event.getWaitlist().size() + " entrants?";
+                    messageView.setText(msg);
+                }
+
+                if (btnCancel != null) {
+                    btnCancel.setOnClickListener(v -> dialog.dismiss());
+                }
+
+                if (btnRun != null) {
+                    btnRun.setOnClickListener(v -> {
+                        repo.runLottery(eventId,
+                                event.getName(),
+                                event.getWaitlist(),
+                                finalNumToDraw,
+                                numWinners -> toast(numWinners + " winners selected and notified!"),
+                                e -> toast("Error: " + e.getMessage()));
+                        dialog.dismiss();
+                    });
+                }
+
+                dialog.show();
             }
 
             @Override
