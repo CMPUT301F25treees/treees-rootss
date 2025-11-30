@@ -139,8 +139,18 @@ public class UHomeFrag extends Fragment implements UHomeView {
 
         filtered = upcomingEvents;
 
+        List<String> interests = controller.getSelectedInterests();
+        if(interests != null && !interests.isEmpty()){
+            filtered = filterEventsByInterests(filtered, interests);
+        }
 
-
+        Long start = controller.getAvailabilityStartMillis();
+        Long end = controller.getAvailabilityEndMillis();
+        if(start != null && end != null){
+            long filteredStart = startOfDay(start);
+            long filteredEnd = startOfDay(end);
+            filtered = filterEventsByAvailability(filtered, filteredStart, filteredEnd);
+        }
 
         adapter.submit(filtered);
         adapter.filter(searchQuery);
