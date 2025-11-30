@@ -3,6 +3,8 @@ package com.example.myapplication.features.user;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -12,7 +14,9 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,6 +44,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Displays event details for entrants, allows joining the waitlist,
@@ -385,6 +392,60 @@ public class UEventDetailFrag extends Fragment {
             drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
             drawable.draw(canvas);
             return bmp;
+        }
+    }
+
+    @Nullable
+    private Uri saveBitmapToGallery(@NonNull Bitmap bitmap, @NonNull String fileName) {
+        ContentResolver resolver = requireContext().getContentResolver();
+
+        Uri imagesUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            imagesUri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        } else {
+            imagesUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName + ".png");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+
+        // Save into a custom folder on Android 10+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/EventLottery");
+            values.put(MediaStore.Images.Media.IS_PENDING, 1);
+        }
+
+        Uri uri = resolver.insert(imagesUri, values);
+        if (uri == null) {
+            return null;
+        }
+
+        OutputStream out = null;
+        try {
+            out = resolver.openOutputStream(uri);
+            if (out != null) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                values.clear();
+                values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                resolver.update(uri, values, null, null);
+            }
+
+            return uri;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ignored) { }
+            }
         }
     }
 
