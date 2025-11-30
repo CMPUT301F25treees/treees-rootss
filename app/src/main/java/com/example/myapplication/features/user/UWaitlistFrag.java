@@ -20,6 +20,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment that displays the user's waitlisted events.
+ */
 public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemClickListener{
 
     private RecyclerView recyclerView;

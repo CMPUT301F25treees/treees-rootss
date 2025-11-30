@@ -16,6 +16,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Adapter for displaying user waitlist events in a RecyclerView.
+ */
 public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.ViewHolder> {
 
     public interface OnItemClickListener{
