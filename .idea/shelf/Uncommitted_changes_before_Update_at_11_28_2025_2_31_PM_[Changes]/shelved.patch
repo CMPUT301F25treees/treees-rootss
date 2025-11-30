@@ -1,0 +1,19 @@
+Index: .idea/deploymentTargetSelector.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"deploymentTargetSelector\">\r\n    <selectionStates>\r\n      <SelectionState runConfigName=\"Unnamed\">\r\n        <option name=\"selectionMode\" value=\"DROPDOWN\" />\r\n      </SelectionState>\r\n    </selectionStates>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/deploymentTargetSelector.xml b/.idea/deploymentTargetSelector.xml
+--- a/.idea/deploymentTargetSelector.xml	(revision f4276124b31cc0cdb9123aa2a529b680d7fc5a56)
++++ b/.idea/deploymentTargetSelector.xml	(date 1764356098811)
+@@ -2,7 +2,7 @@
+ <project version="4">
+   <component name="deploymentTargetSelector">
+     <selectionStates>
+-      <SelectionState runConfigName="Unnamed">
++      <SelectionState runConfigName="app">
+         <option name="selectionMode" value="DROPDOWN" />
+       </SelectionState>
+     </selectionStates>

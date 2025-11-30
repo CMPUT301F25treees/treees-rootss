@@ -18,7 +18,8 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:hintTextColor="@color/white"/>
 
     <TextView
         android:id="@+id/firstNameTitle"
@@ -31,7 +32,8 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registrationTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/registrationTitle"
+        app:hintTextColor="@color/white"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout"
@@ -50,7 +52,8 @@
         app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/firstNameTitle">
+        app:layout_constraintTop_toBottomOf="@+id/firstNameTitle"
+        app:hintTextColor="@color/white">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/first_name_input"
@@ -63,7 +66,8 @@
             android:textColor="@color/white"
             android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            app:hintTextColor="@color/white"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -77,7 +81,8 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout"
+        app:hintTextColor="@color/white"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout2"
@@ -96,7 +101,8 @@
         app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lastNameTitle">
+        app:layout_constraintTop_toBottomOf="@+id/lastNameTitle"
+        app:hintTextColor="@color/white">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/last_name_input"
@@ -109,7 +115,9 @@
             android:textColor="@color/white"
             android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            app:hintTextColor="@color/white"/>
+
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -123,7 +131,8 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout2" />
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout2"
+        app:hintTextColor="@color/white"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout3"
@@ -142,7 +151,8 @@
         app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/emailTextTitle">
+        app:layout_constraintTop_toBottomOf="@+id/emailTextTitle"
+        app:hintTextColor="@color/white">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email_input"
@@ -155,7 +165,8 @@
             android:textColor="@color/white"
             android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            app:hintTextColor="@color/white"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -169,7 +180,8 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout3" />
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout3"
+        app:hintTextColor="@color/white"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout4"
@@ -188,7 +200,8 @@
         app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/phoneTextTitle">
+        app:layout_constraintTop_toBottomOf="@+id/phoneTextTitle"
+        app:hintTextColor="@color/white">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/phone_input"
@@ -201,7 +214,8 @@
             android:textColor="@color/white"
             android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            app:hintTextColor="@color/white" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -215,7 +229,8 @@
         android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout4" />
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout4"
+        app:hintTextColor="@color/white"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout5"
@@ -234,7 +249,8 @@
         app:helperTextEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passwordTextTitle">
+        app:layout_constraintTop_toBottomOf="@+id/passwordTextTitle"
+        app:hintTextColor="@color/white">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/password_input"
@@ -247,7 +263,8 @@
             android:textColor="@color/white"
             android:textColorHighlight="@color/white"
             android:textColorHint="@color/white"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            app:hintTextColor="@color/white"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
@@ -266,7 +283,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout5" />
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout5"
+        app:hintTextColor="@color/white" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
