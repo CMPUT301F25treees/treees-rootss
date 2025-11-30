@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,6 +24,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.storage.FirebaseStorage;
+
+import com.example.myapplication.core.ImageUtils;
+import com.example.myapplication.data.repo.ImageRepository;
 
 /**
  * Remove Options fragment for administrators.
@@ -131,20 +135,36 @@ public class ARemoveFrag extends Fragment {
             }
             new AlertDialog.Builder(requireContext())
                     .setTitle("Remove event image?")
-                    .setMessage("This will remove the preview image from this event.")
-                    .setPositiveButton("Remove", (dialog, which) ->
-                            FirebaseFirestore.getInstance().collection("events").document(eventId)
-                                    .update(
-                                            "imageUrl", FieldValue.delete(),
-                                            "posterUrl", FieldValue.delete()
-                                    )
-                                    .addOnSuccessListener(v1 -> {
-                                        Toast.makeText(requireContext(), "Image removed", Toast.LENGTH_SHORT).show();
-                                        NavHostFragment.findNavController(ARemoveFrag.this).navigateUp();
-                                    })
-                                    .addOnFailureListener(e ->
-                                            Toast.makeText(requireContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show())
-                    )
+                    .setMessage("This will remove the preview image from this event and replace it with a default.")
+                    .setPositiveButton("Remove", (dialog, which) -> {
+                        Uri defaultPosterUri = ImageUtils.createDefaultPosterUri(requireContext());
+                        if (defaultPosterUri != null) {
+                            ImageRepository imageRepository = new ImageRepository();
+                            imageRepository.uploadImage(defaultPosterUri, new ImageRepository.UploadCallback() {
+                                @Override
+                                public void onSuccess(String secureUrl) {
+                                    FirebaseFirestore.getInstance().collection("events").document(eventId)
+                                            .update(
+                                                    "imageUrl", secureUrl,
+                                                    "posterUrl", secureUrl
+                                            )
+                                            .addOnSuccessListener(v1 -> {
+                                                Toast.makeText(requireContext(), "Image replaced with default", Toast.LENGTH_SHORT).show();
+                                                NavHostFragment.findNavController(ARemoveFrag.this).navigateUp();
+                                            })
+                                            .addOnFailureListener(e ->
+                                                    Toast.makeText(requireContext(), "Failed to update with default image: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                }
+
+                                @Override
+                                public void onError(String e) {
+                                    Toast.makeText(requireContext(), "Failed to upload default image: " + e, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else {
+                            Toast.makeText(requireContext(), "Failed to create default image URI", Toast.LENGTH_SHORT).show();
+                        }
+                    })
                     .setNegativeButton("Cancel", null)
                     .show();
         });

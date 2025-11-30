@@ -37,6 +37,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+import com.example.myapplication.core.ImageUtils;
+
 /**
  * This class is for users to be able to create new events when they are in their
  * organizer state. Event details are collected and validated such as: Title, Address,
@@ -300,6 +302,10 @@ public class OCreateEventFrag extends Fragment {
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
         event.setTheme(selectedTheme);
 
+        // If no poster is selected, use the default profile image
+        if (posterUri == null) {
+            posterUri = ImageUtils.createDefaultPosterUri(requireContext());
+        }
 
         if (posterUri != null) {
             imageRepository.uploadImage( posterUri, new ImageRepository.UploadCallback() {
