@@ -188,7 +188,12 @@ public class UProfileFrag extends Fragment implements DeleteProfileView {
         return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
     }
 
-
+    /**
+     * Displays the custom-made role switch pop-up dialogue. This lets the users choose between
+     * 'User' and 'Organizer.'
+     *
+     * @param roleButton button on the profile screen that displays the current users role
+     */
     private void roleSwitchDialog(MaterialButton roleButton) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_role_switch, null);
 
