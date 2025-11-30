@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
                     || d.getId() == R.id.navigation_u_edit_profile
                     || d.getId() == R.id.navigation_user_notifications
                     || d.getId() == R.id.navigation_user_past_events
+                    || d.getId() == R.id.navigation_user_waitlist
                     || d.getId() == R.id.navigation_organizer_event_detail
                     || d.getId() == R.id.navigation_organizer_event_edit
                     || d.getId() == R.id.navigation_organizer_waitlist
