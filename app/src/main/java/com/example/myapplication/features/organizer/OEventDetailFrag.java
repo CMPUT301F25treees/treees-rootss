@@ -121,6 +121,21 @@ public class OEventDetailFrag extends Fragment {
                     .navigate(R.id.action_navigation_organizer_event_detail_to_navigation_organizer_entrant_map, args);
         });
 
+        Button endEventButton = view.findViewById(R.id.endEventButton);
+        endEventButton.setOnClickListener(btn -> {
+            new android.app.AlertDialog.Builder(requireContext())
+                    .setTitle("End Event & Send Surveys")
+                    .setMessage("Are you sure you want to end this event? This will send a rating survey to all attendees.")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        eventRepository.sendRatingRequestNotifications(eventId, 
+                            v -> Toast.makeText(requireContext(), "Notifications sent!", Toast.LENGTH_SHORT).show(),
+                            e -> Toast.makeText(requireContext(), "Failed to send: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        );
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        });
+
     }
 
     /**

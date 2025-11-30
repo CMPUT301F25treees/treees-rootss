@@ -189,10 +189,11 @@ public class RatingSystemTest {
         organizerMap.put("firstName", "Big Boss");
         Tasks.await(db.collection("users").document(testOrganizerId).set(organizerMap), 10, TimeUnit.SECONDS);
 
-        // 2. Create Event
+        // 2. Create Event (Ended in the past)
         Map<String, Object> eventMap = new HashMap<>();
         eventMap.put("organizerID", testOrganizerId);
         eventMap.put("title", "Super Event");
+        eventMap.put("endTimeMillis", System.currentTimeMillis() - 10000); // 10 seconds ago
         Tasks.await(db.collection("events").document(testEventId).set(eventMap), 10, TimeUnit.SECONDS);
 
         // 3. Create NotificationList with entrant in 'final'
@@ -201,11 +202,7 @@ public class RatingSystemTest {
         notiListMap.put("final", Arrays.asList(testEntrantId));
         Tasks.await(db.collection("notificationList").document(testEventId).set(notiListMap), 10, TimeUnit.SECONDS);
 
-        // 4. Send Request (This remains in EventRepository as it's an admin/system action, not typically user-initiated rating submission)
-        // However, if we wanted to MVC this, it might belong in an OrganizerController or EventController.
-        // For now, the request was "update the test", implying testing the existing refactored code.
-        // Since sendRatingRequestNotifications is in Repository and wasn't moved to RatingController (which handles SUBMISSION),
-        // we test it via the repository as before.
+        // 4. Send Request
         final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
         final boolean[] success = {false};
 
@@ -234,5 +231,52 @@ public class RatingSystemTest {
         DocumentSnapshot doc = qs.getDocuments().get(0);
         assertEquals("Organizer Name should be in 'from'", "Big Boss", doc.getString("from"));
         assertEquals("Organizer ID should be in 'fromId'", testOrganizerId, doc.getString("fromId"));
+    }
+
+    @Test
+    public void testSendRatingRequestNotifications_EventNotEnded() throws Exception {
+        // 1. Create Organizer
+        Map<String, Object> organizerMap = new HashMap<>();
+        organizerMap.put("firstName", "Big Boss");
+        Tasks.await(db.collection("users").document(testOrganizerId).set(organizerMap), 10, TimeUnit.SECONDS);
+
+        // 2. Create Event (Ends in future)
+        Map<String, Object> eventMap = new HashMap<>();
+        eventMap.put("organizerID", testOrganizerId);
+        eventMap.put("title", "Future Event");
+        eventMap.put("endTimeMillis", System.currentTimeMillis() + 100000); // In future
+        Tasks.await(db.collection("events").document(testEventId).set(eventMap), 10, TimeUnit.SECONDS);
+
+        // 3. Create NotificationList
+        Map<String, Object> notiListMap = new HashMap<>();
+        notiListMap.put("eventId", testEventId);
+        notiListMap.put("final", Arrays.asList(testEntrantId));
+        Tasks.await(db.collection("notificationList").document(testEventId).set(notiListMap), 10, TimeUnit.SECONDS);
+
+        // 4. Send Request
+        final java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        final boolean[] success = {false};
+
+        eventRepository.sendRatingRequestNotifications(testEventId, 
+            v -> {
+                success[0] = true; // Method returns success but does nothing
+                latch.countDown();
+            },
+            e -> latch.countDown()
+        );
+        
+        latch.await(10, TimeUnit.SECONDS);
+        assertTrue("Method call should succeed (graceful exit)", success[0]);
+
+        // 5. Verify NO Notification Created
+        QuerySnapshot qs = Tasks.await(
+            db.collection("notifications")
+              .whereEqualTo("eventId", testEventId)
+              .whereEqualTo("type", "rating_request")
+              .get(),
+            10, TimeUnit.SECONDS
+        );
+
+        assertTrue("Should NOT find any notifications", qs.isEmpty());
     }
 }
