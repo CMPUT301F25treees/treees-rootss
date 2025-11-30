@@ -1,11 +1,16 @@
 package com.example.myapplication.features.admin;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.net.Uri;
 
@@ -133,55 +138,12 @@ public class ARemoveFrag extends Fragment {
                 Toast.makeText(requireContext(), "No preview image to remove.", Toast.LENGTH_SHORT).show();
                 return;
             }
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Remove event image?")
-                    .setMessage("This will remove the preview image from this event and replace it with a default.")
-                    .setPositiveButton("Remove", (dialog, which) -> {
-                        Uri defaultPosterUri = ImageUtils.createDefaultPosterUri(requireContext());
-                        if (defaultPosterUri != null) {
-                            ImageRepository imageRepository = new ImageRepository();
-                            imageRepository.uploadImage(defaultPosterUri, new ImageRepository.UploadCallback() {
-                                @Override
-                                public void onSuccess(String secureUrl) {
-                                    FirebaseFirestore.getInstance().collection("events").document(eventId)
-                                            .update(
-                                                    "imageUrl", secureUrl,
-                                                    "posterUrl", secureUrl
-                                            )
-                                            .addOnSuccessListener(v1 -> {
-                                                Toast.makeText(requireContext(), "Image replaced with default", Toast.LENGTH_SHORT).show();
-                                                NavHostFragment.findNavController(ARemoveFrag.this).navigateUp();
-                                            })
-                                            .addOnFailureListener(e ->
-                                                    Toast.makeText(requireContext(), "Failed to update with default image: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                                }
-
-                                @Override
-                                public void onError(String e) {
-                                    Toast.makeText(requireContext(), "Failed to upload default image: " + e, Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        } else {
-                            Toast.makeText(requireContext(), "Failed to create default image URI", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+            showRemoveImageDialog();
         });
 
-        btnEvent.setOnClickListener(x -> new AlertDialog.Builder(requireContext())
-                .setTitle("Delete event?")
-                .setMessage("This will permanently delete this event and its images.")
-                .setPositiveButton("Delete", (d1, w1) -> removeEvent())
-                .setNegativeButton("Cancel", null)
-                .show());
+        btnEvent.setOnClickListener(x ->  showDeleteEventDialog());
 
-        btnOrg.setOnClickListener(x -> new AlertDialog.Builder(requireContext())
-                .setTitle("Remove organizer?")
-                .setMessage("This will revoke organizer permissions for this event's organizer.")
-                .setPositiveButton("Remove", (d2, w2) -> removeOrganizerForEvent())
-                .setNegativeButton("Cancel", null)
-                .show());
+        btnOrg.setOnClickListener(x -> showRemoveOrganizerDialog());
     }
 
     /**
@@ -250,4 +212,173 @@ public class ARemoveFrag extends Fragment {
      * @return empty string if {@code s} is null; otherwise {@code s}
      */
     private static String safe(String s){ return s == null ? "" : s; }
+
+    /**
+     * Shows a themed confirmation dialog to replace the event's preview image
+     * with a generated default image.
+     */
+    private void showRemoveImageDialog() {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_delete_event);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT)
+            );
+        }
+
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        TextView messageView = dialog.findViewById(R.id.dialogMessage);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnDelete = dialog.findViewById(R.id.btnDelete);
+
+        if (titleView != null) {
+            titleView.setText("Remove event image?");
+        }
+        if (messageView != null) {
+            messageView.setText(
+                    "This will remove the preview image from this event and replace it with a default."
+            );
+        }
+        if (btnDelete != null) {
+            btnDelete.setText("Remove");
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnDelete != null) {
+            btnDelete.setOnClickListener(v -> {
+                Uri defaultPosterUri = ImageUtils.createDefaultPosterUri(requireContext());
+                if (defaultPosterUri != null) {
+                    ImageRepository imageRepository = new ImageRepository();
+                    imageRepository.uploadImage(defaultPosterUri, new ImageRepository.UploadCallback() {
+                        @Override
+                        public void onSuccess(String secureUrl) {
+                            FirebaseFirestore.getInstance().collection("events").document(eventId)
+                                    .update(
+                                            "imageUrl", secureUrl,
+                                            "posterUrl", secureUrl
+                                    )
+                                    .addOnSuccessListener(v1 -> {
+                                        Toast.makeText(requireContext(),
+                                                "Image replaced with default",
+                                                Toast.LENGTH_SHORT).show();
+                                        NavHostFragment.findNavController(ARemoveFrag.this)
+                                                .navigateUp();
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(requireContext(),
+                                                    "Failed to update with default image: " + e.getMessage(),
+                                                    Toast.LENGTH_SHORT).show());
+                        }
+
+                        @Override
+                        public void onError(String e) {
+                            Toast.makeText(requireContext(),
+                                    "Failed to upload default image: " + e,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    Toast.makeText(requireContext(),
+                            "Failed to create default image URI",
+                            Toast.LENGTH_SHORT).show();
+                }
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
+    }
+
+    /**
+     * Shows a themed confirmation dialog to permanently delete the event
+     * and its images.
+     */
+    private void showDeleteEventDialog() {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_delete_event);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT)
+            );
+        }
+
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        TextView messageView = dialog.findViewById(R.id.dialogMessage);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnDelete = dialog.findViewById(R.id.btnDelete);
+
+        if (titleView != null) {
+            titleView.setText("Delete event?");
+        }
+        if (messageView != null) {
+            messageView.setText("This will permanently delete this event and its images.");
+        }
+        if (btnDelete != null) {
+            btnDelete.setText("Delete");
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnDelete != null) {
+            btnDelete.setOnClickListener(v -> {
+                removeEvent();
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
+    }
+
+    /**
+     * Shows a themed confirmation dialog to demote the event's organizer
+     * back to a regular user (role = "User", suspended = true).
+     */
+    private void showRemoveOrganizerDialog() {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_remove_entrant);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT)
+            );
+        }
+
+        TextView titleView = dialog.findViewById(R.id.dialogTitle);
+        TextView messageView = dialog.findViewById(R.id.dialogMessage);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnRemove = dialog.findViewById(R.id.btnRemove);
+
+        if (titleView != null) {
+            titleView.setText("Remove organizer?");
+        }
+        if (messageView != null) {
+            messageView.setText(
+                    "This will revoke organizer permissions for this event's organizer."
+            );
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnRemove != null) {
+            btnRemove.setText("Remove");
+            btnRemove.setOnClickListener(v -> {
+                removeOrganizerForEvent();
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
+    }
 }
