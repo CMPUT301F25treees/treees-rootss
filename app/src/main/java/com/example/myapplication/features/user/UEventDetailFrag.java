@@ -3,11 +3,20 @@ package com.example.myapplication.features.user;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +44,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Displays event details for entrants, allows joining the waitlist,
@@ -192,8 +204,33 @@ public class UEventDetailFrag extends Fragment {
         if (event.getImageUrl() != null)
             Glide.with(this).load(event.getImageUrl()).into(imageView);
 
-        if (event.getQrData() != null)
-            Glide.with(this).load(event.getQrData()).into(qrImageView);
+        if (qrImageView != null) {
+            if (event.getQrData() != null) {
+                Glide.with(this).load(event.getQrData()).into(qrImageView);
+
+                /**
+                 * Allows the user to save the QR code image by tapping on it.
+                 * The QR drawable inside the ImageView is converted into a Bitmap
+                 * and stored into the device's gallery.
+                 */
+                qrImageView.setOnClickListener(v -> {
+                    Bitmap bmp = getBitmapFromImageView(qrImageView);
+                    if (bmp == null) {
+                        Toast.makeText(requireContext(), "No QR to save.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    Uri uri = saveBitmapToGallery(bmp, "event_" + eventId + "_qr");
+                    if (uri != null) {
+                        Toast.makeText(requireContext(), "QR saved to Photos.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to save QR.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                qrImageView.setOnClickListener(null);
+            }
+        }
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String uid = (user!=null) ? user.getUid() : null;
@@ -334,6 +371,101 @@ public class UEventDetailFrag extends Fragment {
         }, e -> Toast.makeText(getContext(),
                 "Could not join waitlist.",
                 Toast.LENGTH_SHORT).show());
+    }
+
+    /**
+     * Extracts a Bitmap from the drawable currently displayed in the specified ImageView.
+     * <p>
+     * If the drawable is already a BitmapDrawable, its bitmap is returned directly.
+     * If the drawable is a vector or another type of drawable, it is drawn onto a newly
+     * created Bitmap using a Canvas.
+     *
+     * @param imageView The ImageView containing the QR code drawable.
+     * @return A Bitmap representation of the ImageView's drawable, or {@code null} if no drawable exists.
+     */
+    @Nullable
+    private Bitmap getBitmapFromImageView(@NonNull ImageView imageView) {
+        Drawable drawable = imageView.getDrawable();
+        if (drawable == null) {
+            return null;
+        }
+
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        } else {
+            Bitmap bmp = Bitmap.createBitmap(
+                    imageView.getWidth(),
+                    imageView.getHeight(),
+                    Bitmap.Config.ARGB_8888
+            );
+            Canvas canvas = new Canvas(bmp);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+            return bmp;
+        }
+    }
+
+    /**
+     * Saves a Bitmap image into the user's device gallery using the MediaStore API.
+     * <p>
+     * The image is saved as a PNG file with the provided base file name.
+     *
+     * @param bitmap   The Bitmap to save.
+     * @param fileName Desired base file name (without extension).
+     * @return A {@link Uri} referencing the saved image, or {@code null} if saving failed.
+     */
+    @Nullable
+    private Uri saveBitmapToGallery(@NonNull Bitmap bitmap, @NonNull String fileName) {
+        ContentResolver resolver = requireContext().getContentResolver();
+
+        Uri imagesUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            imagesUri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        } else {
+            imagesUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName + ".png");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+
+        // Save into a custom folder
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/EventLottery");
+            values.put(MediaStore.Images.Media.IS_PENDING, 1);
+        }
+
+        Uri uri = resolver.insert(imagesUri, values);
+        if (uri == null) {
+            return null;
+        }
+
+        OutputStream out = null;
+        try {
+            out = resolver.openOutputStream(uri);
+            if (out != null) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                values.clear();
+                values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                resolver.update(uri, values, null, null);
+            }
+
+            return uri;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ignored) { }
+            }
+        }
     }
 
     /**
