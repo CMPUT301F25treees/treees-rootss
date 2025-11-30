@@ -16,7 +16,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * RecyclerView adapter used to display events that the user is waitlisted for
+ *
+ * his adapter binds each event's title and selection (draw) date to the item
+ * layout and forwards click events to a registered listener so the host fragment
+ * can navigate to the event detail page.
+ */
 public class UWaitlistAdapter extends RecyclerView.Adapter<UWaitlistAdapter.ViewHolder> {
+
 
     public interface OnItemClickListener{
         void onEventClick(UserEvent event);
