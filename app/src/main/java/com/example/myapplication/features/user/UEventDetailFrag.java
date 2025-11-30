@@ -298,6 +298,7 @@ public class UEventDetailFrag extends Fragment {
 
 
     /**
+     * Joins the waitlist with optional location data.
      * @param repo
      * @param uid
      * @param lat

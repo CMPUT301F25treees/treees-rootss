@@ -27,7 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Instrumented tests for Rating System (Submission and Calculation) via MVC Controller.
+ * Instrumented tests for Rating System (Submission and Calculation)
  */
 @RunWith(AndroidJUnit4.class)
 public class RatingSystemTest {
