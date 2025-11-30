@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -86,6 +87,10 @@ public class UWaitlistFrag extends Fragment implements UWaitlistAdapter.OnItemCl
      */
     @Override
     public void onEventClick(UserEvent event){
+        Bundle bundle = new Bundle();
+        bundle.putString("eventId", event.getId());
+        NavHostFragment.findNavController(this)
+                .navigate(R.id.action_to_user_event_detail, bundle);
 
     }
 
