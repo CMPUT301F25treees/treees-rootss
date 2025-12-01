@@ -126,13 +126,7 @@ public class OHomeController {
             return;
         }
         List<UserEvent> events = model.getEvents();
-        if (events.isEmpty()) {
-            // We check if the raw list is empty to distinguish "no events at all" vs "no events matching filter"
-            // But for now, let's just show the empty state if the filtered result is empty
-            view.showEmptyState("No " + (model.getFilter() == OHomeModel.FilterType.UPCOMING ? "upcoming" : "past") + " events found");
-        } else {
-            view.showEvents(events, searchQuery);
-        }
+        view.showEvents(events, searchQuery);
     }
 
     /**
