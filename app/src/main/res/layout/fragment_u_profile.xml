@@ -270,8 +270,7 @@
                                 android:layout_width="64dp"
                                 android:layout_height="64dp"
                                 android:contentDescription="Logout"
-                                android:src="@drawable/ic_logout"
-                                app:tint="@android:color/black"/>
+                                android:src="@drawable/logout" />
 
                             <TextView
                                 android:layout_width="wrap_content"
