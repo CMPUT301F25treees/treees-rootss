@@ -21,10 +21,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavOptions;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.myapplication.R;
 import com.example.myapplication.core.ServiceLocator;
 import com.example.myapplication.core.UserSession;
+import com.example.myapplication.data.model.User;
 import com.example.myapplication.data.repo.ImageRepository;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
@@ -303,6 +307,9 @@ public class OCreateEventFrag extends Fragment {
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
         event.setTheme(selectedTheme);
 
+        User user = UserSession.getInstance().getCurrentUser();
+        event.setInstructor(user.getUsername());
+
         // If no poster is selected, use the default profile image
         if (posterUri == null) {
             posterUri = ImageUtils.createDefaultPosterUri(requireContext());
@@ -326,6 +333,22 @@ public class OCreateEventFrag extends Fragment {
         }
     }
 
+    /**
+     * Helper method that clears all user-input fields in the Create Event form.
+     */
+    private void clearForm() {
+        // Text inputs
+        titleInput.setText("");
+        addressInput.setText("");
+        descInput.setText("");
+        capacityInput.setText("");
+        priceInput.setText("");
+        entrantsDrawnInput.setText("");
+        themeInput.setText("");
+        selectedTheme = "";
+
+    }
+
 
     /**
      * This method uses EventRepository to save the event to Firestore. Depending
@@ -339,7 +362,14 @@ public class OCreateEventFrag extends Fragment {
                 event,
                 aVoid -> {
                     Toast.makeText(getContext(), "Event created!", Toast.LENGTH_SHORT).show();
-                    // TODO: navigate to OEventDetails
+
+                    clearForm();
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString("eventId", event.getId());
+
+                    NavHostFragment.findNavController(this)
+                            .navigate(R.id.action_navigation_organizer_create_to_navigation_organizer_event_detail, bundle);
                 },
                 e -> Toast.makeText(getContext(),
                         "Failed to create event: " + e.getMessage(), Toast.LENGTH_LONG).show());

@@ -142,7 +142,13 @@
     <fragment
         android:id="@+id/navigation_organizer_create"
         android:name="com.example.myapplication.features.organizer.OCreateEventFrag"
-        tools:layout="@layout/fragment_o_create_event" />
+        tools:layout="@layout/fragment_o_create_event" >
+
+        <action
+            android:id="@+id/action_navigation_organizer_create_to_navigation_organizer_event_detail"
+            app:destination="@id/navigation_organizer_event_detail" />
+    </fragment>
+
 
     <!-- Admin Stuff -->
     <fragment
