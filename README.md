@@ -34,9 +34,9 @@ The design centers on the following key classes:
 ---
 
 ## Key Materials
-- **CRC Cards**: https://github.com/CMPUT301F25treees/treees-rootss/wiki/CRC-Cards
-- **Storyboard and UI Mockup Link**: https://github.com/CMPUT301F25treees/treees-rootss/wiki/UI-Mockup-and-Storyboard
-- **Team Reading Minutes / Meeting Notes Link**: https://github.com/CMPUT301F25treees/treees-rootss/wiki/Reading-Minutes
+- **CRC Cards**: [View CRC Cards](https://github.com/CMPUT301F25treees/treees-rootss/wiki/CRC-Cards)
+- **Storyboard and UI Mockup Link**: [View Storyboard and UI Mockup](https://github.com/CMPUT301F25treees/treees-rootss/wiki/UI-Mockup-and-Storyboard)
+- **Team Reading Minutes / Meeting Notes Link**: [View Reading Minutes/Notes](https://github.com/CMPUT301F25treees/treees-rootss/wiki/Reading-Minutes)
 - **UML**:[View UML Diagram](https://github.com/CMPUT301F25treees/treees-rootss/wiki/UML-Object%E2%80%90Oriented-Diagram)
 
 
