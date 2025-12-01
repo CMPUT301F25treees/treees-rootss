@@ -2,7 +2,7 @@
 <resources>
     <string name="event_title_text">Event Title</string>
     <string name="waitinglist_text">Currently in Waitinglist:</string>
-    <string name="organizer_text">Organizer</string>
+    <string name="organizer_text">Organizer:</string>
     <string name="organizer_name_format">Organizer %1$s</string>
     <string name="location_text">Location</string>
     <string name="price_text">$0.00</string>
