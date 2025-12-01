@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment;
 import com.example.myapplication.R;
 import com.example.myapplication.core.ServiceLocator;
 import com.example.myapplication.core.UserSession;
+import com.example.myapplication.data.model.User;
 import com.example.myapplication.data.repo.ImageRepository;
 import com.example.myapplication.features.user.UserEvent;
 import com.google.android.material.button.MaterialButton;
@@ -302,6 +303,9 @@ public class OCreateEventFrag extends Fragment {
         event.setGeoRequired(geoSwitch.isChecked());
         event.setOrganizerID(UserSession.getInstance().getCurrentUser().getUid());
         event.setTheme(selectedTheme);
+
+        User user = UserSession.getInstance().getCurrentUser();
+        event.setInstructor(user.getUsername());
 
         // If no poster is selected, use the default profile image
         if (posterUri == null) {
