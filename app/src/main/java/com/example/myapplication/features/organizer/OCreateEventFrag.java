@@ -333,6 +333,9 @@ public class OCreateEventFrag extends Fragment {
         }
     }
 
+    /**
+     * Helper method that clears all user-input fields in the Create Event form.
+     */
     private void clearForm() {
         // Text inputs
         titleInput.setText("");
